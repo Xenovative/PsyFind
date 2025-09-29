@@ -1,0 +1,3644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PsyFind - AI Psychiatric Analysis & Matching</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .language-toggle {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .lang-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .lang-btn.active {
+            background: rgba(255, 255, 255, 0.9);
+            color: #4facfe;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            min-height: 600px;
+        }
+
+        .form-section {
+            padding: 40px;
+            background: #f8f9fa;
+        }
+
+        .results-section {
+            padding: 40px;
+            background: white;
+            border-left: 1px solid #e9ecef;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .btn-analyze {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s ease;
+        }
+
+        .btn-analyze:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-analyze:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading i {
+            font-size: 3rem;
+            color: #4facfe;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            display: none;
+        }
+
+        .analysis-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid #4facfe;
+        }
+
+        .disorder-match {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .disorder-match h4 {
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .confidence-badge {
+            background: #4facfe;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .psychiatrist-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: 1px solid #e9ecef;
+            transition: transform 0.2s ease;
+        }
+
+        .psychiatrist-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .psychiatrist-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .psychiatrist-specialty {
+            color: #4facfe;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .psychiatrist-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-item i {
+            color: #666;
+            width: 16px;
+        }
+
+        .recommendations {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 25px;
+        }
+
+        .recommendations h3 {
+            color: #856404;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .recommendations ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .recommendations li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .recommendations li:before {
+            content: "•";
+            color: #856404;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .detailed-report {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 25px;
+            font-family: 'Georgia', serif;
+            line-height: 1.6;
+        }
+
+        .detailed-report h1,
+        .detailed-report h2,
+        .detailed-report h3 {
+            color: #2c3e50;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .detailed-report h1 {
+            font-size: 1.5rem;
+            border-bottom: 2px solid #4facfe;
+            padding-bottom: 10px;
+        }
+
+        .detailed-report h2 {
+            font-size: 1.3rem;
+            color: #34495e;
+        }
+
+        .detailed-report h3 {
+            font-size: 1.1rem;
+            color: #5a6c7d;
+        }
+
+        .detailed-report ul,
+        .detailed-report ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .detailed-report li {
+            margin-bottom: 5px;
+        }
+
+        .detailed-report strong {
+            color: #2c3e50;
+        }
+
+        .detailed-report p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .report-toggle {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: transform 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .report-toggle:hover {
+            transform: translateY(-2px);
+        }
+
+        .report-toggle i {
+            transition: transform 0.3s ease;
+        }
+
+        .report-toggle.collapsed i {
+            transform: rotate(180deg);
+        }
+
+        .whiteley-questions {
+            margin-top: 20px;
+        }
+
+        .question-item {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .question-text {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .rating-scale {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .rating-scale label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 20px;
+            transition: background-color 0.2s ease;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .rating-scale label:hover {
+            background-color: #f8f9fa;
+        }
+
+        .rating-scale input[type="radio"] {
+            margin: 0;
+            transform: scale(1.2);
+        }
+
+        .rating-scale input[type="radio"]:checked + span {
+            font-weight: 600;
+            color: #4facfe;
+        }
+
+        @media (max-width: 768px) {
+            .rating-scale {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .rating-scale label {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+
+        .whiteley-results {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .score-display {
+            margin-bottom: 20px;
+        }
+
+        .score-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #4facfe;
+        }
+
+        .score-total {
+            font-size: 1.5rem;
+            color: #666;
+            margin-left: 5px;
+        }
+
+        .severity-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        .severity-minimal {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .severity-mild {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .severity-moderate {
+            background-color: #ffeaa7;
+            color: #b8860b;
+        }
+
+        .severity-severe {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .interpretation {
+            font-style: italic;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        /* Chat Interface Styles */
+        .chat-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            height: 70vh;
+            min-height: 600px;
+            margin-bottom: 20px;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .chat-avatar {
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .chat-info h3 {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+
+        .chat-info p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .chat-status {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4ade80;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .message.assistant .message-avatar {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .message.user .message-avatar {
+            background: #e5e7eb;
+            color: #6b7280;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.4;
+        }
+
+        .message.assistant .message-content {
+            background: #f3f4f6;
+            color: #374151;
+            border-bottom-left-radius: 6px;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border-bottom-right-radius: 6px;
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: #f9fafb;
+            border-radius: 25px;
+            padding: 5px;
+            border: 2px solid #e5e7eb;
+            transition: border-color 0.3s ease;
+        }
+
+        .chat-input-wrapper:focus-within {
+            border-color: #4facfe;
+        }
+
+        #chatInput {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 12px 15px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .send-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .quick-responses {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .quick-response-btn {
+            padding: 8px 16px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            color: #6b7280;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .quick-response-btn:hover {
+            border-color: #4facfe;
+            color: #4facfe;
+        }
+
+        .assessment-panel, .results-panel {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            height: 70vh;
+            min-height: 600px;
+            margin-top: 20px;
+        }
+
+        .results-panel {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+            position: fixed;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            max-height: 80vh;
+        }
+
+        .assessment-header, .results-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .results-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .close-assessment, .close-results {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: background 0.3s ease;
+        }
+
+        .close-assessment:hover, .close-results:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .assessment-content, .results-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .assessment-actions {
+            padding: 20px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn-primary, .btn-secondary {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #6b7280;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 12px 16px;
+            background: #f3f4f6;
+            border-radius: 18px;
+            border-bottom-left-radius: 6px;
+            max-width: 70px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #9ca3af;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-10px); opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Results Panel Styles */
+        .results-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            border-radius: 12px;
+            background: #f8f9fa;
+        }
+
+        .results-section h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .score-display {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .score-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #4facfe;
+        }
+
+        .disorder-match {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #4facfe;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .disorder-match h5 {
+            color: #2c3e50;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .confidence-badge {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .specialist-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+        }
+
+        .specialist-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .specialist-detail {
+            margin-bottom: 8px;
+            color: #666;
+        }
+
+        .specialist-detail strong {
+            color: #2c3e50;
+        }
+
+        .clinical-report {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            line-height: 1.6;
+            color: #2c3e50;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .recommendations-list {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .recommendations-list ol {
+            padding-left: 20px;
+        }
+
+        .recommendations-list li {
+            margin-bottom: 10px;
+            color: #2c3e50;
+            line-height: 1.5;
+        }
+
+        /* Collapsible sections */
+        .collapsible-header {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .collapsible-header:hover {
+            color: #4facfe;
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .toggle-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        .collapsible-content {
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .collapsible-content.expanded {
+            display: block !important;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-header {
+            padding: 20px 25px 15px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            color: #6c757d;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: #f8f9fa;
+            color: #dc3545;
+        }
+
+        .modal-body {
+            padding: 20px 25px;
+            line-height: 1.6;
+        }
+
+        .modal-body p {
+            margin-bottom: 15px;
+            color: #495057;
+        }
+
+        .modal-footer {
+            padding: 15px 25px 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        /* Progressive Assessment Styles */
+        .assessment-progress {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .progress-text {
+            font-size: 0.9rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .current-question {
+            margin: 30px 0;
+        }
+
+        .question-item {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .question-number {
+            color: #667eea;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .rating-scale {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #f8f9fa;
+        }
+
+        .option-label:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateY(-1px);
+        }
+
+        .option-label input[type="radio"] {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+
+        .option-label input[type="radio"]:checked + .option-text {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .option-label:has(input[type="radio"]:checked) {
+            border-color: #667eea;
+            background: #f0f4ff;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.2);
+        }
+
+        .option-text {
+            font-size: 1rem;
+            color: #495057;
+            transition: all 0.2s ease;
+        }
+
+        .question-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding: 0 20px;
+        }
+
+        .nav-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+        }
+
+        .nav-btn:disabled {
+            background: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .nav-btn:not(:disabled) {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .nav-btn:not(:disabled):hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .assessment-complete {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .completion-icon {
+            font-size: 4rem;
+            color: #28a745;
+            margin-bottom: 20px;
+            animation: bounce 0.6s ease;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .assessment-complete h3 {
+            color: #28a745;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .assessment-complete p {
+            color: #6c757d;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
+        }
+
+        .submission-progress {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e9ecef;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .submission-steps {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .step.active {
+            color: #667eea;
+        }
+
+        .step i {
+            font-size: 1.5rem;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Desktop/Mobile visibility classes */
+        .desktop-only {
+            display: block;
+        }
+
+        .mobile-only {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .rating-scale {
+                gap: 8px;
+            }
+            
+            .option-label {
+                padding: 12px 15px;
+            }
+            
+            .question-navigation {
+                padding: 0 10px;
+            }
+            
+            .submission-steps {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
+        /* Mobile Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+                margin: 0;
+            }
+
+            .container {
+                padding: 10px;
+                max-width: 100%;
+            }
+
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                padding: 0;
+            }
+            
+            .results-section {
+                border-left: none;
+                border-top: 1px solid #e9ecef;
+                padding: 15px;
+            }
+
+            .header {
+                padding: 15px 10px;
+                text-align: center;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+                margin-bottom: 5px;
+            }
+
+            .header p {
+                font-size: 0.9rem;
+            }
+
+            /* Mobile Chat Interface */
+            .chat-interface {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: white;
+                border-top: 1px solid #e9ecef;
+                box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+                max-height: 70vh;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .chat-header {
+                padding: 15px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                display: flex;
+                justify-content: between;
+                align-items: center;
+                border-radius: 0;
+            }
+
+            .chat-toggle {
+                display: block;
+                background: none;
+                border: none;
+                color: white;
+                font-size: 1.2rem;
+                cursor: pointer;
+                margin-left: auto;
+            }
+
+            .chat-messages {
+                max-height: 40vh;
+                overflow-y: auto;
+                padding: 15px;
+                flex: 1;
+            }
+
+            .chat-input-container {
+                padding: 15px;
+                border-top: 1px solid #e9ecef;
+                background: #f8f9fa;
+            }
+
+            /* Mobile Assessment Panel as Floating Modal */
+            .assessment-panel {
+                position: fixed !important;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 2000;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+
+            .assessment-content {
+                background: white;
+                border-radius: 15px;
+                width: 100%;
+                max-width: 500px;
+                max-height: 90vh;
+                overflow-y: auto;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+                animation: modalSlideUp 0.3s ease-out;
+            }
+
+            @keyframes modalSlideUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(50px) scale(0.95);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+            }
+
+            .assessment-header {
+                padding: 20px;
+                border-bottom: 1px solid #e9ecef;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border-radius: 15px 15px 0 0;
+            }
+
+            .assessment-header h2 {
+                margin: 0;
+                font-size: 1.2rem;
+            }
+
+            .close-assessment {
+                background: none;
+                border: none;
+                color: white;
+                font-size: 1.5rem;
+                cursor: pointer;
+                padding: 5px;
+                border-radius: 50%;
+                width: 35px;
+                height: 35px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .close-assessment:hover {
+                background: rgba(255, 255, 255, 0.2);
+            }
+
+            .assessment-body {
+                padding: 20px;
+            }
+
+            /* Mobile Results Panel as Floating Modal */
+            .results-panel {
+                position: fixed !important;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 2000;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+
+            .results-content {
+                background: white;
+                border-radius: 15px;
+                width: 100%;
+                max-width: 500px;
+                max-height: 90vh;
+                overflow-y: auto;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+                animation: modalSlideUp 0.3s ease-out;
+            }
+
+            .results-header {
+                padding: 20px;
+                border-bottom: 1px solid #e9ecef;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+                color: white;
+                border-radius: 15px 15px 0 0;
+            }
+
+            .results-header h2 {
+                margin: 0;
+                font-size: 1.2rem;
+            }
+
+            .close-results {
+                background: none;
+                border: none;
+                color: white;
+                font-size: 1.5rem;
+                cursor: pointer;
+                padding: 5px;
+                border-radius: 50%;
+                width: 35px;
+                height: 35px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .close-results:hover {
+                background: rgba(255, 255, 255, 0.2);
+            }
+
+            .results-body {
+                padding: 20px;
+            }
+
+            /* Mobile Results Content Styling */
+            .results-body .analysis-card {
+                margin-bottom: 20px;
+                padding: 15px;
+                background: #f8f9fa;
+                border-radius: 10px;
+                border-left: 4px solid #28a745;
+            }
+
+            .results-body .analysis-card h3 {
+                margin-top: 0;
+                margin-bottom: 15px;
+                color: #28a745;
+                font-size: 1.1rem;
+            }
+
+            .results-body .whiteley-results {
+                text-align: center;
+                margin: 15px 0;
+            }
+
+            .results-body .score-display {
+                margin-bottom: 10px;
+            }
+
+            .results-body .score-number {
+                font-size: 2rem;
+                font-weight: bold;
+                color: #28a745;
+            }
+
+            .results-body .score-total {
+                font-size: 1.2rem;
+                color: #6c757d;
+            }
+
+            .results-body .severity-badge {
+                display: inline-block;
+                padding: 5px 15px;
+                border-radius: 20px;
+                font-weight: 600;
+                font-size: 0.9rem;
+                margin-bottom: 10px;
+            }
+
+            .results-body .severity-minimal { background: #d4edda; color: #155724; }
+            .results-body .severity-mild { background: #fff3cd; color: #856404; }
+            .results-body .severity-moderate { background: #ffeaa7; color: #856404; }
+            .results-body .severity-severe { background: #f8d7da; color: #721c24; }
+
+            .results-body .disorder-match {
+                margin-bottom: 15px;
+                padding: 12px;
+                background: white;
+                border-radius: 8px;
+                border: 1px solid #e9ecef;
+            }
+
+            .results-body .disorder-match h4 {
+                margin: 0 0 8px 0;
+                font-size: 1rem;
+                color: #2c3e50;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+
+            .results-body .confidence-badge {
+                background: #e3f2fd;
+                color: #1976d2;
+                padding: 2px 8px;
+                border-radius: 12px;
+                font-size: 0.8rem;
+                font-weight: 500;
+            }
+
+            .results-body .psychiatrist-card {
+                margin-bottom: 15px;
+                padding: 15px;
+                background: white;
+                border-radius: 10px;
+                border: 1px solid #e9ecef;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+
+            .results-body .psychiatrist-name {
+                font-size: 1.1rem;
+                font-weight: bold;
+                color: #2c3e50;
+                margin-bottom: 5px;
+            }
+
+            .results-body .psychiatrist-specialty {
+                color: #667eea;
+                font-weight: 600;
+                margin-bottom: 10px;
+            }
+
+            .results-body .psychiatrist-info {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 8px;
+                margin-top: 10px;
+            }
+
+            .results-body .info-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 0.9rem;
+                color: #495057;
+            }
+
+            .results-body .info-item i {
+                width: 16px;
+                color: #6c757d;
+            }
+
+            .results-body .report-toggle {
+                width: 100%;
+                padding: 12px;
+                background: #f8f9fa;
+                border: 1px solid #e9ecef;
+                border-radius: 8px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                margin: 15px 0;
+                transition: all 0.2s ease;
+            }
+
+            .results-body .report-toggle:hover {
+                background: #e9ecef;
+            }
+
+            .results-body .detailed-report {
+                background: #f8f9fa;
+                padding: 15px;
+                border-radius: 8px;
+                margin: 10px 0;
+                font-size: 0.95rem;
+                line-height: 1.6;
+            }
+
+            .results-body .recommendations {
+                margin-top: 20px;
+                padding: 15px;
+                background: #fff3cd;
+                border-radius: 8px;
+                border-left: 4px solid #ffc107;
+            }
+
+            .results-body .recommendations h3 {
+                margin-top: 0;
+                color: #856404;
+            }
+
+            .results-body .recommendations ul {
+                margin: 10px 0;
+                padding-left: 20px;
+            }
+
+            .results-body .recommendations li {
+                margin-bottom: 8px;
+                color: #856404;
+            }
+
+            /* Mobile-specific adjustments */
+            .question-item {
+                padding: 20px;
+                margin-bottom: 15px;
+            }
+
+            .question-text {
+                font-size: 1.1rem;
+            }
+
+            .option-label {
+                padding: 12px 15px;
+                font-size: 0.95rem;
+            }
+
+            .nav-btn {
+                padding: 12px 20px;
+                font-size: 0.95rem;
+            }
+
+            .submit-btn {
+                padding: 12px 25px;
+                font-size: 1rem;
+            }
+
+            /* Hide desktop elements on mobile */
+            .desktop-only {
+                display: none !important;
+            }
+
+            /* Show mobile elements */
+            .mobile-only {
+                display: block !important;
+            }
+
+            /* Adjust chat interface for mobile */
+            .chat-interface.collapsed .chat-messages,
+            .chat-interface.collapsed .chat-input-container {
+                display: none;
+            }
+
+            .chat-interface.collapsed {
+                max-height: 60px;
+            }
+
+            /* Mobile typography */
+            h1 { font-size: 1.8rem; }
+            h2 { font-size: 1.5rem; }
+            h3 { font-size: 1.3rem; }
+            h4 { font-size: 1.1rem; }
+
+            /* Mobile spacing */
+            .panel {
+                margin-bottom: 15px;
+                padding: 15px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="language-toggle">
+                <button class="lang-btn" onclick="switchLanguage('en')">EN</button>
+                <button class="lang-btn active" onclick="switchLanguage('zh')">繁中</button>
+            </div>
+            <h1><i class="fas fa-brain"></i> <span data-lang="title">PsyFind</span></h1>
+            <p data-lang="subtitle">AI-Powered Psychiatric Analysis & Specialist Matching</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Chat Interface -->
+            <div class="chat-container">
+                <div class="chat-header">
+                    <div class="chat-avatar">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <div class="chat-info">
+                        <h3 data-lang="chat_title">PsyFind Clinical Assistant</h3>
+                        <p data-lang="chat_subtitle">Your AI-powered mental health screening companion</p>
+                    </div>
+                    <div class="chat-status">
+                        <span class="status-indicator online"></span>
+                        <span data-lang="status_online">Online</span>
+                    </div>
+                </div>
+
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Messages will be added here -->
+                </div>
+
+                <div class="chat-input-container">
+                    <div class="chat-input-wrapper">
+                        <input 
+                            type="text" 
+                            id="chatInput" 
+                            data-lang-placeholder="chat_placeholder"
+                            placeholder="正在連接助理..."
+                            disabled
+                        >
+                        <button id="sendButton" class="send-btn" disabled>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <div class="quick-responses" id="quickResponses">
+                        <!-- Quick response buttons will be added here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assessment Panel -->
+            <div class="assessment-panel" id="assessmentPanel" style="display: none;">
+                <div class="assessment-content">
+                    <div class="assessment-header">
+                        <h2 id="assessmentTitle">Assessment</h2>
+                        <button class="close-assessment" onclick="closeAssessment()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="assessment-body" id="assessmentContent">
+                        <!-- Assessment questions will be loaded here -->
+                    </div>
+                    <div class="assessment-actions desktop-only">
+                        <button class="btn-secondary" onclick="closeAssessment()" data-lang="cancel">Cancel</button>
+                        <button class="btn-primary" id="submitAssessment" data-lang="submit_assessment">Submit Assessment</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Panel -->
+            <div class="results-panel" id="resultsPanel" style="display: none;">
+                <div class="results-content">
+                    <div class="results-header">
+                        <h2 data-lang="analysis_results">Analysis Results</h2>
+                        <button class="close-results" onclick="closeResults()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="results-body" id="resultsContent">
+                        <!-- Results will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legacy Form (Hidden) -->
+            <div class="form-section" style="display: none;">
+                <form id="analysisForm">
+                    <div class="form-group">
+                        <h3><i class="fas fa-clipboard-check"></i> <span data-lang="whiteley_title">Whiteley 7 Health Anxiety Assessment</span></h3>
+                        <p data-lang="whiteley_instruction">Please rate how much each statement applies to you over the past 6 months:</p>
+                        
+                        <div class="whiteley-questions">
+                            <div class="question-item">
+                                <p class="question-text" data-lang="q1">1. Do you worry a lot about your health?</p>
+                                <div class="rating-scale">
+                                    <label><input type="radio" name="q1" value="0" required> <span data-lang="not_at_all">Not at all</span></label>
+                                    <label><input type="radio" name="q1" value="1"> <span data-lang="a_little">A little</span></label>
+                                    <label><input type="radio" name="q1" value="2"> <span data-lang="moderately">Moderately</span></label>
+                                    <label><input type="radio" name="q1" value="3"> <span data-lang="quite_a_bit">Quite a bit</span></label>
+                                    <label><input type="radio" name="q1" value="4"> <span data-lang="extremely">Extremely</span></label>
+                                </div>
+                            </div>
+
+                            <div class="question-item">
+                                <p class="question-text" data-lang="q2">2. Are you bothered by many different symptoms?</p>
+                                <div class="rating-scale">
+                                    <label><input type="radio" name="q2" value="0" required> <span data-lang="not_at_all">Not at all</span></label>
+                                    <label><input type="radio" name="q2" value="1"> <span data-lang="a_little">A little</span></label>
+                                    <label><input type="radio" name="q2" value="2"> <span data-lang="moderately">Moderately</span></label>
+                                    <label><input type="radio" name="q2" value="3"> <span data-lang="quite_a_bit">Quite a bit</span></label>
+                                    <label><input type="radio" name="q2" value="4"> <span data-lang="extremely">Extremely</span></label>
+                                </div>
+                            </div>
+
+                            <div class="question-item">
+                                <p class="question-text" data-lang="q3">3. Do you find that you are bothered by many different symptoms?</p>
+                                <div class="rating-scale">
+                                    <label><input type="radio" name="q3" value="0" required> <span data-lang="not_at_all">Not at all</span></label>
+                                    <label><input type="radio" name="q3" value="1"> <span data-lang="a_little">A little</span></label>
+                                    <label><input type="radio" name="q3" value="2"> <span data-lang="moderately">Moderately</span></label>
+                                    <label><input type="radio" name="q3" value="3"> <span data-lang="quite_a_bit">Quite a bit</span></label>
+                                    <label><input type="radio" name="q3" value="4"> <span data-lang="extremely">Extremely</span></label>
+                                </div>
+                            </div>
+
+                            <div class="question-item">
+                                <p class="question-text" data-lang="q4">4. Is it easy for you to forget about yourself when you are busy with work or some other activity?</p>
+                                <div class="rating-scale">
+                                    <label><input type="radio" name="q4" value="4" required> <span data-lang="not_at_all">Not at all</span></label>
+                                    <label><input type="radio" name="q4" value="3"> <span data-lang="a_little">A little</span></label>
+                                    <label><input type="radio" name="q4" value="2"> <span data-lang="moderately">Moderately</span></label>
+                                    <label><input type="radio" name="q4" value="1"> <span data-lang="quite_a_bit">Quite a bit</span></label>
+                                    <label><input type="radio" name="q4" value="0"> <span data-lang="extremely">Extremely</span></label>
+                                </div>
+                            </div>
+
+                            <div class="question-item">
+                                <p class="question-text" data-lang="q5">5. If you feel ill and someone tells you that you are looking better, do you become annoyed?</p>
+                                <div class="rating-scale">
+                                    <label><input type="radio" name="q5" value="0" required> <span data-lang="not_at_all">Not at all</span></label>
+                                    <label><input type="radio" name="q5" value="1"> <span data-lang="a_little">A little</span></label>
+                                    <label><input type="radio" name="q5" value="2"> <span data-lang="moderately">Moderately</span></label>
+                                    <label><input type="radio" name="q5" value="3"> <span data-lang="quite_a_bit">Quite a bit</span></label>
+                                    <label><input type="radio" name="q5" value="4"> <span data-lang="extremely">Extremely</span></label>
+                                </div>
+                            </div>
+
+                            <div class="question-item">
+                                <p class="question-text" data-lang="q6">6. Do you find that you are aware of various things happening in your body?</p>
+                                <div class="rating-scale">
+                                    <label><input type="radio" name="q6" value="0" required> <span data-lang="not_at_all">Not at all</span></label>
+                                    <label><input type="radio" name="q6" value="1"> <span data-lang="a_little">A little</span></label>
+                                    <label><input type="radio" name="q6" value="2"> <span data-lang="moderately">Moderately</span></label>
+                                    <label><input type="radio" name="q6" value="3"> <span data-lang="quite_a_bit">Quite a bit</span></label>
+                                    <label><input type="radio" name="q6" value="4"> <span data-lang="extremely">Extremely</span></label>
+                                </div>
+                            </div>
+
+                            <div class="question-item">
+                                <p class="question-text" data-lang="q7">7. Are you bothered by many aches and pains?</p>
+                                <div class="rating-scale">
+                                    <label><input type="radio" name="q7" value="0" required> <span data-lang="not_at_all">Not at all</span></label>
+                                    <label><input type="radio" name="q7" value="1"> <span data-lang="a_little">A little</span></label>
+                                    <label><input type="radio" name="q7" value="2"> <span data-lang="moderately">Moderately</span></label>
+                                    <label><input type="radio" name="q7" value="3"> <span data-lang="quite_a_bit">Quite a bit</span></label>
+                                    <label><input type="radio" name="q7" value="4"> <span data-lang="extremely">Extremely</span></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="age">
+                            <i class="fas fa-calendar-alt"></i> <span data-lang="age_label">Age</span>
+                        </label>
+                        <input 
+                            type="number" 
+                            id="age" 
+                            name="age" 
+                            min="1" 
+                            max="120" 
+                            data-lang-placeholder="age_placeholder"
+                            placeholder="Enter your age"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="duration">
+                            <i class="fas fa-clock"></i> <span data-lang="duration_label">How long have you been experiencing these symptoms?</span>
+                        </label>
+                        <select id="duration" name="duration" required>
+                            <option value="" data-lang="select_duration">Select duration</option>
+                            <option value="less_than_week" data-lang="less_than_week">Less than a week</option>
+                            <option value="1-2_weeks" data-lang="1-2_weeks">1-2 weeks</option>
+                            <option value="2-4_weeks" data-lang="2-4_weeks">2-4 weeks</option>
+                            <option value="1-3_months" data-lang="1-3_months">1-3 months</option>
+                            <option value="3-6_months" data-lang="3-6_months">3-6 months</option>
+                            <option value="6-12_months" data-lang="6-12_months">6-12 months</option>
+                            <option value="more_than_year" data-lang="more_than_year">More than a year</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="language">
+                            <i class="fas fa-language"></i> <span data-lang="language_label">Preferred Language</span>
+                        </label>
+                        <select id="language" name="language">
+                            <option value="English" data-lang="english">English</option>
+                            <option value="Spanish" data-lang="spanish">Spanish</option>
+                            <option value="Mandarin" data-lang="mandarin">Mandarin</option>
+                            <option value="Traditional Chinese" data-lang="traditional_chinese">Traditional Chinese</option>
+                            <option value="French" data-lang="french">French</option>
+                            <option value="German" data-lang="german">German</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="location">
+                            <i class="fas fa-map-marker-alt"></i> <span data-lang="location_label">Preferred Location (Optional)</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="location" 
+                            name="location" 
+                            data-lang-placeholder="location_placeholder"
+                            placeholder="City or area preference"
+                        >
+                    </div>
+
+                    <button type="submit" class="btn-analyze">
+                        <i class="fas fa-search"></i> <span data-lang="analyze_button">Analyze & Find Specialists</span>
+                    </button>
+                </form>
+            </div>
+
+            <div class="results-section">
+                <div class="loading" id="loading">
+                    <i class="fas fa-spinner"></i>
+                    <p data-lang="loading_text">Analyzing symptoms using DSM-5-TR criteria...</p>
+                </div>
+
+                <div class="results" id="results">
+                    <!-- Results will be populated here -->
+                </div>
+
+                <!-- Disclaimer removed from static display - now shown as modal -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Language translations
+        const translations = {
+            en: {
+                title: "PsyFind",
+                subtitle: "AI-Powered Psychiatric Analysis & Specialist Matching",
+                symptoms_label: "Describe your symptoms or concerns",
+                symptoms_placeholder: "Please describe your symptoms, feelings, or mental health concerns in detail. Include duration, severity, and any triggers you've noticed...",
+                age_label: "Age",
+                age_placeholder: "Enter your age",
+                duration_label: "How long have you been experiencing these symptoms?",
+                select_duration: "Select duration",
+                less_than_week: "Less than a week",
+                "1-2_weeks": "1-2 weeks",
+                "2-4_weeks": "2-4 weeks",
+                "1-3_months": "1-3 months",
+                "3-6_months": "3-6 months",
+                "6-12_months": "6-12 months",
+                more_than_year: "More than a year",
+                language_label: "Preferred Language",
+                english: "English",
+                spanish: "Spanish",
+                mandarin: "Mandarin",
+                traditional_chinese: "Traditional Chinese",
+                french: "French",
+                german: "German",
+                location_label: "Preferred Location (Optional)",
+                location_placeholder: "City or area preference",
+                analyze_button: "Analyze & Find Specialists",
+                loading_text: "Analyzing symptoms using DSM-5-TR criteria...",
+                detailed_report_toggle: "View Detailed Clinical Report",
+                whiteley_title: "Whiteley 7 Health Anxiety Assessment",
+                whiteley_instruction: "Please rate how much each statement applies to you over the past 6 months:",
+                q1: "1. Do you worry a lot about your health?",
+                q2: "2. Are you bothered by many different symptoms?",
+                q3: "3. Do you find that you are bothered by many different symptoms?",
+                q4: "4. Is it easy for you to forget about yourself when you are busy with work or some other activity?",
+                q5: "5. If you feel ill and someone tells you that you are looking better, do you become annoyed?",
+                q6: "6. Do you find that you are aware of various things happening in your body?",
+                q7: "7. Are you bothered by many aches and pains?",
+                not_at_all: "Not at all",
+                a_little: "A little",
+                moderately: "Moderately",
+                quite_a_bit: "Quite a bit",
+                extremely: "Extremely",
+                analysis_results: "Analysis Results",
+                whiteley_results: "Whiteley 7 Assessment Results",
+                dsm_analysis: "DSM-5-TR Analysis",
+                dsm_code: "DSM-5-TR Code",
+                matched_indicators: "Matched indicators",
+                recommended_specialists: "Recommended Specialists",
+                specializes_in: "Specializes in",
+                approach: "Approach",
+                experience: "experience",
+                clinical_recommendations: "Clinical Recommendations",
+                detailed_clinical_report: "Detailed Clinical Report",
+                match_text: "match",
+                severity_minimal: "Minimal Health Anxiety",
+                severity_mild: "Mild Health Anxiety", 
+                severity_moderate: "Moderate Health Anxiety",
+                severity_severe: "Severe Health Anxiety",
+                interpretation_minimal: "Minimal health anxiety - within normal range",
+                interpretation_mild: "Mild health anxiety - minimal hypochondriacal concerns",
+                interpretation_moderate: "Moderate health anxiety - some hypochondriacal concerns", 
+                interpretation_severe: "High health anxiety - significant hypochondriacal concerns",
+                disclaimer_title: "Important Disclaimer",
+                disclaimer_text: "This tool is for informational purposes only and does not provide medical diagnosis or treatment recommendations. Always consult with qualified mental health professionals for proper evaluation and care.",
+                disclaimer_note_title: "Please Note:",
+                disclaimer_note_1: "This assessment is a screening tool, not a diagnostic instrument",
+                disclaimer_note_2: "Results should be discussed with a qualified healthcare provider",
+                disclaimer_note_3: "If you're experiencing a mental health emergency, contact emergency services immediately",
+                disclaimer_note_4: "Your privacy is protected - no personal data is stored permanently",
+                disclaimer_understand: "I Understand",
+                disclaimer_close: "Close",
+                chat_title: "PsyFind Clinical Assistant",
+                chat_subtitle: "Your AI-powered mental health screening companion",
+                status_online: "Online",
+                chat_placeholder: "Type your response here...",
+                cancel: "Cancel",
+                submit_assessment: "Submit Assessment",
+                analysis_results: "Analysis Results"
+            },
+            zh: {
+                title: "心理診斷",
+                subtitle: "AI 精神科分析與專家配對系統",
+                age_label: "年齡",
+                age_placeholder: "請輸入您的年齡",
+                duration_label: "您經歷這些症狀多長時間了？",
+                select_duration: "選擇持續時間",
+                less_than_week: "少於一週",
+                "1-2_weeks": "1-2 週",
+                "2-4_weeks": "2-4 週",
+                "1-3_months": "1-3 個月",
+                "3-6_months": "3-6 個月",
+                "6-12_months": "6-12 個月",
+                more_than_year: "超過一年",
+                language_label: "偏好語言",
+                english: "英語",
+                spanish: "西班牙語",
+                mandarin: "普通話",
+                traditional_chinese: "繁體中文",
+                french: "法語",
+                german: "德語",
+                location_label: "偏好地點（選填）",
+                location_placeholder: "城市或地區偏好",
+                analyze_button: "分析並尋找專家",
+                loading_text: "正在使用 DSM-5-TR 標準分析症狀...",
+                detailed_report_toggle: "查看詳細臨床報告",
+                whiteley_title: "Whiteley 7 健康焦慮評估",
+                whiteley_instruction: "請評估以下陳述在過去6個月內對您的適用程度：",
+                q1: "1. 您是否經常擔心自己的健康？",
+                q2: "2. 您是否被許多不同的症狀困擾？",
+                q3: "3. 您是否發現自己被許多不同的症狀困擾？",
+                q4: "4. 當您忙於工作或其他活動時，是否容易忘記自己的身體狀況？",
+                q5: "5. 如果您感到不適，而有人告訴您看起來好多了，您會感到煩惱嗎？",
+                q6: "6. 您是否發現自己會注意到身體內發生的各種變化？",
+                q7: "7. 您是否被許多疼痛和不適困擾？",
+                not_at_all: "完全沒有",
+                a_little: "有一點",
+                moderately: "中等程度",
+                quite_a_bit: "相當多",
+                extremely: "極度",
+                analysis_results: "分析結果",
+                whiteley_results: "Whiteley 7 評估結果",
+                dsm_analysis: "DSM-5-TR 分析",
+                dsm_code: "DSM-5-TR 代碼",
+                matched_indicators: "符合指標",
+                recommended_specialists: "推薦專家",
+                specializes_in: "專精領域",
+                approach: "治療方法",
+                experience: "經驗",
+                clinical_recommendations: "臨床建議",
+                match_text: "符合",
+                severity_minimal: "輕微健康焦慮",
+                severity_mild: "輕度健康焦慮",
+                severity_moderate: "中度健康焦慮", 
+                severity_severe: "重度健康焦慮",
+                interpretation_minimal: "輕微健康焦慮 - 在正常範圍內",
+                interpretation_mild: "輕度健康焦慮 - 最小程度的疑病症狀",
+                interpretation_moderate: "中度健康焦慮 - 一些疑病症狀",
+                interpretation_severe: "高度健康焦慮 - 顯著的疑病症狀",
+                disclaimer_title: "重要聲明",
+                disclaimer_text: "此工具僅供參考，不提供醫療診斷或治療建議。請務必諮詢合格的心理健康專業人員進行適當的評估和護理。",
+                disclaimer_note_title: "請注意：",
+                disclaimer_note_1: "此評估是篩檢工具，而非診斷儀器",
+                disclaimer_note_2: "結果應與合格的醫療保健提供者討論",
+                disclaimer_note_3: "如果您正在經歷心理健康緊急情況，請立即聯繫緊急服務",
+                disclaimer_note_4: "您的隱私受到保護 - 不會永久存儲個人數據",
+                disclaimer_understand: "我明白",
+                disclaimer_close: "關閉",
+                chat_title: "PsyFind 臨床助理",
+                chat_subtitle: "您的 AI 精神健康篩檢夥伴",
+                status_online: "在線",
+                chat_placeholder: "在此輸入您的回應...",
+                cancel: "取消",
+                submit_assessment: "提交評估",
+                analysis_results: "分析結果",
+                whiteley_results: "Whiteley 7 評估結果",
+                dsm_analysis: "DSM-5-TR 分析",
+                dsm_code: "DSM-5-TR 代碼",
+                matched_indicators: "符合指標",
+                recommended_specialists: "推薦專家",
+                specializes_in: "專精領域",
+                approach: "治療方法",
+                experience: "經驗",
+                clinical_recommendations: "臨床建議",
+                detailed_clinical_report: "詳細臨床報告",
+                match_text: "符合",
+                severity_minimal: "輕微健康焦慮",
+                severity_mild: "輕度健康焦慮", 
+                severity_moderate: "中度健康焦慮",
+                severity_severe: "重度健康焦慮"
+            }
+        };
+
+        let currentLanguage = 'zh';
+
+        function updateLanguageDisplay() {
+            // Update all text elements
+            document.querySelectorAll('[data-lang]').forEach(element => {
+                const key = element.getAttribute('data-lang');
+                if (translations[currentLanguage] && translations[currentLanguage][key]) {
+                    element.textContent = translations[currentLanguage][key];
+                }
+            });
+            
+            // Update placeholders
+            document.querySelectorAll('[data-lang-placeholder]').forEach(element => {
+                const key = element.getAttribute('data-lang-placeholder');
+                if (translations[currentLanguage] && translations[currentLanguage][key]) {
+                    element.placeholder = translations[currentLanguage][key];
+                }
+            });
+            
+            // Update select options
+            document.querySelectorAll('option[data-lang]').forEach(option => {
+                const key = option.getAttribute('data-lang');
+                if (translations[currentLanguage] && translations[currentLanguage][key]) {
+                    option.textContent = translations[currentLanguage][key];
+                }
+            });
+        }
+
+        function switchLanguage(lang) {
+            currentLanguage = lang;
+            
+            // Update active button
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update language display
+            updateLanguageDisplay();
+        }
+
+        document.getElementById('analysisForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Show loading state
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            document.querySelector('.btn-analyze').disabled = true;
+            
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    displayResults(result);
+                } else {
+                    throw new Error(result.error || 'Analysis failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('results').innerHTML = `
+                    <div class="analysis-card">
+                        <h3 style="color: #dc3545;"><i class="fas fa-exclamation-circle"></i> Error</h3>
+                        <p>Sorry, we encountered an error during analysis. Please try again.</p>
+                    </div>
+                `;
+                document.getElementById('results').style.display = 'block';
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.querySelector('.btn-analyze').disabled = false;
+            }
+        });
+        
+        function displayResults(result) {
+            const resultsContent = document.getElementById('resultsContent');
+            const resultsPanel = document.getElementById('resultsPanel');
+            
+            const t = translations[currentLanguage];
+            let html = '';
+            
+            // Display Whiteley score if available
+            if (result.analysis && result.analysis.whiteley_score !== undefined) {
+                html += '<div class="analysis-card">';
+                html += `<h3><i class="fas fa-clipboard-check"></i> ${t.whiteley_results || 'Whiteley 7 Assessment Results'}</h3>`;
+                
+                const severityText = getSeverityText(result.analysis.severity);
+                const interpretationText = getInterpretationText(result.analysis.severity, result.analysis.whiteley_score);
+                
+                html += `
+                    <div class="whiteley-results">
+                        <div class="score-display">
+                            <span class="score-number">${result.analysis.whiteley_score}</span>
+                            <span class="score-total">/28</span>
+                        </div>
+                        <div class="severity-badge severity-${result.analysis.severity}">
+                            ${severityText}
+                        </div>
+                        <p class="interpretation">${interpretationText}</p>
+                    </div>
+                `;
+                html += '</div>';
+            }
+
+            // Display analysis
+            if (result.analysis && result.analysis.analysis && result.analysis.analysis.length > 0) {
+                html += '<div class="analysis-card">';
+                html += `<h3><i class="fas fa-brain"></i> ${t.dsm_analysis}</h3>`;
+                
+                result.analysis.analysis.forEach(match => {
+                    const disorderName = currentLanguage === 'zh' && match.disorder_zh ? match.disorder_zh : match.disorder;
+                    const keywords = currentLanguage === 'zh' && match.matched_keywords_zh ? match.matched_keywords_zh : match.matched_keywords;
+                    
+                    html += `
+                        <div class="disorder-match">
+                            <h4>
+                                ${disorderName}
+                                <span class="confidence-badge">${Math.round(match.confidence)}% ${t.match_text}</span>
+                            </h4>
+                            <p><strong>${t.dsm_code}:</strong> ${match.code}</p>
+                            <p><strong>${t.matched_indicators}:</strong> ${keywords.join(', ')}</p>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            }
+            
+            // Display psychiatrists
+            if (result.psychiatrists && result.psychiatrists.length > 0) {
+                html += `<h3><i class="fas fa-user-md"></i> ${t.recommended_specialists}</h3>`;
+                
+                result.psychiatrists.forEach(psychiatrist => {
+                    html += `
+                        <div class="psychiatrist-card">
+                            <div class="psychiatrist-name">${psychiatrist.name}</div>
+                            <div class="psychiatrist-specialty">${psychiatrist.specialty}</div>
+                            <p><strong>${t.specializes_in}:</strong> ${psychiatrist.subspecialty}</p>
+                            <p><strong>${t.approach}:</strong> ${psychiatrist.approach}</p>
+                            
+                            <div class="psychiatrist-info">
+                                <div class="info-item">
+                                    <i class="fas fa-phone"></i>
+                                    <span>${psychiatrist.phone}</span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>${psychiatrist.location}</span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-language"></i>
+                                    <span>${psychiatrist.languages.join(', ')}</span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-graduation-cap"></i>
+                                    <span>${psychiatrist.experience} ${t.experience}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            // Display detailed LLM report
+            if (result.detailed_report) {
+                html += `
+                    <button class="report-toggle" onclick="toggleDetailedReport()">
+                        <i class="fas fa-chevron-down"></i>
+                        <span data-lang="detailed_report_toggle">View Detailed Clinical Report</span>
+                    </button>
+                    <div class="detailed-report" id="detailedReport" style="display: none;">
+                        ${formatMarkdownToHTML(result.detailed_report)}
+                    </div>
+                `;
+            }
+
+            // Display recommendations
+            if (result.analysis && result.analysis.recommendations) {
+                html += `
+                    <div class="recommendations">
+                        <h3><i class="fas fa-lightbulb"></i> ${t.clinical_recommendations}</h3>
+                        <ul>
+                            ${result.analysis.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            resultsContent.innerHTML = html;
+            resultsPanel.style.display = 'flex';
+        }
+        
+        function getSeverityText(severity) {
+            const t = translations[currentLanguage];
+            return t[`severity_${severity}`] || `${severity.charAt(0).toUpperCase() + severity.slice(1)} Health Anxiety`;
+        }
+        
+        function getInterpretationText(severity, score) {
+            const t = translations[currentLanguage];
+            return t[`interpretation_${severity}`] || `${severity} health anxiety (score: ${score}/28)`;
+        }
+        
+        function formatMarkdownToHTML(markdown) {
+            // Simple markdown to HTML converter for the report
+            let html = markdown
+                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/^\- (.*$)/gim, '<li>$1</li>')
+                .replace(/^\d+\. (.*$)/gim, '<li>$1</li>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+                .replace(/<\/ul>\s*<ul>/g, '')
+                .replace(/^(?!<[h|u|p])(.+)$/gim, '<p>$1</p>');
+            
+            return html;
+        }
+        
+        function toggleDetailedReport() {
+            const report = document.getElementById('detailedReport');
+            const button = document.querySelector('.report-toggle');
+            const icon = button.querySelector('i');
+            
+            if (report.style.display === 'none') {
+                report.style.display = 'block';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+                button.classList.remove('collapsed');
+            } else {
+                report.style.display = 'none';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+                button.classList.add('collapsed');
+            }
+        }
+
+        // Chat Interface Functionality
+        // Generate a completely unique session ID for each page load
+        function generateFreshSessionId() {
+            const timestamp = Date.now();
+            const randomPart = Math.random().toString(36).substr(2, 15);
+            const pageLoadId = Math.random().toString(36).substr(2, 10);
+            const userAgent = navigator.userAgent.slice(-10).replace(/[^a-zA-Z0-9]/g, '');
+            return `fresh_${timestamp}_${randomPart}_${pageLoadId}_${userAgent}`;
+        }
+
+        // Always create a completely fresh session on page load
+        let chatState = {
+            step: 'initial',
+            userInfo: {},
+            assessmentData: {},
+            currentAssessment: null,
+            sessionId: generateFreshSessionId(),
+            sessionStartTime: Date.now(),
+            isNewSession: true
+        };
+
+        // Session management
+        function validateSession() {
+            const sessionAge = Date.now() - chatState.sessionStartTime;
+            const maxSessionAge = 60 * 60 * 1000; // 1 hour
+            
+            if (sessionAge > maxSessionAge) {
+                // Session expired, create new one
+                chatState.sessionId = generateSessionId();
+                chatState.sessionStartTime = Date.now();
+                console.log('Session expired, created new session:', chatState.sessionId);
+                return false;
+            }
+            return true;
+        }
+
+        function resetSession() {
+            chatState.sessionId = generateSessionId();
+            chatState.sessionStartTime = Date.now();
+            chatState.step = 'welcome';
+            chatState.userInfo = {};
+            chatState.assessmentData = {};
+            chatState.currentAssessment = null;
+            
+            // Clear chat messages
+            document.getElementById('chatMessages').innerHTML = '';
+            document.getElementById('quickResponses').innerHTML = '';
+            
+            console.log('Session reset, new session:', chatState.sessionId);
+        }
+
+        // Initialize chat when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize with Chinese language
+            updateLanguageDisplay();
+            initializeChat();
+            setupChatEventListeners();
+            
+            // Set up session validation interval
+            setInterval(validateSession, 5 * 60 * 1000); // Check every 5 minutes
+            
+            // Clear session data on page unload to prevent context bleeding
+            window.addEventListener('beforeunload', function() {
+                // Mark session as ended (this helps with cleanup)
+                chatState.sessionEnded = true;
+            });
+            
+            // Also handle page visibility changes
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    // Page is hidden, could be navigating away
+                    chatState.lastVisible = Date.now();
+                }
+            });
+        });
+
+        function initializeChat() {
+            // Let LLM handle the entire conversation from the start
+            sendInitialContext();
+        }
+        
+        async function sendInitialContext() {
+            try {
+                console.log('Starting fresh conversation with session:', chatState.sessionId);
+                
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        session_id: chatState.sessionId,
+                        message: "FRESH_START_CONVERSATION",
+                        language: currentLanguage,
+                        is_new_session: true
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Check for session-related errors
+                    if (data.conversation_stage === 'error' || data.conversation_stage === 'limit_reached') {
+                        console.log('Session error detected, resetting session');
+                        resetSession();
+                        // Retry with new session
+                        setTimeout(() => {
+                            sendInitialContext();
+                        }, 1000);
+                        return;
+                    }
+                    
+                    addMessage('assistant', data.message, true);
+                    
+                    // Enable free text input instead of quick responses
+                    setTimeout(() => {
+                        document.getElementById('chatInput').disabled = false;
+                        document.getElementById('sendButton').disabled = false;
+                        document.getElementById('chatInput').placeholder = currentLanguage === 'zh' ? 
+                            '在此輸入您的回應...' : 'Type your response here...';
+                    }, 1000);
+                } else {
+                    // Fallback
+                    const fallbackMessage = currentLanguage === 'zh' ? 
+                        '您好！我是您的 PsyFind 臨床助理。我在這裡幫助您進行精神健康篩檢。請告訴我，今天是什麼帶您來到這裡的？' :
+                        'Hello! I\'m your PsyFind Clinical Assistant. I\'m here to help you with mental health screening. What brings you here today?';
+                    addMessage('assistant', fallbackMessage);
+                    document.getElementById('chatInput').disabled = false;
+                    document.getElementById('sendButton').disabled = false;
+                }
+                
+            } catch (error) {
+                console.error('Initial context error:', error);
+                // Fallback
+                const fallbackMessage = currentLanguage === 'zh' ? 
+                    '您好！我是您的 PsyFind 臨床助理。我在這裡幫助您進行精神健康篩檢。請告訴我，今天是什麼帶您來到這裡的？' :
+                    'Hello! I\'m your PsyFind Clinical Assistant. I\'m here to help you with mental health screening. What brings you here today?';
+                addMessage('assistant', fallbackMessage);
+                document.getElementById('chatInput').disabled = false;
+                document.getElementById('sendButton').disabled = false;
+            }
+        }
+
+        function setupChatEventListeners() {
+            const chatInput = document.getElementById('chatInput');
+            const sendButton = document.getElementById('sendButton');
+
+            chatInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            sendButton.addEventListener('click', sendMessage);
+        }
+
+        function addMessage(sender, content, showTyping = false) {
+            const messagesContainer = document.getElementById('chatMessages');
+            
+            if (showTyping && sender === 'assistant') {
+                addTypingIndicator();
+                setTimeout(() => {
+                    removeTypingIndicator();
+                    createMessageElement(sender, content);
+                }, 1000 + Math.random() * 1000);
+            } else {
+                createMessageElement(sender, content);
+            }
+        }
+
+        function createMessageElement(sender, content) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.innerHTML = sender === 'assistant' ? '<i class="fas fa-user-md"></i>' : '<i class="fas fa-user"></i>';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = content;
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(contentDiv);
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function addTypingIndicator() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message assistant';
+            typingDiv.id = 'typing-indicator';
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.innerHTML = '<i class="fas fa-user-md"></i>';
+            
+            const typingContent = document.createElement('div');
+            typingContent.className = 'typing-indicator';
+            typingContent.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+            
+            typingDiv.appendChild(avatar);
+            typingDiv.appendChild(typingContent);
+            messagesContainer.appendChild(typingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        // Quick responses are now dynamically generated by LLM if needed
+        function showQuickResponses(responses) {
+            const quickResponsesContainer = document.getElementById('quickResponses');
+            quickResponsesContainer.innerHTML = '';
+            
+            if (responses && responses.length > 0) {
+                responses.forEach(responseText => {
+                    const button = document.createElement('button');
+                    button.className = 'quick-response-btn';
+                    button.textContent = responseText;
+                    button.onclick = () => selectQuickResponse('custom', responseText);
+                    quickResponsesContainer.appendChild(button);
+                });
+            }
+        }
+
+        function selectQuickResponse(key, text) {
+            addMessage('user', text);
+            document.getElementById('quickResponses').innerHTML = '';
+            
+            // Send the quick response to LLM for intelligent processing
+            sendToLLM(text);
+        }
+
+        // This function is no longer needed - all responses are now LLM-powered
+
+        function showAssessmentOption(assessmentType) {
+            console.log('showAssessmentOption called with:', assessmentType); // Debug log
+            
+            // Ensure we have a valid assessment type
+            if (!assessmentType || assessmentType === 'none') {
+                console.log('Invalid assessment type, defaulting to phq9');
+                assessmentType = 'phq9';
+            }
+            
+            const assessmentNames = {
+                'gad7': currentLanguage === 'zh' ? 'GAD-7 焦慮症篩檢' : 'GAD-7 Anxiety Screening',
+                'phq9': currentLanguage === 'zh' ? 'PHQ-9 憂鬱症篩檢' : 'PHQ-9 Depression Screening',
+                'isi': currentLanguage === 'zh' ? '失眠嚴重程度指數' : 'Insomnia Severity Index',
+                'whiteley': currentLanguage === 'zh' ? 'Whiteley-7 健康焦慮評估' : 'Whiteley-7 Health Anxiety Assessment'
+            };
+            
+            const assessmentName = assessmentNames[assessmentType] || 
+                (currentLanguage === 'zh' ? '心理健康評估' : 'Mental Health Assessment');
+            
+            const message = currentLanguage === 'zh' ? 
+                `您想要進行 ${assessmentName} 嗎？這大約需要 3-5 分鐘完成。` :
+                `Would you like to take the ${assessmentName}? This will take about 3-5 minutes to complete.`;
+            
+            addMessage('assistant', message);
+            
+            const quickResponsesContainer = document.getElementById('quickResponses');
+            quickResponsesContainer.innerHTML = '';
+            
+            const yesBtn = document.createElement('button');
+            yesBtn.className = 'quick-response-btn';
+            yesBtn.textContent = currentLanguage === 'zh' ? '是的，開始評估' : 'Yes, start assessment';
+            yesBtn.onclick = () => startAssessment(assessmentType);
+            
+            const noBtn = document.createElement('button');
+            noBtn.className = 'quick-response-btn';
+            noBtn.textContent = currentLanguage === 'zh' ? '不，我想聊聊' : 'No, I\'d like to talk more';
+            noBtn.onclick = () => continueConversation();
+            
+            quickResponsesContainer.appendChild(yesBtn);
+            quickResponsesContainer.appendChild(noBtn);
+        }
+
+        function startAssessment(assessmentType) {
+            console.log('startAssessment called with:', assessmentType); // Debug log
+            
+            document.getElementById('quickResponses').innerHTML = '';
+            addMessage('user', currentLanguage === 'zh' ? '是的，開始評估' : 'Yes, start assessment');
+            
+            const message = currentLanguage === 'zh' ? 
+                '太好了！我將在側邊面板中打開評估。請誠實回答所有問題。' :
+                'Great! I\'ll open the assessment in the side panel. Please answer all questions honestly.';
+            
+            addMessage('assistant', message, true);
+            
+            setTimeout(() => {
+                console.log('About to open assessment with type:', assessmentType); // Debug log
+                openAssessment(assessmentType);
+            }, 1500);
+        }
+
+        function continueConversation() {
+            document.getElementById('quickResponses').innerHTML = '';
+            addMessage('user', currentLanguage === 'zh' ? '不，我想聊聊' : 'No, I\'d like to talk more');
+            
+            const message = currentLanguage === 'zh' ? 
+                '當然！我在這裡傾聽。請告訴我更多關於您的感受或任何特定的擔憂。' :
+                'Of course! I\'m here to listen. Please tell me more about how you\'re feeling or any specific concerns you have.';
+            
+            addMessage('assistant', message, true);
+            
+            document.getElementById('chatInput').disabled = false;
+            document.getElementById('sendButton').disabled = false;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                addMessage('user', message);
+                input.value = '';
+                
+                // Disable input while processing
+                input.disabled = true;
+                document.getElementById('sendButton').disabled = true;
+                
+                // Send to LLM-powered backend
+                sendToLLM(message);
+            }
+        }
+
+        async function sendToLLM(message) {
+            try {
+                addTypingIndicator();
+                
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        session_id: chatState.sessionId,
+                        message: message,
+                        language: currentLanguage
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Calculate realistic typing delay based on message length
+                    const messageLength = data.message.length;
+                    const baseDelay = 1000; // 1 second base delay
+                    const typingSpeed = 50; // characters per second (realistic typing speed)
+                    const readingDelay = Math.min(messageLength / typingSpeed * 1000, 4000); // Max 4 seconds
+                    const totalDelay = baseDelay + readingDelay;
+                    
+                    // Keep typing indicator for realistic duration
+                    setTimeout(() => {
+                        removeTypingIndicator();
+                        addMessage('assistant', data.message);
+                    }, totalDelay);
+                    
+                    // Show follow-up actions after the main message appears
+                    // Show quick responses if provided
+                    if (data.follow_up_questions && data.follow_up_questions.length > 0) {
+                        setTimeout(() => {
+                            showQuickResponses(data.follow_up_questions);
+                        }, totalDelay + 500);
+                    }
+                    
+                    // Handle assessment recommendation
+                    if (data.assessment_recommendation && data.assessment_recommendation !== 'none') {
+                        console.log('LLM recommended assessment:', data.assessment_recommendation); // Debug log
+                        setTimeout(() => {
+                            showAssessmentOption(data.assessment_recommendation);
+                        }, totalDelay + 1000);
+                    } else {
+                        console.log('No assessment recommendation or recommendation is none:', data.assessment_recommendation); // Debug log
+                    }
+                    
+                    // Show psychoeducation if provided with significant delay
+                    if (data.psychoeducation && data.psychoeducation.trim()) {
+                        const psychoDelay = totalDelay + 3000; // 3 seconds after main message
+                        setTimeout(() => {
+                            addMessage('assistant', data.psychoeducation);
+                        }, psychoDelay);
+                    }
+                } else {
+                    removeTypingIndicator();
+                    addMessage('assistant', 'I apologize, but I\'m having trouble processing your message right now. Please try again.');
+                }
+                
+            } catch (error) {
+                console.error('Chat error:', error);
+                removeTypingIndicator();
+                addMessage('assistant', 'I\'m sorry, there seems to be a connection issue. Please try again.');
+            } finally {
+                // Re-enable input after delay or immediately on error
+                document.getElementById('chatInput').disabled = false;
+                document.getElementById('sendButton').disabled = false;
+            }
+        }
+
+        function processTextMessage(message) {
+            // This function is now replaced by sendToLLM for LLM-powered responses
+            // Keeping for backward compatibility with quick responses
+            sendToLLM(message);
+        }
+
+        function openAssessment(assessmentType) {
+            const assessmentPanel = document.getElementById('assessmentPanel');
+            const assessmentTitle = document.getElementById('assessmentTitle');
+            const assessmentContent = document.getElementById('assessmentContent');
+            
+            // Ensure we have a valid assessment type
+            if (!assessmentType) {
+                assessmentType = 'phq9'; // Default fallback
+            }
+            
+            const assessmentNames = {
+                'gad7': currentLanguage === 'zh' ? 'GAD-7 焦慮症篩檢' : 'GAD-7 Anxiety Screening',
+                'phq9': currentLanguage === 'zh' ? 'PHQ-9 憂鬱症篩檢' : 'PHQ-9 Depression Screening',
+                'isi': currentLanguage === 'zh' ? '失眠嚴重程度指數' : 'Insomnia Severity Index',
+                'whiteley': currentLanguage === 'zh' ? 'Whiteley-7 健康焦慮評估' : 'Whiteley-7 Health Anxiety Assessment'
+            };
+            
+            // Get the assessment name with fallback
+            const assessmentName = assessmentNames[assessmentType] || 
+                (currentLanguage === 'zh' ? '心理健康評估' : 'Mental Health Assessment');
+            
+            assessmentTitle.textContent = assessmentName;
+            
+            // Initialize progressive assessment
+            chatState.currentAssessment = assessmentType;
+            chatState.assessmentQuestions = getAssessmentQuestions(assessmentType);
+            chatState.assessmentResponses = {};
+            chatState.currentQuestionIndex = 0;
+            
+            // Start the progressive assessment
+            startProgressiveAssessment();
+            assessmentPanel.style.display = 'flex';
+            
+            console.log('Opening assessment:', assessmentType, 'Title:', assessmentName); // Debug log
+        }
+
+        function getAssessmentQuestions(assessmentType) {
+            let questions = [];
+            let options = [];
+            
+            if (currentLanguage === 'zh') {
+                options = ['完全沒有', '有一點', '中等程度', '相當多', '極度'];
+                
+                switch(assessmentType) {
+                    case 'phq9':
+                        questions = [
+                            "做事時提不起勁或沒有樂趣",
+                            "感到心情低落、沮喪或絕望",
+                            "入睡困難、睡不安穩或睡眠過多",
+                            "感覺疲倦或沒有活力",
+                            "食慾不振或吃太多",
+                            "覺得自己很糟或覺得自己很失敗，或讓自己或家人失望",
+                            "對事物專注有困難，例如閱讀報紙或看電視時",
+                            "動作或說話速度緩慢到別人已經察覺？或正好相反－煩躁或坐立不安、動來動去的情況更勝於平常",
+                            "有不如死掉或用某種方式傷害自己的念頭"
+                        ];
+                        break;
+                    case 'gad7':
+                        questions = [
+                            "感到緊張、焦慮或煩躁",
+                            "無法停止或控制擔憂",
+                            "對各種不同的事情擔憂過度",
+                            "很難放鬆下來",
+                            "坐立不安，難以靜坐",
+                            "變得容易煩惱或易怒",
+                            "感到害怕，好像將有可怕的事情發生"
+                        ];
+                        break;
+                    case 'whiteley':
+                    default:
+                        questions = [
+                            "您是否經常擔心自己的健康？",
+                            "您是否被許多不同的症狀困擾？",
+                            "您是否發現自己被許多不同的症狀困擾？",
+                            "當您忙於工作或其他活動時，是否容易忘記自己的身體狀況？",
+                            "如果您感到不適，而有人告訴您看起來好多了，您會感到煩惱嗎？",
+                            "您是否發現自己會注意到身體內發生的各種變化？",
+                            "您是否被許多疼痛和不適困擾？"
+                        ];
+                        break;
+                }
+            } else {
+                options = ['Not at all', 'Several days', 'More than half the days', 'Nearly every day'];
+                
+                switch(assessmentType) {
+                    case 'phq9':
+                        questions = [
+                            "Little interest or pleasure in doing things",
+                            "Feeling down, depressed, or hopeless",
+                            "Trouble falling or staying asleep, or sleeping too much",
+                            "Feeling tired or having little energy",
+                            "Poor appetite or overeating",
+                            "Feeling bad about yourself or that you are a failure",
+                            "Trouble concentrating on things",
+                            "Moving or speaking slowly or being fidgety/restless",
+                            "Thoughts that you would be better off dead or hurting yourself"
+                        ];
+                        break;
+                    case 'gad7':
+                        questions = [
+                            "Feeling nervous, anxious, or on edge",
+                            "Not being able to stop or control worrying",
+                            "Worrying too much about different things",
+                            "Trouble relaxing",
+                            "Being so restless that it's hard to sit still",
+                            "Becoming easily annoyed or irritable",
+                            "Feeling afraid as if something awful might happen"
+                        ];
+                        break;
+                    case 'whiteley':
+                    default:
+                        options = ['Not at all', 'A little', 'Moderately', 'Quite a bit', 'Extremely'];
+                        questions = [
+                            "Do you worry a lot about your health?",
+                            "Are you bothered by many different symptoms?",
+                            "Do you find that you are bothered by many different symptoms?",
+                            "Is it easy for you to forget about yourself when busy with work?",
+                            "If you feel ill and someone tells you that you are looking better, do you become annoyed?",
+                            "Do you find that you are aware of various things happening in your body?",
+                            "Are you bothered by many aches and pains?"
+                        ];
+                        break;
+                }
+            }
+            
+            return { questions, options };
+        }
+
+        function startProgressiveAssessment() {
+            const assessmentContent = document.getElementById('assessmentContent');
+            const { questions, options } = chatState.assessmentQuestions;
+            
+            // Create progress indicator
+            const progressHtml = `
+                <div class="assessment-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">
+                        ${currentLanguage === 'zh' ? '問題' : 'Question'} 1 ${currentLanguage === 'zh' ? '共' : 'of'} ${questions.length}
+                    </div>
+                </div>
+                <div class="current-question" id="currentQuestion"></div>
+                <div class="question-navigation">
+                    <button id="prevQuestion" class="nav-btn" style="display: none;" onclick="previousQuestion()">
+                        ${currentLanguage === 'zh' ? '上一題' : 'Previous'}
+                    </button>
+                    <button id="nextQuestion" class="nav-btn" onclick="nextQuestion()" disabled>
+                        ${currentLanguage === 'zh' ? '下一題' : 'Next'}
+                    </button>
+                </div>
+            `;
+            
+            assessmentContent.innerHTML = progressHtml;
+            showCurrentQuestion();
+        }
+
+        function showCurrentQuestion() {
+            const { questions, options } = chatState.assessmentQuestions;
+            const currentIndex = chatState.currentQuestionIndex;
+            const currentQuestion = questions[currentIndex];
+            
+            // Update progress
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const progress = ((currentIndex + 1) / questions.length) * 100;
+            
+            progressFill.style.width = `${progress}%`;
+            progressText.textContent = `${currentLanguage === 'zh' ? '問題' : 'Question'} ${currentIndex + 1} ${currentLanguage === 'zh' ? '共' : 'of'} ${questions.length}`;
+            
+            // Show current question
+            const questionContainer = document.getElementById('currentQuestion');
+            const savedResponse = chatState.assessmentResponses[`q${currentIndex + 1}`];
+            
+            let questionHtml = `
+                <div class="question-item fade-in">
+                    <h3 class="question-number">${currentLanguage === 'zh' ? '問題' : 'Question'} ${currentIndex + 1}</h3>
+                    <p class="question-text">${currentQuestion}</p>
+                    <div class="rating-scale">
+            `;
+            
+            options.forEach((option, optionIndex) => {
+                const isChecked = savedResponse === optionIndex ? 'checked' : '';
+                questionHtml += `
+                    <label class="option-label">
+                        <input type="radio" name="currentQ" value="${optionIndex}" ${isChecked} onchange="handleQuestionResponse(${optionIndex})">
+                        <span class="option-text">${option}</span>
+                    </label>
+                `;
+            });
+            
+            questionHtml += `</div></div>`;
+            questionContainer.innerHTML = questionHtml;
+            
+            // Update navigation buttons
+            updateNavigationButtons();
+        }
+
+        function handleQuestionResponse(value) {
+            const currentIndex = chatState.currentQuestionIndex;
+            chatState.assessmentResponses[`q${currentIndex + 1}`] = value;
+            
+            // Enable next button
+            document.getElementById('nextQuestion').disabled = false;
+            
+            // Auto-advance after a short delay for better UX
+            setTimeout(() => {
+                if (currentIndex < chatState.assessmentQuestions.questions.length - 1) {
+                    nextQuestion();
+                } else {
+                    // Last question - show submit button
+                    showSubmitButton();
+                }
+            }, 800);
+        }
+
+        function nextQuestion() {
+            const { questions } = chatState.assessmentQuestions;
+            if (chatState.currentQuestionIndex < questions.length - 1) {
+                chatState.currentQuestionIndex++;
+                showCurrentQuestion();
+            }
+        }
+
+        function previousQuestion() {
+            if (chatState.currentQuestionIndex > 0) {
+                chatState.currentQuestionIndex--;
+                showCurrentQuestion();
+            }
+        }
+
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevQuestion');
+            const nextBtn = document.getElementById('nextQuestion');
+            const { questions } = chatState.assessmentQuestions;
+            const currentIndex = chatState.currentQuestionIndex;
+            
+            // Show/hide previous button
+            prevBtn.style.display = currentIndex > 0 ? 'inline-block' : 'none';
+            
+            // Update next button
+            const hasResponse = chatState.assessmentResponses[`q${currentIndex + 1}`] !== undefined;
+            nextBtn.disabled = !hasResponse;
+            
+            // Change next button text on last question
+            if (currentIndex === questions.length - 1) {
+                nextBtn.textContent = currentLanguage === 'zh' ? '完成' : 'Complete';
+                nextBtn.onclick = showSubmitButton;
+            } else {
+                nextBtn.textContent = currentLanguage === 'zh' ? '下一題' : 'Next';
+                nextBtn.onclick = nextQuestion;
+            }
+        }
+
+        function showSubmitButton() {
+            const questionContainer = document.getElementById('currentQuestion');
+            const { questions } = chatState.assessmentQuestions;
+            
+            questionContainer.innerHTML = `
+                <div class="assessment-complete fade-in">
+                    <div class="completion-icon">✓</div>
+                    <h3>${currentLanguage === 'zh' ? '評估完成！' : 'Assessment Complete!'}</h3>
+                    <p>${currentLanguage === 'zh' ? 
+                        `您已回答了所有 ${questions.length} 個問題。點擊下方按鈕提交您的回答以獲得分析結果。` : 
+                        `You have answered all ${questions.length} questions. Click the button below to submit your responses for analysis.`
+                    }</p>
+                    <button id="submitAssessment" class="submit-btn" onclick="submitProgressiveAssessment()">
+                        <i class="fas fa-paper-plane"></i>
+                        ${currentLanguage === 'zh' ? '提交評估' : 'Submit Assessment'}
+                    </button>
+                </div>
+            `;
+            
+            // Hide navigation buttons
+            document.querySelector('.question-navigation').style.display = 'none';
+        }
+
+        function showSubmissionProgress() {
+            const questionContainer = document.getElementById('currentQuestion');
+            
+            questionContainer.innerHTML = `
+                <div class="submission-progress fade-in">
+                    <div class="loading-spinner"></div>
+                    <h3>${currentLanguage === 'zh' ? '正在分析您的回答...' : 'Analyzing your responses...'}</h3>
+                    <p>${currentLanguage === 'zh' ? 
+                        '請稍候，我們正在處理您的評估結果。' : 
+                        'Please wait while we process your assessment results.'
+                    }</p>
+                    <div class="submission-steps">
+                        <div class="step active">
+                            <i class="fas fa-check-circle"></i>
+                            ${currentLanguage === 'zh' ? '收集回答' : 'Collecting responses'}
+                        </div>
+                        <div class="step active">
+                            <i class="fas fa-brain"></i>
+                            ${currentLanguage === 'zh' ? '分析症狀' : 'Analyzing symptoms'}
+                        </div>
+                        <div class="step">
+                            <i class="fas fa-file-medical"></i>
+                            ${currentLanguage === 'zh' ? '生成報告' : 'Generating report'}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function closeAssessment() {
+            document.getElementById('assessmentPanel').style.display = 'none';
+            chatState.currentAssessment = null;
+        }
+
+        // Add event listener for submit assessment button
+        document.addEventListener('DOMContentLoaded', function() {
+            const submitButton = document.getElementById('submitAssessment');
+            if (submitButton) {
+                submitButton.addEventListener('click', submitAssessment);
+            }
+        });
+
+        async function submitProgressiveAssessment() {
+            const assessmentType = chatState.currentAssessment;
+            if (!assessmentType) {
+                alert('No assessment selected');
+                return;
+            }
+
+            // Collect form data from progressive responses
+            const formData = {};
+            const { questions } = chatState.assessmentQuestions;
+            
+            // Validate all questions are answered
+            if (Object.keys(chatState.assessmentResponses).length !== questions.length) {
+                const message = currentLanguage === 'zh' ? 
+                    '請回答所有問題' : 'Please answer all questions';
+                alert(message);
+                return;
+            }
+
+            // Collect responses
+            Object.keys(chatState.assessmentResponses).forEach(key => {
+                formData[key] = chatState.assessmentResponses[key];
+            });
+
+            // Add assessment metadata
+            formData.assessment_type = assessmentType;
+            formData.age = 25; // Default age, could be collected earlier
+            formData.duration = '1-3_months'; // Default duration
+            formData.session_id = chatState.sessionId; // Include session ID for chat context
+            formData.language = currentLanguage === 'zh' ? 'Traditional Chinese' : 'English';
+
+            try {
+                // Show submission feedback
+                showSubmissionProgress();
+
+                // Submit to backend
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Close assessment panel
+                    closeAssessment();
+                    
+                    // Show results in chat
+                    const resultsMessage = currentLanguage === 'zh' ? 
+                        '評估完成！以下是您的結果：' : 'Assessment completed! Here are your results:';
+                    
+                    addMessage('assistant', resultsMessage);
+                    
+                    // Display results
+                    setTimeout(() => {
+                        displayAssessmentResults(data);
+                    }, 1000);
+                    
+                } else {
+                    alert(data.error || 'Assessment submission failed');
+                }
+
+            } catch (error) {
+                console.error('Assessment submission error:', error);
+                alert('Failed to submit assessment. Please try again.');
+            } finally {
+                // Re-enable submit button
+                document.getElementById('submitAssessment').disabled = false;
+                document.getElementById('submitAssessment').textContent = currentLanguage === 'zh' ? '提交評估' : 'Submit Assessment';
+            }
+        }
+
+        function displayAssessmentResults(data) {
+            // Show simple completion message in chat
+            const completionMessage = currentLanguage === 'zh' ? 
+                '評估完成！詳細結果已在結果面板中顯示。' : 
+                'Assessment completed! Detailed results are shown in the results panel.';
+            addMessage('assistant', completionMessage);
+            
+            // Display detailed results in the results panel
+            showResultsPanel(data);
+        }
+
+        function showResultsPanel(data) {
+            const resultsPanel = document.getElementById('resultsPanel');
+            const resultsContent = document.getElementById('resultsContent');
+            
+            let html = '';
+            
+            // Assessment Score Section
+            if (data.analysis) {
+                let score = 0;
+                let maxScore = '';
+                
+                if (data.analysis.whiteley_score !== undefined) {
+                    score = data.analysis.whiteley_score;
+                    maxScore = '28';
+                } else if (data.analysis.phq9_score !== undefined) {
+                    score = data.analysis.phq9_score;
+                    maxScore = '27';
+                } else if (data.analysis.gad7_score !== undefined) {
+                    score = data.analysis.gad7_score;
+                    maxScore = '21';
+                }
+                
+                if (maxScore) {
+                    const severity = data.analysis.severity || 'unknown';
+                    const interpretation = data.analysis.interpretation || 'Assessment completed';
+                    
+                    html += `
+                        <div class="results-section">
+                            <h4><i class="fas fa-chart-bar"></i> ${currentLanguage === 'zh' ? '評估分數' : 'Assessment Score'}</h4>
+                            <div class="score-display">
+                                <div class="score-number">${score}<span class="score-total">/${maxScore}</span></div>
+                                <div class="severity-badge severity-${severity}">${severity}</div>
+                                <p class="interpretation">${interpretation}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            
+            // DSM-5-TR Analysis Section
+            if (data.analysis && data.analysis.analysis && data.analysis.analysis.length > 0) {
+                html += `
+                    <div class="results-section">
+                        <h4><i class="fas fa-brain"></i> ${translations[currentLanguage].dsm_analysis}</h4>
+                `;
+                
+                data.analysis.analysis.forEach(match => {
+                    const disorderName = currentLanguage === 'zh' && match.disorder_zh ? match.disorder_zh : match.disorder;
+                    const keywords = currentLanguage === 'zh' && match.matched_keywords_zh ? match.matched_keywords_zh : match.matched_keywords;
+                    const matchText = translations[currentLanguage].match_text;
+                    
+                    html += `
+                        <div class="disorder-match">
+                            <h5>
+                                ${disorderName} (${match.code})
+                                <span class="confidence-badge">${Math.round(match.confidence)}% ${matchText}</span>
+                            </h5>
+                            <p><strong>${translations[currentLanguage].matched_indicators}:</strong> ${keywords.join(', ')}</p>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            }
+            
+            // Clinical Report Section
+            if (data.detailed_report) {
+                html += `
+                    <div class="results-section">
+                        <h4 class="collapsible-header" onclick="toggleSection('clinicalReport')">
+                            <i class="fas fa-file-medical"></i> 
+                            ${translations[currentLanguage].detailed_clinical_report}
+                            <i class="fas fa-chevron-down toggle-icon" id="clinicalReportIcon"></i>
+                        </h4>
+                        <div class="clinical-report collapsible-content" id="clinicalReport" style="display: none;">
+                            ${data.detailed_report.replace(/\n/g, '<br>')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Specialist Recommendations Section
+            if (data.psychiatrists && data.psychiatrists.length > 0) {
+                html += `
+                    <div class="results-section">
+                        <h4><i class="fas fa-user-md"></i> ${translations[currentLanguage].recommended_specialists}</h4>
+                `;
+                
+                data.psychiatrists.slice(0, 3).forEach(psychiatrist => {
+                    html += `
+                        <div class="specialist-card">
+                            <div class="specialist-name">${psychiatrist.name}</div>
+                            <div class="specialist-detail"><strong>${translations[currentLanguage].specializes_in}:</strong> ${psychiatrist.specialization}</div>
+                            <div class="specialist-detail"><strong>${translations[currentLanguage].approach}:</strong> ${psychiatrist.approach}</div>
+                            <div class="specialist-detail"><strong>${translations[currentLanguage].experience}:</strong> ${psychiatrist.experience}</div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            }
+            
+            // Clinical Recommendations Section
+            if (data.analysis && data.analysis.recommendations) {
+                html += `
+                    <div class="results-section">
+                        <h4><i class="fas fa-clipboard-list"></i> ${translations[currentLanguage].clinical_recommendations}</h4>
+                        <div class="recommendations-list">
+                            <ol>
+                `;
+                
+                data.analysis.recommendations.forEach(rec => {
+                    html += `<li>${rec}</li>`;
+                });
+                
+                html += `
+                            </ol>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            resultsContent.innerHTML = html;
+            resultsPanel.style.display = 'flex';
+        }
+
+        function closeResults() {
+            document.getElementById('resultsPanel').style.display = 'none';
+        }
+
+        function toggleSection(sectionId) {
+            const content = document.getElementById(sectionId);
+            const icon = document.getElementById(sectionId + 'Icon');
+            
+            if (content.style.display === 'none' || !content.classList.contains('expanded')) {
+                content.style.display = 'block';
+                content.classList.add('expanded');
+                icon.classList.add('rotated');
+            } else {
+                content.style.display = 'none';
+                content.classList.remove('expanded');
+                icon.classList.remove('rotated');
+            }
+        }
+
+        // Disclaimer Modal Functions
+        function showDisclaimerModal() {
+            const modal = document.getElementById('disclaimerModal');
+            modal.style.display = 'flex';
+            
+            // Update modal text based on current language
+            updateLanguageDisplay();
+            
+            // Prevent background scrolling
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDisclaimerModal() {
+            const modal = document.getElementById('disclaimerModal');
+            modal.style.display = 'none';
+            
+            // Restore background scrolling
+            document.body.style.overflow = 'auto';
+        }
+
+        function acceptDisclaimer() {
+            closeDisclaimerModal();
+            
+            // Optional: Store acceptance in session storage
+            sessionStorage.setItem('disclaimerAccepted', 'true');
+        }
+
+        // Close modal when clicking outside of it
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('disclaimerModal');
+            if (event.target === modal) {
+                closeDisclaimerModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const modal = document.getElementById('disclaimerModal');
+                if (modal.style.display === 'flex') {
+                    closeDisclaimerModal();
+                }
+            }
+        });
+
+        // Show disclaimer modal on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user has already accepted disclaimer in this session
+            const disclaimerAccepted = sessionStorage.getItem('disclaimerAccepted');
+            
+            if (!disclaimerAccepted) {
+                // Show modal after a brief delay to ensure page is fully loaded
+                setTimeout(() => {
+                    showDisclaimerModal();
+                }, 500);
+            }
+        });
+
+        // Update the existing switchLanguage function to reinitialize chat
+        const originalSwitchLanguage = switchLanguage;
+        switchLanguage = function(lang) {
+            originalSwitchLanguage(lang);
+            
+            // Clear and reinitialize chat if it exists
+            const chatMessages = document.getElementById('chatMessages');
+            if (chatMessages) {
+                chatMessages.innerHTML = '';
+                document.getElementById('quickResponses').innerHTML = '';
+                setTimeout(() => {
+                    initializeChat();
+                }, 100);
+            }
+        };
+
+        // Mobile responsiveness functions
+        function isMobile() {
+            return window.innerWidth <= 768;
+        }
+
+        function toggleChatInterface() {
+            if (isMobile()) {
+                const chatInterface = document.querySelector('.chat-interface');
+                if (chatInterface) {
+                    chatInterface.classList.toggle('collapsed');
+                    const toggleIcon = chatInterface.querySelector('.chat-toggle i');
+                    if (toggleIcon) {
+                        toggleIcon.classList.toggle('fa-chevron-down');
+                        toggleIcon.classList.toggle('fa-chevron-up');
+                    }
+                }
+            }
+        }
+
+        function initializeMobileInterface() {
+            if (isMobile()) {
+                // Add mobile chat header and toggle
+                const chatInterface = document.querySelector('.chat-interface');
+                if (chatInterface && !chatInterface.querySelector('.chat-header')) {
+                    const chatHeader = document.createElement('div');
+                    chatHeader.className = 'chat-header';
+                    chatHeader.innerHTML = `
+                        <h3>PsyFind Assistant</h3>
+                        <button class="chat-toggle" onclick="toggleChatInterface()">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    `;
+                    chatInterface.insertBefore(chatHeader, chatInterface.firstChild);
+                }
+
+                // Make panels full-screen modals on mobile
+                const assessmentPanel = document.getElementById('assessmentPanel');
+                const resultsPanel = document.getElementById('resultsPanel');
+                
+                if (assessmentPanel) {
+                    assessmentPanel.addEventListener('click', function(e) {
+                        if (e.target === assessmentPanel) {
+                            closeAssessment();
+                        }
+                    });
+                }
+
+                if (resultsPanel) {
+                    resultsPanel.addEventListener('click', function(e) {
+                        if (e.target === resultsPanel) {
+                            closeResults();
+                        }
+                    });
+                }
+
+                // Prevent body scroll when modals are open
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                            const target = mutation.target;
+                            if (target.id === 'assessmentPanel' || target.id === 'resultsPanel') {
+                                if (target.style.display === 'flex') {
+                                    document.body.style.overflow = 'hidden';
+                                } else if (target.style.display === 'none') {
+                                    // Check if any other modals are open
+                                    const otherModal = target.id === 'assessmentPanel' ? 
+                                        document.getElementById('resultsPanel') : 
+                                        document.getElementById('assessmentPanel');
+                                    if (otherModal.style.display !== 'flex') {
+                                        document.body.style.overflow = 'auto';
+                                    }
+                                }
+                            }
+                        }
+                    });
+                });
+
+                if (assessmentPanel) observer.observe(assessmentPanel, { attributes: true });
+                if (resultsPanel) observer.observe(resultsPanel, { attributes: true });
+            }
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (!isMobile()) {
+                // Reset mobile-specific styles when switching to desktop
+                document.body.style.overflow = 'auto';
+                const chatInterface = document.querySelector('.chat-interface');
+                if (chatInterface) {
+                    chatInterface.classList.remove('collapsed');
+                }
+            } else {
+                initializeMobileInterface();
+            }
+        });
+
+        // Initialize mobile interface on load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeMobileInterface();
+        });
+    </script>
+
+    <!-- Disclaimer Modal -->
+    <div id="disclaimerModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-exclamation-triangle" style="color: #dc3545; margin-right: 10px;"></i><span data-lang="disclaimer_title">Important Disclaimer</span></h3>
+                <button class="modal-close" onclick="closeDisclaimerModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p data-lang="disclaimer_text">This tool is for informational purposes only and does not provide medical diagnosis or treatment recommendations. Always consult with qualified mental health professionals for proper evaluation and care.</p>
+                
+                <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px;">
+                    <h4 style="margin-bottom: 10px; color: #856404;"><i class="fas fa-info-circle"></i> <span data-lang="disclaimer_note_title">Please Note:</span></h4>
+                    <ul style="margin: 0; padding-left: 20px; color: #856404;">
+                        <li data-lang="disclaimer_note_1">This assessment is a screening tool, not a diagnostic instrument</li>
+                        <li data-lang="disclaimer_note_2">Results should be discussed with a qualified healthcare provider</li>
+                        <li data-lang="disclaimer_note_3">If you're experiencing a mental health emergency, contact emergency services immediately</li>
+                        <li data-lang="disclaimer_note_4">Your privacy is protected - no personal data is stored permanently</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="acceptDisclaimer()">
+                    <i class="fas fa-check"></i> <span data-lang="disclaimer_understand">I Understand</span>
+                </button>
+                <button class="btn btn-secondary" onclick="closeDisclaimerModal()">
+                    <i class="fas fa-times"></i> <span data-lang="disclaimer_close">Close</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

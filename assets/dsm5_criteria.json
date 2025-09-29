@@ -1,0 +1,419 @@
+{
+  "major_depressive_disorder": {
+    "code": "296.2x",
+    "name": "Major Depressive Disorder",
+    "name_zh": "重度憂鬱症",
+    "category": "Depressive Disorders",
+    "category_zh": "憂鬱症相關障礙症",
+    "criteria": {
+      "A": "Five (or more) of the following symptoms during the same 2-week period and represent a change from previous functioning; at least one symptom is either (1) depressed mood or (2) loss of interest or pleasure",
+      "symptoms": [
+        "Depressed mood most of the day, nearly every day",
+        "Markedly diminished interest or pleasure in all, or almost all, activities",
+        "Significant weight loss when not dieting or weight gain, or decrease/increase in appetite",
+        "Insomnia or hypersomnia nearly every day",
+        "Psychomotor agitation or retardation nearly every day",
+        "Fatigue or loss of energy nearly every day",
+        "Feelings of worthlessness or excessive or inappropriate guilt",
+        "Diminished ability to think or concentrate, or indecisiveness",
+        "Recurrent thoughts of death, recurrent suicidal ideation, or suicide attempt"
+      ],
+      "B": "Symptoms cause clinically significant distress or impairment",
+      "C": "Episode is not attributable to physiological effects of substance or medical condition"
+    },
+    "keywords": ["depression", "depressed", "sad", "hopeless", "worthless", "suicide", "suicidal", "sleep", "insomnia", "appetite", "weight", "energy", "fatigue", "concentration", "guilt", "death", "crying", "empty", "despair"],
+    "keywords_zh": ["憂鬱", "沮喪", "悲傷", "絕望", "無價值感", "自殺", "睡眠", "失眠", "食慾", "體重", "精力", "疲勞", "專注力", "罪惡感", "死亡", "哭泣", "空虛"]
+  },
+  "persistent_depressive_disorder": {
+    "code": "300.4",
+    "name": "Persistent Depressive Disorder (Dysthymia)",
+    "name_zh": "持續性憂鬱症（輕鬱症）",
+    "category": "Depressive Disorders",
+    "category_zh": "憂鬱症相關障礙症",
+    "criteria": {
+      "A": "Depressed mood for most of the day, for more days than not, for at least 2 years",
+      "B": "Presence of two or more of the following symptoms",
+      "symptoms": [
+        "Poor appetite or overeating",
+        "Insomnia or hypersomnia",
+        "Low energy or fatigue",
+        "Low self-esteem",
+        "Poor concentration or difficulty making decisions",
+        "Feelings of hopelessness"
+      ]
+    },
+    "keywords": ["chronic depression", "dysthymia", "long-term sadness", "persistent low mood", "chronic fatigue", "low self-esteem", "hopelessness"],
+    "keywords_zh": ["慢性憂鬱", "輕鬱症", "長期悲傷", "持續低落情緒", "慢性疲勞", "低自尊", "絕望感"]
+  },
+  "generalized_anxiety_disorder": {
+    "code": "300.02",
+    "name": "Generalized Anxiety Disorder",
+    "name_zh": "廣泛性焦慮症",
+    "category": "Anxiety Disorders",
+    "category_zh": "焦慮症相關障礙症",
+    "criteria": {
+      "A": "Excessive anxiety and worry occurring more days than not for at least 6 months",
+      "B": "Individual finds it difficult to control the worry",
+      "C": "Anxiety and worry are associated with three or more of the following symptoms",
+      "symptoms": [
+        "Restlessness or feeling keyed up or on edge",
+        "Being easily fatigued",
+        "Difficulty concentrating or mind going blank",
+        "Irritability",
+        "Muscle tension",
+        "Sleep disturbance (difficulty falling or staying asleep, restless sleep)"
+      ]
+    },
+    "keywords": ["anxiety", "anxious", "worry", "worried", "nervous", "restless", "tension", "panic", "fear", "stress", "stressed", "overwhelmed", "edge", "keyed up", "irritable", "muscle tension", "racing thoughts"],
+    "keywords_zh": ["焦慮", "擔心", "緊張", "不安", "煩躁", "肌肉緊張", "壓力", "恐懼", "不知所措", "易怒", "思緒飛快"]
+  },
+  "panic_disorder": {
+    "code": "300.01",
+    "name": "Panic Disorder",
+    "name_zh": "恐慌症",
+    "category": "Anxiety Disorders",
+    "category_zh": "焦慮症相關障礙症",
+    "criteria": {
+      "A": "Recurrent unexpected panic attacks defined as abrupt surge of intense fear/discomfort",
+      "symptoms": [
+        "Palpitations, pounding heart, or accelerated heart rate",
+        "Sweating",
+        "Trembling or shaking",
+        "Sensations of shortness of breath or smothering",
+        "Feelings of choking",
+        "Chest pain or discomfort",
+        "Nausea or abdominal distress",
+        "Feeling dizzy, unsteady, light-headed, or faint",
+        "Chills or heat sensations",
+        "Paresthesias (numbness or tingling)",
+        "Derealization or depersonalization",
+        "Fear of losing control or going crazy",
+        "Fear of dying"
+      ],
+      "B": "At least one attack followed by 1 month of persistent concern or maladaptive change"
+    },
+    "keywords": ["panic", "attack", "heart", "palpitations", "racing heart", "breathing", "shortness of breath", "chest", "chest pain", "dizzy", "lightheaded", "fear", "control", "dying", "sweating", "shaking", "trembling", "choking", "nausea"],
+    "keywords_zh": ["恐慌", "發作", "心跳", "心悸", "呼吸", "胸痛", "頭暈", "恐懼", "失控", "死亡", "出汗", "顫抖", "窒息", "噁心"]
+  },
+  "social_anxiety_disorder": {
+    "code": "300.23",
+    "name": "Social Anxiety Disorder (Social Phobia)",
+    "name_zh": "社交焦慮症（社交恐懼症）",
+    "category": "Anxiety Disorders",
+    "category_zh": "焦慮症相關障礙症",
+    "criteria": {
+      "A": "Marked fear or anxiety about one or more social situations",
+      "B": "Individual fears acting in a way that will be negatively evaluated",
+      "C": "Social situations almost always provoke fear or anxiety",
+      "D": "Social situations are avoided or endured with intense fear",
+      "E": "Fear is out of proportion to actual threat"
+    },
+    "keywords": ["social", "social anxiety", "embarrassed", "embarrassment", "judged", "judgment", "public", "speaking", "performance", "blushing", "sweating", "trembling", "avoid", "avoidance", "shy", "shyness", "self-conscious", "humiliation"],
+    "keywords_zh": ["社交", "社交焦慮", "尷尬", "被評判", "公開", "演講", "表現", "臉紅", "出汗", "顫抖", "迴避", "害羞", "自我意識", "羞辱"]
+  },
+  "specific_phobia": {
+    "code": "300.29",
+    "name": "Specific Phobia",
+    "name_zh": "特定恐懼症",
+    "category": "Anxiety Disorders",
+    "category_zh": "焦慮症相關障礙症",
+    "criteria": {
+      "A": "Marked fear or anxiety about a specific object or situation",
+      "B": "Phobic object or situation almost always provokes immediate fear",
+      "C": "Phobic object or situation is actively avoided or endured with intense fear",
+      "D": "Fear is out of proportion to actual danger",
+      "E": "Fear persists for 6 months or more"
+    },
+    "keywords": ["phobia", "specific fear", "heights", "animals", "blood", "needles", "flying", "enclosed spaces", "spiders", "snakes", "dogs", "storms", "water", "medical procedures"],
+    "keywords_zh": ["恐懼症", "特定恐懼", "高度", "動物", "血液", "針頭", "飛行", "密閉空間", "蜘蛛", "蛇", "狗", "暴風雨", "水", "醫療程序"]
+  },
+  "agoraphobia": {
+    "code": "300.22",
+    "name": "Agoraphobia",
+    "name_zh": "廣場恐懼症",
+    "category": "Anxiety Disorders",
+    "category_zh": "焦慮症相關障礙症",
+    "criteria": {
+      "A": "Marked fear or anxiety about two or more of the following situations",
+      "situations": [
+        "Using public transportation",
+        "Being in open spaces",
+        "Being in enclosed places",
+        "Standing in line or being in a crowd",
+        "Being outside of the home alone"
+      ],
+      "B": "Individual fears these situations because escape might be difficult"
+    },
+    "keywords": ["agoraphobia", "public places", "crowds", "transportation", "open spaces", "enclosed spaces", "escape", "trapped", "outside home", "avoidance"],
+    "keywords_zh": ["廣場恐懼症", "公共場所", "人群", "交通工具", "開放空間", "密閉空間", "逃脫", "被困", "離家", "迴避"]
+  },
+  "bipolar_i_disorder": {
+    "code": "296.xx",
+    "name": "Bipolar I Disorder",
+    "name_zh": "雙極性第一型障礙症",
+    "category": "Bipolar and Related Disorders",
+    "category_zh": "雙極性及相關障礙症",
+    "criteria": {
+      "A": "Criteria have been met for at least one manic episode",
+      "manic_episode": "Distinct period of abnormally and persistently elevated, expansive, or irritable mood and abnormally increased goal-directed activity or energy, lasting at least 1 week",
+      "symptoms": [
+        "Inflated self-esteem or grandiosity",
+        "Decreased need for sleep (feels rested after only 3 hours)",
+        "More talkative than usual or pressure to keep talking",
+        "Flight of ideas or subjective experience of racing thoughts",
+        "Distractibility",
+        "Increase in goal-directed activity or psychomotor agitation",
+        "Excessive involvement in activities with high potential for painful consequences"
+      ]
+    },
+    "keywords": ["manic", "mania", "elevated", "euphoric", "grandiose", "grandiosity", "sleep", "talkative", "racing", "thoughts", "risky", "mood swings", "high", "energetic", "impulsive", "spending", "hypersexual"],
+    "keywords_zh": ["躁症", "躁狂", "情緒高漲", "欣快", "誇大", "睡眠", "多話", "思緒飛快", "冒險", "情緒波動", "精力充沛", "衝動", "花錢", "性慾亢進"]
+  },
+  "bipolar_ii_disorder": {
+    "code": "296.89",
+    "name": "Bipolar II Disorder",
+    "name_zh": "雙極性第二型障礙症",
+    "category": "Bipolar and Related Disorders",
+    "category_zh": "雙極性及相關障礙症",
+    "criteria": {
+      "A": "Criteria have been met for at least one hypomanic episode and at least one major depressive episode",
+      "B": "There has never been a manic episode",
+      "hypomanic_symptoms": [
+        "Same symptoms as mania but less severe",
+        "Duration of at least 4 consecutive days",
+        "Unequivocal change in functioning that is uncharacteristic"
+      ]
+    },
+    "keywords": ["hypomania", "hypomanic", "mild mania", "mood swings", "depression", "elevated mood", "increased energy", "less sleep", "more active"],
+    "keywords_zh": ["輕躁症", "輕度躁狂", "情緒波動", "憂鬱", "情緒高漲", "精力增加", "睡眠減少", "活動增加"]
+  },
+  "adhd_combined": {
+    "code": "314.01",
+    "name": "Attention-Deficit/Hyperactivity Disorder, Combined Presentation",
+    "name_zh": "注意力不足過動症，混合型",
+    "category": "Neurodevelopmental Disorders",
+    "category_zh": "神經發展障礙症",
+    "criteria": {
+      "A": "Persistent pattern of inattention and/or hyperactivity-impulsivity",
+      "inattention": "Six or more symptoms of inattention for children up to age 16, or five or more for individuals 17 and older",
+      "hyperactivity": "Six or more symptoms of hyperactivity-impulsivity for children up to age 16, or five or more for individuals 17 and older",
+      "inattention_symptoms": [
+        "Fails to give close attention to details or makes careless mistakes",
+        "Has difficulty sustaining attention in tasks or play activities",
+        "Does not seem to listen when spoken to directly",
+        "Does not follow through on instructions and fails to finish work",
+        "Has difficulty organizing tasks and activities",
+        "Avoids tasks that require sustained mental effort",
+        "Loses things necessary for tasks or activities",
+        "Is easily distracted by extraneous stimuli",
+        "Is forgetful in daily activities"
+      ],
+      "hyperactivity_symptoms": [
+        "Fidgets with hands or feet or squirms in seat",
+        "Leaves seat when remaining seated is expected",
+        "Runs about or climbs when inappropriate",
+        "Unable to play or engage in leisure activities quietly",
+        "Is on the go or acts as if driven by a motor",
+        "Talks excessively",
+        "Blurts out answers before questions completed",
+        "Has difficulty waiting turn",
+        "Interrupts or intrudes on others"
+      ]
+    },
+    "keywords": ["attention", "hyperactive", "impulsive", "focus", "concentrate", "restless", "fidget", "interrupt", "forgetful", "disorganized", "distracted", "careless", "squirm", "talks", "blurts", "impatient"],
+    "keywords_zh": ["注意力", "過動", "衝動", "專注", "集中", "不安", "坐立不安", "打斷", "健忘", "無組織", "分心", "粗心", "扭動", "多話", "脫口而出", "沒耐心"]
+  },
+  "ptsd": {
+    "code": "309.81",
+    "name": "Post-Traumatic Stress Disorder",
+    "name_zh": "創傷後壓力症候群",
+    "category": "Trauma- and Stressor-Related Disorders",
+    "category_zh": "創傷及壓力相關障礙症",
+    "criteria": {
+      "A": "Exposure to actual or threatened death, serious injury, or sexual violence",
+      "B": "Presence of one or more intrusion symptoms",
+      "C": "Persistent avoidance of stimuli associated with trauma",
+      "D": "Negative alterations in cognitions and mood",
+      "E": "Marked alterations in arousal and reactivity",
+      "intrusion_symptoms": [
+        "Recurrent, involuntary, and intrusive distressing memories",
+        "Recurrent distressing dreams related to trauma",
+        "Dissociative reactions (flashbacks)",
+        "Intense or prolonged psychological distress at trauma cues",
+        "Marked physiological reactions to trauma reminders"
+      ],
+      "avoidance_symptoms": [
+        "Avoidance of trauma-related thoughts, feelings, or memories",
+        "Avoidance of external reminders of trauma"
+      ],
+      "negative_mood_symptoms": [
+        "Inability to remember important aspects of trauma",
+        "Persistent negative beliefs about oneself or world",
+        "Persistent distorted cognitions about cause/consequences",
+        "Persistent negative emotional state",
+        "Markedly diminished interest in activities",
+        "Feelings of detachment from others",
+        "Persistent inability to experience positive emotions"
+      ],
+      "arousal_symptoms": [
+        "Irritable behavior and angry outbursts",
+        "Reckless or self-destructive behavior",
+        "Hypervigilance",
+        "Exaggerated startle response",
+        "Problems with concentration",
+        "Sleep disturbance"
+      ]
+    },
+    "keywords": ["trauma", "traumatic", "flashback", "flashbacks", "nightmare", "nightmares", "avoidance", "hypervigilant", "startle", "intrusive", "dissociation", "detached", "numb", "irritable", "angry", "reckless", "concentration", "sleep", "memories"],
+    "keywords_zh": ["創傷", "外傷", "閃回", "惡夢", "迴避", "過度警覺", "驚嚇", "侵入性", "解離", "疏離", "麻木", "易怒", "憤怒", "魯莽", "專注力", "睡眠", "記憶"]
+  },
+  "ocd": {
+    "code": "300.3",
+    "name": "Obsessive-Compulsive Disorder",
+    "name_zh": "強迫症",
+    "category": "Obsessive-Compulsive and Related Disorders",
+    "category_zh": "強迫症及相關障礙症",
+    "criteria": {
+      "A": "Presence of obsessions, compulsions, or both",
+      "obsessions": [
+        "Recurrent and persistent thoughts, urges, or images experienced as intrusive and unwanted",
+        "Individual attempts to ignore or suppress thoughts or neutralize with another thought or action"
+      ],
+      "compulsions": [
+        "Repetitive behaviors or mental acts individual feels driven to perform",
+        "Behaviors aimed at preventing or reducing anxiety or preventing dreaded event"
+      ],
+      "B": "Obsessions or compulsions are time-consuming or cause significant distress"
+    },
+    "keywords": ["obsessive", "compulsive", "repetitive", "rituals", "checking", "washing", "counting", "arranging", "intrusive thoughts", "contamination", "germs", "symmetry", "order", "harm", "unwanted thoughts", "urges"],
+    "keywords_zh": ["強迫", "重複", "儀式", "檢查", "洗滌", "計數", "排列", "侵入性思想", "污染", "細菌", "對稱", "秩序", "傷害", "不想要的想法", "衝動"]
+  },
+  "illness_anxiety_disorder": {
+    "code": "300.3",
+    "name": "Illness Anxiety Disorder",
+    "name_zh": "疾病焦慮症",
+    "category": "Somatic Symptom and Related Disorders",
+    "category_zh": "身體症狀及相關障礙症",
+    "criteria": {
+      "A": "Preoccupation with having or acquiring a serious illness",
+      "B": "Somatic symptoms are not present or, if present, are only mild in intensity",
+      "C": "High level of anxiety about health, and individual is easily alarmed about personal health status",
+      "D": "Individual performs excessive health-related behaviors or exhibits maladaptive avoidance"
+    },
+    "keywords": ["health anxiety", "illness worry", "disease fear", "medical anxiety", "hypochondria", "body checking", "doctor visits", "health research", "symptom monitoring"],
+    "keywords_zh": ["健康焦慮", "疾病擔憂", "疾病恐懼", "醫療焦慮", "疑病症", "身體檢查", "看醫生", "健康研究", "症狀監控"]
+  },
+  "somatic_symptom_disorder": {
+    "code": "300.82",
+    "name": "Somatic Symptom Disorder",
+    "name_zh": "身體症狀障礙症",
+    "category": "Somatic Symptom and Related Disorders",
+    "category_zh": "身體症狀及相關障礙症",
+    "criteria": {
+      "A": "One or more somatic symptoms that are distressing or result in significant disruption of daily life",
+      "B": "Excessive thoughts, feelings, or behaviors related to the somatic symptoms or associated health concerns",
+      "symptoms": [
+        "Disproportionate and persistent thoughts about the seriousness of symptoms",
+        "Persistently high level of anxiety about health or symptoms",
+        "Excessive time and energy devoted to symptoms or health concerns"
+      ]
+    },
+    "keywords": ["somatic symptoms", "physical symptoms", "body pain", "fatigue", "weakness", "medical concerns", "multiple symptoms", "chronic pain", "unexplained symptoms"],
+    "keywords_zh": ["身體症狀", "生理症狀", "身體疼痛", "疲勞", "虛弱", "醫療關注", "多種症狀", "慢性疼痛", "無法解釋的症狀"]
+  },
+  "anorexia_nervosa": {
+    "code": "307.1",
+    "name": "Anorexia Nervosa",
+    "name_zh": "神經性厭食症",
+    "category": "Feeding and Eating Disorders",
+    "category_zh": "餵食及飲食障礙症",
+    "criteria": {
+      "A": "Restriction of energy intake leading to significantly low body weight",
+      "B": "Intense fear of gaining weight or becoming fat, or persistent behavior that interferes with weight gain",
+      "C": "Disturbance in the way in which one's body weight or shape is experienced"
+    },
+    "keywords": ["eating", "food", "weight", "thin", "fat", "calories", "restrict", "restriction", "diet", "body image", "mirror", "scale", "exercise", "purge", "vomit", "laxatives", "starve", "hungry"],
+    "keywords_zh": ["飲食", "食物", "體重", "瘦", "胖", "卡路里", "限制", "節食", "身體形象", "鏡子", "體重計", "運動", "清除", "嘔吐", "瀉藥", "挨餓", "飢餓"]
+  },
+  "bulimia_nervosa": {
+    "code": "307.51",
+    "name": "Bulimia Nervosa",
+    "name_zh": "神經性暴食症",
+    "category": "Feeding and Eating Disorders",
+    "category_zh": "餵食及飲食障礙症",
+    "criteria": {
+      "A": "Recurrent episodes of binge eating characterized by eating large amounts of food and sense of lack of control",
+      "B": "Recurrent inappropriate compensatory behaviors to prevent weight gain",
+      "C": "Binge eating and compensatory behaviors occur at least once a week for 3 months",
+      "D": "Self-evaluation is unduly influenced by body shape and weight"
+    },
+    "keywords": ["binge eating", "overeating", "purging", "vomiting", "laxatives", "diuretics", "fasting", "excessive exercise", "body image", "weight control", "shame", "secrecy"],
+    "keywords_zh": ["暴食", "過度進食", "清除", "嘔吐", "瀉藥", "利尿劑", "禁食", "過度運動", "身體形象", "體重控制", "羞恥", "秘密"]
+  },
+  "binge_eating_disorder": {
+    "code": "307.51",
+    "name": "Binge-Eating Disorder",
+    "name_zh": "暴食症",
+    "category": "Feeding and Eating Disorders",
+    "category_zh": "餵食及飲食障礙症",
+    "criteria": {
+      "A": "Recurrent episodes of binge eating",
+      "B": "Binge-eating episodes are associated with three or more of the following",
+      "symptoms": [
+        "Eating much more rapidly than normal",
+        "Eating until feeling uncomfortably full",
+        "Eating large amounts when not physically hungry",
+        "Eating alone because of embarrassment",
+        "Feeling disgusted, depressed, or guilty after overeating"
+      ],
+      "C": "Marked distress regarding binge eating",
+      "D": "Occurs at least once a week for 3 months"
+    },
+    "keywords": ["binge eating", "overeating", "rapid eating", "full", "not hungry", "embarrassment", "guilt", "shame", "large amounts", "loss of control"],
+    "keywords_zh": ["暴食", "過度進食", "快速進食", "飽脹", "不餓", "尷尬", "罪惡感", "羞恥", "大量", "失控"]
+  },
+  "substance_use_disorder_alcohol": {
+    "code": "303.90",
+    "name": "Alcohol Use Disorder",
+    "name_zh": "酒精使用障礙症",
+    "category": "Substance-Related and Addictive Disorders",
+    "category_zh": "物質相關及成癮障礙症",
+    "criteria": {
+      "A": "Problematic pattern of alcohol use leading to clinically significant impairment or distress",
+      "symptoms": [
+        "Alcohol taken in larger amounts or longer period than intended",
+        "Persistent desire or unsuccessful efforts to cut down or control alcohol use",
+        "Great deal of time spent obtaining, using, or recovering from alcohol",
+        "Craving or strong desire to use alcohol",
+        "Recurrent alcohol use resulting in failure to fulfill major role obligations",
+        "Continued alcohol use despite persistent social or interpersonal problems",
+        "Important activities given up or reduced because of alcohol use",
+        "Recurrent alcohol use in physically hazardous situations",
+        "Continued alcohol use despite knowledge of physical or psychological problems",
+        "Tolerance",
+        "Withdrawal"
+      ]
+    },
+    "keywords": ["alcohol", "drinking", "drunk", "intoxicated", "hangover", "withdrawal", "tolerance", "craving", "addiction", "alcoholism", "binge drinking", "blackout"],
+    "keywords_zh": ["酒精", "喝酒", "醉酒", "中毒", "宿醉", "戒斷", "耐受性", "渴望", "成癮", "酗酒", "狂飲", "失憶"]
+  },
+  "insomnia_disorder": {
+    "code": "780.52",
+    "name": "Insomnia Disorder",
+    "name_zh": "失眠症",
+    "category": "Sleep-Wake Disorders",
+    "category_zh": "睡眠-清醒障礙症",
+    "criteria": {
+      "A": "Predominant complaint of dissatisfaction with sleep quantity or quality",
+      "symptoms": [
+        "Difficulty initiating sleep",
+        "Difficulty maintaining sleep",
+        "Early-morning awakening with inability to return to sleep"
+      ],
+      "B": "Sleep disturbance causes clinically significant distress or impairment",
+      "C": "Sleep difficulty occurs at least 3 nights per week for at least 3 months"
+    },
+    "keywords": ["insomnia", "sleep", "sleepless", "awake", "tired", "fatigue", "restless sleep", "early waking", "difficulty falling asleep", "staying asleep", "sleep quality"],
+    "keywords_zh": ["失眠", "睡眠", "無法入睡", "清醒", "疲倦", "疲勞", "不安穩睡眠", "早醒", "難以入睡", "維持睡眠", "睡眠品質"]
+  }
+}

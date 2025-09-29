@@ -1,0 +1,61 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+.env/
+ENV/
+env/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+pip-wheel-metadata/
+
+# Logs
+*.log
+
+# Tests & coverage
+.pytest_cache/
+.cache/
+.coverage
+*.cover
+coverage.xml
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+!.env.example
+
+# Databases
+*.db
+*.sqlite3
+psyfind.db
+
+# Flask artifacts
+instance/
+
+# User uploads & temporary files
+uploads/
+media/
+tmp/
+*.tmp
+
+# IDE & editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+*.pyproj
+
+# System files
+.DS_Store
+Thumbs.db

@@ -211,7 +211,7 @@ Group=$APP_USER
 WorkingDirectory=$APP_DIR
 Environment=PATH=$APP_DIR/venv/bin
 EnvironmentFile=$APP_DIR/.env.production
-ExecStart=$APP_DIR/venv/bin/gunicorn --bind 127.0.0.1:$APP_PORT --workers 3 --timeout 120 --access-logfile - --error-logfile - app:app
+ExecStart=$APP_DIR/venv/bin/gunicorn --bind 0.0.0.0:$APP_PORT --workers 3 --timeout 120 --access-logfile - --error-logfile - app:app
 ExecReload=/bin/kill -s HUP \$MAINPID
 Restart=always
 RestartSec=10

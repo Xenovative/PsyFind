@@ -72,14 +72,47 @@ check_root() {
     fi
 }
 
+fix_apt_repositories() {
+    log_info "Fixing APT repository issues..."
+    
+    # Accept changed repository labels for common PPAs
+    if [ -f /etc/apt/sources.list.d/ondrej-ubuntu-apache2-jammy.list ]; then
+        log_info "Accepting Apache2 PPA label change"
+        apt-get update --allow-releaseinfo-change -o Acquire::AllowInsecureRepositories=true 2>/dev/null || true
+    fi
+    
+    if [ -f /etc/apt/sources.list.d/ondrej-ubuntu-php-jammy.list ]; then
+        log_info "Accepting PHP PPA label change"
+        apt-get update --allow-releaseinfo-change -o Acquire::AllowInsecureRepositories=true 2>/dev/null || true
+    fi
+    
+    # Remove problematic nginx repository
+    if [ -f /etc/apt/sources.list.d/nginx.list ]; then
+        log_warning "Removing problematic nginx repository"
+        rm -f /etc/apt/sources.list.d/nginx.list
+    fi
+    
+    # Clean apt cache
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+    
+    log_success "Repository issues fixed"
+}
+
 install_dependencies() {
     log_info "Installing system dependencies..."
     
-    $UPDATE_CMD
-    
     if [[ "$PACKAGE_MANAGER" == "apt" ]]; then
+        # Fix repository issues first
+        fix_apt_repositories
+        
+        # Update package lists
+        apt-get update
+        
+        # Install dependencies
         $INSTALL_CMD python3 python3-pip python3-venv nginx supervisor git curl
     else
+        $UPDATE_CMD
         $INSTALL_CMD python3 python3-pip nginx supervisor git curl
         # Install python3-venv equivalent for CentOS/RHEL
         python3 -m pip install virtualenv
@@ -359,17 +392,27 @@ case "${1:-deploy}" in
         systemctl start $SERVICE_NAME
         log_success "Application updated"
         ;;
+    "fix-repos")
+        if [[ "$PACKAGE_MANAGER" == "apt" ]]; then
+            fix_apt_repositories
+            apt-get update
+            log_success "Repository issues fixed"
+        else
+            log_warning "Repository fix only available for APT-based systems"
+        fi
+        ;;
     *)
-        echo "Usage: $0 {deploy|start|stop|restart|status|logs|update}"
+        echo "Usage: $0 {deploy|start|stop|restart|status|logs|update|fix-repos}"
         echo
         echo "Commands:"
-        echo "  deploy   - Full deployment (default)"
-        echo "  start    - Start services"
-        echo "  stop     - Stop PsyFind service"
-        echo "  restart  - Restart services"
-        echo "  status   - Show service status"
-        echo "  logs     - Show live logs"
-        echo "  update   - Update application code"
+        echo "  deploy     - Full deployment (default)"
+        echo "  start      - Start services"
+        echo "  stop       - Stop PsyFind service"
+        echo "  restart    - Restart services"
+        echo "  status     - Show service status"
+        echo "  logs       - Show live logs"
+        echo "  update     - Update application code"
+        echo "  fix-repos  - Fix APT repository issues"
         echo
         echo "Environment Variables:"
         echo "  DOMAIN      - Domain name (default: localhost)"

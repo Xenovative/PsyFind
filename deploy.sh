@@ -339,7 +339,10 @@ start_services() {
     log_info "Starting services..."
     
     systemctl start $SERVICE_NAME
-    systemctl restart nginx
+    
+    if [[ "${SKIP_NGINX:-false}" != "true" ]]; then
+        systemctl restart nginx
+    fi
     
     log_success "Services started"
 }
@@ -355,20 +358,26 @@ show_status() {
         log_error "PsyFind service is not running"
     fi
     
-    if systemctl is-active --quiet nginx; then
-        log_success "Nginx is running"
+    if [[ "${SKIP_NGINX:-false}" != "true" ]]; then
+        if systemctl is-active --quiet nginx; then
+            log_success "Nginx is running"
+        else
+            log_error "Nginx is not running"
+        fi
+        
+        echo
+        if [ "$HTTP_PORT" = "80" ]; then
+            log_info "Application URL: http://$DOMAIN"
+        else
+            log_info "Application URL: http://$DOMAIN:$HTTP_PORT"
+        fi
     else
-        log_error "Nginx is not running"
-    fi
-    
-    echo
-    if [ "$HTTP_PORT" = "80" ]; then
-        log_info "Application URL: http://$DOMAIN"
-    else
-        log_info "Application URL: http://$DOMAIN:$HTTP_PORT"
+        log_info "Direct application URL: http://$DOMAIN:$APP_PORT"
     fi
     log_info "Service logs: journalctl -u $SERVICE_NAME -f"
-    log_info "Nginx logs: tail -f /var/log/nginx/access.log"
+    if [[ "${SKIP_NGINX:-false}" != "true" ]]; then
+        log_info "Nginx logs: tail -f /var/log/nginx/access.log"
+    fi
     echo
 }
 
@@ -388,8 +397,15 @@ main() {
     setup_python_environment
     setup_production_config
     setup_systemd_service
-    setup_nginx
-    setup_firewall
+    
+    # Skip nginx and firewall for testing
+    if [[ "${SKIP_NGINX:-false}" == "true" ]]; then
+        log_info "Skipping nginx and firewall setup (testing mode)"
+    else
+        setup_nginx
+        setup_firewall
+    fi
+    
     start_services
     show_status
     
@@ -464,6 +480,7 @@ case "${1:-deploy}" in
         echo "Examples:"
         echo "  sudo DOMAIN=example.com ./deploy.sh deploy"
         echo "  sudo APP_PORT=8000 HTTP_PORT=8080 ./deploy.sh deploy"
+        echo "  sudo SKIP_NGINX=true ./deploy.sh deploy  # Testing mode"
         exit 1
         ;;
 esac

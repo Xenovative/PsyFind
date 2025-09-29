@@ -111,6 +111,17 @@ install_dependencies() {
         
         # Install dependencies
         $INSTALL_CMD python3 python3-pip python3-venv nginx supervisor git curl
+        
+        # Ensure nginx directories exist
+        mkdir -p /etc/nginx/sites-available
+        mkdir -p /etc/nginx/sites-enabled
+        
+        # Check if sites-enabled is included in nginx.conf
+        if ! grep -q "sites-enabled" /etc/nginx/nginx.conf; then
+            log_info "Adding sites-enabled include to nginx.conf"
+            sed -i '/http {/a\\tinclude /etc/nginx/sites-enabled/*;' /etc/nginx/nginx.conf
+        fi
+        
     else
         $UPDATE_CMD
         $INSTALL_CMD python3 python3-pip nginx supervisor git curl
@@ -218,7 +229,21 @@ EOF
 setup_nginx() {
     log_info "Setting up Nginx configuration..."
     
-    cat > $NGINX_AVAILABLE/$SERVICE_NAME << EOF
+    # Create nginx directories if they don't exist
+    mkdir -p $NGINX_AVAILABLE
+    mkdir -p $NGINX_ENABLED
+    
+    # Check if we're using sites-available/enabled structure or conf.d
+    if [ ! -d "$NGINX_AVAILABLE" ] && [ -d "/etc/nginx/conf.d" ]; then
+        log_info "Using nginx conf.d structure instead of sites-available"
+        NGINX_AVAILABLE="/etc/nginx/conf.d"
+        NGINX_ENABLED="/etc/nginx/conf.d"
+        NGINX_CONFIG_FILE="$NGINX_AVAILABLE/${SERVICE_NAME}.conf"
+    else
+        NGINX_CONFIG_FILE="$NGINX_AVAILABLE/$SERVICE_NAME"
+    fi
+    
+    cat > $NGINX_CONFIG_FILE << EOF
 server {
     listen $HTTP_PORT;
     server_name $DOMAIN;
@@ -267,13 +292,29 @@ server {
 }
 EOF
     
-    # Enable site
-    ln -sf $NGINX_AVAILABLE/$SERVICE_NAME $NGINX_ENABLED/
+    # Enable site (only if using sites-available/enabled structure)
+    if [ "$NGINX_AVAILABLE" != "$NGINX_ENABLED" ]; then
+        ln -sf $NGINX_CONFIG_FILE $NGINX_ENABLED/
+        log_info "Site enabled in sites-enabled"
+    else
+        log_info "Configuration placed in conf.d (auto-enabled)"
+    fi
+    
+    # Remove default nginx site if it exists and conflicts
+    if [ -f "$NGINX_ENABLED/default" ] && [ "$NGINX_AVAILABLE" != "$NGINX_ENABLED" ]; then
+        rm -f $NGINX_ENABLED/default
+        log_info "Removed default nginx site"
+    fi
     
     # Test nginx configuration
-    nginx -t
-    
-    log_success "Nginx configuration created"
+    if nginx -t; then
+        log_success "Nginx configuration created and tested successfully"
+    else
+        log_error "Nginx configuration test failed"
+        log_info "Configuration file location: $NGINX_CONFIG_FILE"
+        log_info "Please check the configuration manually"
+        exit 1
+    fi
 }
 
 setup_firewall() {

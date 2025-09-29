@@ -1495,12 +1495,13 @@
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 2000;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: 3000;
                 display: none;
                 align-items: center;
                 justify-content: center;
                 padding: 20px;
+                backdrop-filter: blur(2px);
             }
 
             .assessment-content {
@@ -1571,12 +1572,13 @@
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 2000;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: 2500;
                 display: none;
                 align-items: center;
                 justify-content: center;
                 padding: 20px;
+                backdrop-filter: blur(2px);
             }
 
             .results-content {
@@ -1919,6 +1921,29 @@
             h2 { font-size: 1.5rem; }
             h3 { font-size: 1.3rem; }
             h4 { font-size: 1.1rem; }
+
+            /* Modal Management */
+            body.modal-open {
+                overflow: hidden !important;
+                position: fixed;
+                width: 100%;
+            }
+
+            /* Prevent double-tap zoom on modal buttons */
+            .assessment-panel button,
+            .results-panel button,
+            .close-assessment,
+            .close-results {
+                touch-action: manipulation;
+                user-select: none;
+            }
+
+            /* Improve modal backdrop */
+            .assessment-panel,
+            .results-panel {
+                -webkit-backdrop-filter: blur(2px);
+                backdrop-filter: blur(2px);
+            }
 
             /* Mobile spacing */
             .panel {
@@ -3577,21 +3602,15 @@
         // Disclaimer Modal Functions
         function showDisclaimerModal() {
             const modal = document.getElementById('disclaimerModal');
-            modal.style.display = 'flex';
+            showModal(modal, 'disclaimer');
             
             // Update modal text based on current language
             updateLanguageDisplay();
-            
-            // Prevent background scrolling
-            document.body.style.overflow = 'hidden';
         }
 
         function closeDisclaimerModal() {
             const modal = document.getElementById('disclaimerModal');
-            modal.style.display = 'none';
-            
-            // Restore background scrolling
-            document.body.style.overflow = 'auto';
+            closeModal(modal);
         }
 
         function acceptDisclaimer() {
@@ -3647,6 +3666,50 @@
                 }, 100);
             }
         };
+
+        // Modal Management Functions
+        let activeModal = null;
+
+        function closeAllModals() {
+            const modals = document.querySelectorAll('.assessment-panel, .results-panel, #disclaimerModal');
+            modals.forEach(modal => {
+                modal.style.display = 'none';
+            });
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            activeModal = null;
+        }
+
+        function showModal(modalElement, modalName) {
+            // Close any existing modals first
+            closeAllModals();
+            
+            // Show the new modal
+            modalElement.style.display = 'flex';
+            document.body.classList.add('modal-open');
+            activeModal = modalName;
+        }
+
+        function closeModal(modalElement) {
+            modalElement.style.display = 'none';
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            activeModal = null;
+        }
+
+        // Enhanced close modal on outside click
+        document.addEventListener('click', function(event) {
+            if (activeModal && event.target.classList.contains('assessment-panel', 'results-panel')) {
+                closeAllModals();
+            }
+        });
+
+        // Enhanced escape key handling
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && activeModal) {
+                closeAllModals();
+            }
+        });
 
         // Mobile responsiveness functions
         function isMobile() {

@@ -17,15 +17,21 @@ import os
 from dotenv import load_dotenv
 from functools import wraps
 
+# Load environment variables FIRST (before any os.getenv calls)
+# Check for production config, fall back to .env
+if os.path.exists('.env.production'):
+    load_dotenv('.env.production')
+elif os.path.exists('/opt/psyfind/.env.production'):
+    load_dotenv('/opt/psyfind/.env.production')
+else:
+    load_dotenv()
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-admin-key-change-in-production')
-
-# Load environment variables
-load_dotenv()
 
 def filter_medication_recommendations(report: str, language: str = 'en') -> str:
     """Filter out medication recommendations from clinical reports for safety"""

@@ -696,6 +696,7 @@ show_help() {
     echo "  -h, --help        Show this help message"
     echo "  -i, --interactive Run in interactive mode (prompts for config)"
     echo "  -n, --dry-run     Show what would be done without making changes"
+    echo "  -u, --update      Quick update (git pull + pip install + restart)"
     echo
     echo -e "${GREEN}Environment Variables:${NC}"
     echo "  DOMAIN            Domain name (default: localhost)"
@@ -737,6 +738,18 @@ while [[ $# -gt 0 ]]; do
         -n|--dry-run)
             DRY_RUN="true"
             shift
+            ;;
+        -u|--update)
+            # Quick update shortcut
+            check_root
+            log_info "Updating application..."
+            systemctl stop $SERVICE_NAME
+            cp -r $APP_DIR $APP_DIR.backup.$(date +%Y%m%d_%H%M%S)
+            sudo -u $APP_USER bash -c "cd $APP_DIR && git pull"
+            sudo -u $APP_USER bash -c "cd $APP_DIR && source venv/bin/activate && pip install -r requirements.txt"
+            systemctl start $SERVICE_NAME
+            log_success "Application updated"
+            exit 0
             ;;
         -*)
             log_error "Unknown option: $1"

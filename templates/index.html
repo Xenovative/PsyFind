@@ -4234,17 +4234,12 @@
             }
         });
 
-        // Show disclaimer modal on page load
+        // Show disclaimer modal on page load - ALWAYS show disclaimer first
         document.addEventListener('DOMContentLoaded', function() {
-            // Check if user has already accepted disclaimer in this session
-            const disclaimerAccepted = sessionStorage.getItem('disclaimerAccepted');
-            
-            if (!disclaimerAccepted) {
-                // Show modal after a brief delay to ensure page is fully loaded
-                setTimeout(() => {
-                    showDisclaimerModal();
-                }, 500);
-            }
+            // Always show disclaimer modal on page load
+            setTimeout(() => {
+                showDisclaimerModal();
+            }, 500);
         });
 
         // Update the existing switchLanguage function to reinitialize chat

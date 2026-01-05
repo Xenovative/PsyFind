@@ -740,12 +740,18 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         -u|--update)
-            # Quick update shortcut
+            # Quick update shortcut - run from project directory
             check_root
-            log_info "Updating application..."
+            if [ ! -f "app.py" ] || [ ! -f "requirements.txt" ]; then
+                log_error "Run this from the PsyFind project directory"
+                exit 1
+            fi
+            log_info "Updating application from current directory..."
             systemctl stop $SERVICE_NAME
             cp -r $APP_DIR $APP_DIR.backup.$(date +%Y%m%d_%H%M%S)
-            sudo -u $APP_USER bash -c "cd $APP_DIR && git pull"
+            # Copy new files (preserve .env.production and venv)
+            rsync -av --exclude='venv' --exclude='.env.production' --exclude='.git' --exclude='*.pyc' --exclude='__pycache__' . $APP_DIR/
+            chown -R $APP_USER:$APP_USER $APP_DIR
             sudo -u $APP_USER bash -c "cd $APP_DIR && source venv/bin/activate && pip install -r requirements.txt"
             systemctl start $SERVICE_NAME
             log_success "Application updated"
@@ -788,12 +794,26 @@ case "${1:-deploy}" in
         journalctl -u $SERVICE_NAME -f
         ;;
     "update")
-        log_info "Updating application..."
+        check_root
+        if [ ! -f "app.py" ] || [ ! -f "requirements.txt" ]; then
+            log_error "Run this from the PsyFind project directory"
+            log_info "Usage: cd /path/to/psyfind-source && sudo ./deploy.sh update"
+            exit 1
+        fi
+        log_info "Updating application from current directory..."
         systemctl stop $SERVICE_NAME
         # Backup current version
         cp -r $APP_DIR $APP_DIR.backup.$(date +%Y%m%d_%H%M%S)
-        # Update code (assumes git repository)
-        sudo -u $APP_USER bash -c "cd $APP_DIR && git pull"
+        log_info "Backup created at $APP_DIR.backup.$(date +%Y%m%d_%H%M%S)"
+        # Copy new files (preserve .env.production and venv)
+        if command -v rsync &>/dev/null; then
+            rsync -av --exclude='venv' --exclude='.env.production' --exclude='.git' --exclude='*.pyc' --exclude='__pycache__' . $APP_DIR/
+        else
+            # Fallback if rsync not available
+            cp -r . $APP_DIR/
+            rm -rf $APP_DIR/.git $APP_DIR/venv
+        fi
+        chown -R $APP_USER:$APP_USER $APP_DIR
         # Update dependencies
         sudo -u $APP_USER bash -c "cd $APP_DIR && source venv/bin/activate && pip install -r requirements.txt"
         systemctl start $SERVICE_NAME

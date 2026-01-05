@@ -12,7 +12,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Configuration
+# Configuration (can be overridden by env vars or interactive mode)
 APP_NAME="psyfind"
 APP_USER="psyfind"
 APP_DIR="/opt/psyfind"
@@ -23,6 +23,8 @@ DOMAIN="${DOMAIN:-localhost}"
 APP_PORT="${APP_PORT:-5000}"
 HTTP_PORT="${HTTP_PORT:-80}"
 HTTPS_PORT="${HTTPS_PORT:-443}"
+DRY_RUN="${DRY_RUN:-false}"
+INTERACTIVE="${INTERACTIVE:-false}"
 
 # Functions
 log_info() {
@@ -39,6 +41,98 @@ log_warning() {
 
 log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
+}
+
+log_dry() {
+    echo -e "${YELLOW}[DRY-RUN]${NC} Would: $1"
+}
+
+confirm() {
+    local prompt="$1"
+    local default="${2:-y}"
+    if [[ "$INTERACTIVE" != "true" ]]; then
+        return 0
+    fi
+    read -p "$prompt [Y/n] " response
+    response=${response:-$default}
+    [[ "$response" =~ ^[Yy]$ ]]
+}
+
+show_banner() {
+    echo -e "${BLUE}"
+    echo "╔═══════════════════════════════════════════╗"
+    echo "║         PsyFind Deployment Tool           ║"
+    echo "╚═══════════════════════════════════════════╝"
+    echo -e "${NC}"
+}
+
+show_config() {
+    echo -e "${BLUE}Current Configuration:${NC}"
+    echo "  Domain:     $DOMAIN"
+    echo "  App Port:   $APP_PORT"
+    echo "  HTTP Port:  $HTTP_PORT"
+    echo "  HTTPS Port: $HTTPS_PORT"
+    echo "  App Dir:    $APP_DIR"
+    echo "  App User:   $APP_USER"
+    echo "  Skip Nginx: ${SKIP_NGINX:-false}"
+    echo
+}
+
+interactive_config() {
+    show_banner
+    echo -e "${GREEN}Interactive Configuration${NC}"
+    echo "Press Enter to accept defaults shown in brackets."
+    echo
+    
+    read -p "Domain name [$DOMAIN]: " input
+    DOMAIN="${input:-$DOMAIN}"
+    
+    read -p "Application port [$APP_PORT]: " input
+    APP_PORT="${input:-$APP_PORT}"
+    
+    read -p "HTTP port [$HTTP_PORT]: " input
+    HTTP_PORT="${input:-$HTTP_PORT}"
+    
+    read -p "Skip Nginx setup? (y/N) [${SKIP_NGINX:-n}]: " input
+    if [[ "$input" =~ ^[Yy]$ ]]; then
+        SKIP_NGINX="true"
+    fi
+    
+    echo
+    show_config
+    read -p "Proceed with these settings? [Y/n] " confirm
+    if [[ "$confirm" =~ ^[Nn]$ ]]; then
+        log_error "Deployment cancelled by user"
+        exit 0
+    fi
+}
+
+check_prerequisites() {
+    log_info "Checking prerequisites..."
+    local errors=0
+    
+    # Check if running from project directory
+    if [ ! -f "app.py" ] && [ ! -f "requirements.txt" ]; then
+        log_error "Not in PsyFind project directory (missing app.py or requirements.txt)"
+        errors=$((errors + 1))
+    fi
+    
+    # Check for required files
+    if [ ! -f ".env.example" ]; then
+        log_warning ".env.example not found - will need manual configuration"
+    fi
+    
+    # Check internet connectivity
+    if ! ping -c 1 google.com &>/dev/null 2>&1; then
+        log_warning "No internet connection detected - package installation may fail"
+    fi
+    
+    if [ $errors -gt 0 ]; then
+        log_error "Prerequisites check failed with $errors error(s)"
+        exit 1
+    fi
+    
+    log_success "Prerequisites check passed"
 }
 
 detect_os() {
@@ -383,13 +477,44 @@ show_status() {
 
 # Main deployment process
 main() {
-    log_info "Starting PsyFind deployment..."
+    show_banner
+    
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log_warning "DRY-RUN MODE - No changes will be made"
+        echo
+    fi
     
     check_root
     detect_os
     
+    if [[ "$INTERACTIVE" == "true" ]]; then
+        interactive_config
+    fi
+    
+    check_prerequisites
+    
     log_info "Detected OS: $OS"
     log_info "Package Manager: $PACKAGE_MANAGER"
+    
+    if [[ "$DRY_RUN" != "true" ]]; then
+        show_config
+    fi
+    
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log_dry "Install system dependencies"
+        log_dry "Create user $APP_USER"
+        log_dry "Copy application to $APP_DIR"
+        log_dry "Setup Python virtual environment"
+        log_dry "Create production config"
+        log_dry "Setup systemd service"
+        if [[ "${SKIP_NGINX:-false}" != "true" ]]; then
+            log_dry "Setup Nginx reverse proxy"
+            log_dry "Configure firewall"
+        fi
+        log_dry "Start services"
+        log_success "Dry run complete - no changes made"
+        exit 0
+    fi
     
     install_dependencies
     create_user
@@ -411,6 +536,122 @@ main() {
     
     log_success "PsyFind deployment completed successfully!"
 }
+
+uninstall() {
+    log_info "Uninstalling PsyFind..."
+    
+    check_root
+    
+    # Stop services
+    if systemctl is-active --quiet $SERVICE_NAME 2>/dev/null; then
+        systemctl stop $SERVICE_NAME
+        log_info "Stopped $SERVICE_NAME service"
+    fi
+    
+    # Disable and remove service
+    if [ -f "/etc/systemd/system/${SERVICE_NAME}.service" ]; then
+        systemctl disable $SERVICE_NAME 2>/dev/null || true
+        rm -f "/etc/systemd/system/${SERVICE_NAME}.service"
+        systemctl daemon-reload
+        log_info "Removed systemd service"
+    fi
+    
+    # Remove nginx config
+    if [ -f "$NGINX_AVAILABLE/$SERVICE_NAME" ]; then
+        rm -f "$NGINX_AVAILABLE/$SERVICE_NAME"
+        rm -f "$NGINX_ENABLED/$SERVICE_NAME"
+        systemctl reload nginx 2>/dev/null || true
+        log_info "Removed Nginx configuration"
+    fi
+    if [ -f "/etc/nginx/conf.d/${SERVICE_NAME}.conf" ]; then
+        rm -f "/etc/nginx/conf.d/${SERVICE_NAME}.conf"
+        systemctl reload nginx 2>/dev/null || true
+        log_info "Removed Nginx configuration"
+    fi
+    
+    # Remove application directory
+    if [ -d "$APP_DIR" ]; then
+        read -p "Remove application directory $APP_DIR? [y/N] " confirm
+        if [[ "$confirm" =~ ^[Yy]$ ]]; then
+            rm -rf "$APP_DIR"
+            log_info "Removed application directory"
+        fi
+    fi
+    
+    # Remove user
+    if id "$APP_USER" &>/dev/null; then
+        read -p "Remove user $APP_USER? [y/N] " confirm
+        if [[ "$confirm" =~ ^[Yy]$ ]]; then
+            userdel -r $APP_USER 2>/dev/null || userdel $APP_USER
+            log_info "Removed user $APP_USER"
+        fi
+    fi
+    
+    log_success "PsyFind uninstalled"
+}
+
+show_help() {
+    show_banner
+    echo "Usage: $0 [OPTIONS] COMMAND"
+    echo
+    echo -e "${GREEN}Commands:${NC}"
+    echo "  deploy      Full deployment (default)"
+    echo "  start       Start services"
+    echo "  stop        Stop PsyFind service"
+    echo "  restart     Restart services"
+    echo "  status      Show service status"
+    echo "  logs        Show live logs (Ctrl+C to exit)"
+    echo "  update      Update application code from git"
+    echo "  uninstall   Remove PsyFind completely"
+    echo "  fix-repos   Fix APT repository issues"
+    echo "  config      Show current configuration"
+    echo
+    echo -e "${GREEN}Options:${NC}"
+    echo "  -h, --help        Show this help message"
+    echo "  -i, --interactive Run in interactive mode (prompts for config)"
+    echo "  -n, --dry-run     Show what would be done without making changes"
+    echo
+    echo -e "${GREEN}Environment Variables:${NC}"
+    echo "  DOMAIN       Domain name (default: localhost)"
+    echo "  APP_PORT     Application port (default: 5000)"
+    echo "  HTTP_PORT    HTTP port (default: 80)"
+    echo "  HTTPS_PORT   HTTPS port (default: 443)"
+    echo "  SKIP_NGINX   Skip nginx setup (default: false)"
+    echo
+    echo -e "${GREEN}Examples:${NC}"
+    echo "  sudo ./deploy.sh deploy              # Basic deployment"
+    echo "  sudo ./deploy.sh -i deploy           # Interactive deployment"
+    echo "  sudo ./deploy.sh --dry-run deploy    # Preview deployment"
+    echo "  sudo DOMAIN=example.com ./deploy.sh deploy"
+    echo "  sudo SKIP_NGINX=true ./deploy.sh deploy"
+    echo
+}
+
+# Parse options
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        -i|--interactive)
+            INTERACTIVE="true"
+            shift
+            ;;
+        -n|--dry-run)
+            DRY_RUN="true"
+            shift
+            ;;
+        -*)
+            log_error "Unknown option: $1"
+            echo "Use --help for usage information"
+            exit 1
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
 
 # Handle command line arguments
 case "${1:-deploy}" in
@@ -450,6 +691,7 @@ case "${1:-deploy}" in
         log_success "Application updated"
         ;;
     "fix-repos")
+        detect_os
         if [[ "$PACKAGE_MANAGER" == "apt" ]]; then
             fix_apt_repositories
             apt-get update
@@ -458,29 +700,15 @@ case "${1:-deploy}" in
             log_warning "Repository fix only available for APT-based systems"
         fi
         ;;
+    "uninstall")
+        uninstall
+        ;;
+    "config")
+        show_banner
+        show_config
+        ;;
     *)
-        echo "Usage: $0 {deploy|start|stop|restart|status|logs|update|fix-repos}"
-        echo
-        echo "Commands:"
-        echo "  deploy     - Full deployment (default)"
-        echo "  start      - Start services"
-        echo "  stop       - Stop PsyFind service"
-        echo "  restart    - Restart services"
-        echo "  status     - Show service status"
-        echo "  logs       - Show live logs"
-        echo "  update     - Update application code"
-        echo "  fix-repos  - Fix APT repository issues"
-        echo
-        echo "Environment Variables:"
-        echo "  DOMAIN      - Domain name (default: localhost)"
-        echo "  APP_PORT    - Application port (default: 5000)"
-        echo "  HTTP_PORT   - HTTP port (default: 80)"
-        echo "  HTTPS_PORT  - HTTPS port (default: 443)"
-        echo
-        echo "Examples:"
-        echo "  sudo DOMAIN=example.com ./deploy.sh deploy"
-        echo "  sudo APP_PORT=8000 HTTP_PORT=8080 ./deploy.sh deploy"
-        echo "  sudo SKIP_NGINX=true ./deploy.sh deploy  # Testing mode"
+        show_help
         exit 1
         ;;
 esac

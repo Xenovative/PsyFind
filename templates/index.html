@@ -2865,13 +2865,12 @@
             // Initialize with Chinese language
             updateLanguageDisplay();
             
-            // Check if user has already provided info
+            // Check if user has already provided info - don't show modal here
+            // The disclaimer modal flow will handle showing user info modal after acceptance
             if (window.userInfo) {
                 initializeChat();
-            } else {
-                // Show user info modal first
-                showUserInfoModal();
             }
+            // Note: showUserInfoModal() is called from acceptDisclaimer() after disclaimer is accepted
             
             setupChatEventListeners();
             
@@ -3074,6 +3073,9 @@
                 'gad7': currentLanguage === 'zh' ? 'GAD-7 焦慮症篩檢' : 'GAD-7 Anxiety Screening',
                 'phq9': currentLanguage === 'zh' ? 'PHQ-9 憂鬱症篩檢' : 'PHQ-9 Depression Screening',
                 'isi': currentLanguage === 'zh' ? '失眠嚴重程度指數' : 'Insomnia Severity Index',
+                'psqi': currentLanguage === 'zh' ? '匹茲堡睡眠品質指數' : 'Pittsburgh Sleep Quality Index',
+                'ess': currentLanguage === 'zh' ? '愛普沃斯嗜睡量表' : 'Epworth Sleepiness Scale',
+                'pss': currentLanguage === 'zh' ? '壓力感知量表' : 'Perceived Stress Scale',
                 'whiteley': currentLanguage === 'zh' ? 'Whiteley-7 健康焦慮評估' : 'Whiteley-7 Health Anxiety Assessment'
             };
             
@@ -3245,6 +3247,9 @@
                 'gad7': currentLanguage === 'zh' ? 'GAD-7 焦慮症篩檢' : 'GAD-7 Anxiety Screening',
                 'phq9': currentLanguage === 'zh' ? 'PHQ-9 憂鬱症篩檢' : 'PHQ-9 Depression Screening',
                 'isi': currentLanguage === 'zh' ? '失眠嚴重程度指數' : 'Insomnia Severity Index',
+                'psqi': currentLanguage === 'zh' ? '匹茲堡睡眠品質指數' : 'Pittsburgh Sleep Quality Index',
+                'ess': currentLanguage === 'zh' ? '愛普沃斯嗜睡量表' : 'Epworth Sleepiness Scale',
+                'pss': currentLanguage === 'zh' ? '壓力感知量表' : 'Perceived Stress Scale',
                 'whiteley': currentLanguage === 'zh' ? 'Whiteley-7 健康焦慮評估' : 'Whiteley-7 Health Anxiety Assessment'
             };
             
@@ -3270,12 +3275,14 @@
         function getAssessmentQuestions(assessmentType) {
             let questions = [];
             let options = [];
+            let citation = '';
             
             if (currentLanguage === 'zh') {
                 options = ['完全沒有', '有一點', '中等程度', '相當多', '極度'];
                 
                 switch(assessmentType) {
                     case 'phq9':
+                        citation = 'Kroenke, K., Spitzer, R. L., & Williams, J. B. (2001). The PHQ-9: validity of a brief depression severity measure. Journal of General Internal Medicine, 16(9), 606-613.';
                         questions = [
                             "做事時提不起勁或沒有樂趣",
                             "感到心情低落、沮喪或絕望",
@@ -3289,6 +3296,7 @@
                         ];
                         break;
                     case 'gad7':
+                        citation = 'Spitzer, R. L., Kroenke, K., Williams, J. B., & Löwe, B. (2006). A brief measure for assessing generalized anxiety disorder: the GAD-7. Archives of Internal Medicine, 166(10), 1092-1097.';
                         questions = [
                             "感到緊張、焦慮或煩躁",
                             "無法停止或控制擔憂",
@@ -3299,8 +3307,69 @@
                             "感到害怕，好像將有可怕的事情發生"
                         ];
                         break;
+                    case 'isi':
+                        citation = 'Morin, C. M., Belleville, G., Bélanger, L., & Ivers, H. (2011). The Insomnia Severity Index: psychometric indicators to detect insomnia cases and evaluate treatment response. Sleep, 34(5), 601-608. 中文版：香港中文大學睡眠研究中心 (https://jcsleepwell.cuhk.edu.hk)';
+                        // ISI has different options per question group
+                        // Q1-3: severity, Q4: satisfaction, Q5: interference, Q6: noticeability, Q7: worry
+                        questions = [
+                            { text: "入睡困難", options: ['沒有', '輕微', '普通', '嚴重', '非常嚴重'] },
+                            { text: "難以維持睡眠", options: ['沒有', '輕微', '普通', '嚴重', '非常嚴重'] },
+                            { text: "太早睡醒的問題", options: ['沒有', '輕微', '普通', '嚴重', '非常嚴重'] },
+                            { text: "你有幾滿意／不滿意你現時的睡眠狀況？", options: ['非常滿意', '滿意', '普通', '不滿意', '非常不滿意'] },
+                            { text: "你認為你的睡眠問題妨礙你日常運作（例如：日間疲勞、處理工作／日常事務的能力、集中力、記憶、情緒等等）到哪一個程度？", options: ['完全沒有妨礙', '少許', '頗為', '非常', '極之妨礙'] },
+                            { text: "你的睡眠問題在降低生活質素而言，在其他人眼中有幾明顯？", options: ['完全不明顯', '僅為', '頗為', '非常', '極之明顯'] },
+                            { text: "你對你現時的睡眠問題有幾憂慮／苦惱？", options: ['完全沒有', '少許', '頗為', '非常', '非常大'] }
+                        ];
+                        options = null; // Signal to use per-question options
+                        break;
+                    case 'psqi':
+                        citation = 'Buysse, D. J., Reynolds, C. F., Monk, T. H., Berman, S. R., & Kupfer, D. J. (1989). The Pittsburgh Sleep Quality Index: a new instrument for psychiatric practice and research. Psychiatry Research, 28(2), 193-213.';
+                        options = ['非常好', '還好', '不好', '非常不好'];
+                        questions = [
+                            "過去一個月，你認為自己的睡眠品質整體而言如何？",
+                            "過去一個月，你大約需要多久才能入睡？",
+                            "過去一個月，你通常每晚實際睡眠時間有多長？",
+                            "過去一個月，你有多常因為半夜或清晨醒來而睡不好？",
+                            "過去一個月，你有多常因為感到太冷而睡不好？",
+                            "過去一個月，你有多常因為感到太熱而睡不好？",
+                            "過去一個月，你有多常因為做惡夢而睡不好？",
+                            "過去一個月，你有多常因為疼痛而睡不好？",
+                            "過去一個月，你有多常需要服用藥物才能入睡？"
+                        ];
+                        break;
+                    case 'ess':
+                        citation = 'Johns, M. W. (1991). A new method for measuring daytime sleepiness: the Epworth sleepiness scale. Sleep, 14(6), 540-545.';
+                        options = ['從不打瞌睡', '輕微機會', '中等機會', '很大機會'];
+                        questions = [
+                            "坐著閱讀時",
+                            "看電視時",
+                            "在公共場所安靜地坐著（例如在劇院或會議中）",
+                            "作為乘客在車上連續坐一小時",
+                            "下午躺下休息時",
+                            "坐著與人交談時",
+                            "午餐後安靜地坐著（沒有喝酒）",
+                            "開車時遇到交通停頓幾分鐘"
+                        ];
+                        break;
+                    case 'pss':
+                        citation = 'Cohen, S., Kamarck, T., & Mermelstein, R. (1983). A global measure of perceived stress. Journal of Health and Social Behavior, 24(4), 385-396.';
+                        options = ['從不', '偶爾', '有時', '經常', '總是'];
+                        questions = [
+                            "過去一個月，你有多常因為發生了意想不到的事情而感到心煩意亂？",
+                            "過去一個月，你有多常覺得無法控制生活中重要的事情？",
+                            "過去一個月，你有多常感到緊張和有壓力？",
+                            "過去一個月，你有多常成功地處理日常生活中的煩惱？",
+                            "過去一個月，你有多常覺得自己能有效地應對生活中的重要變化？",
+                            "過去一個月，你有多常對自己處理個人問題的能力感到有信心？",
+                            "過去一個月，你有多常覺得事情按照你的意願發展？",
+                            "過去一個月，你有多常發現自己無法應付所有必須做的事情？",
+                            "過去一個月，你有多常能夠控制生活中的煩躁情緒？",
+                            "過去一個月，你有多常覺得自己掌控一切？"
+                        ];
+                        break;
                     case 'whiteley':
                     default:
+                        citation = 'Pilowsky, I. (1967). Dimensions of hypochondriasis. British Journal of Psychiatry, 113(494), 89-93. / Fink, P., et al. (1999). The prevalence of somatoform disorders among internal medical inpatients. Journal of Psychosomatic Research, 46(5), 391-399.';
                         questions = [
                             "您是否經常擔心自己的健康？",
                             "您是否被許多不同的症狀困擾？",
@@ -3317,6 +3386,7 @@
                 
                 switch(assessmentType) {
                     case 'phq9':
+                        citation = 'Kroenke, K., Spitzer, R. L., & Williams, J. B. (2001). The PHQ-9: validity of a brief depression severity measure. Journal of General Internal Medicine, 16(9), 606-613.';
                         questions = [
                             "Little interest or pleasure in doing things",
                             "Feeling down, depressed, or hopeless",
@@ -3330,6 +3400,7 @@
                         ];
                         break;
                     case 'gad7':
+                        citation = 'Spitzer, R. L., Kroenke, K., Williams, J. B., & Löwe, B. (2006). A brief measure for assessing generalized anxiety disorder: the GAD-7. Archives of Internal Medicine, 166(10), 1092-1097.';
                         questions = [
                             "Feeling nervous, anxious, or on edge",
                             "Not being able to stop or control worrying",
@@ -3340,8 +3411,68 @@
                             "Feeling afraid as if something awful might happen"
                         ];
                         break;
+                    case 'isi':
+                        citation = 'Morin, C. M., Belleville, G., Bélanger, L., & Ivers, H. (2011). The Insomnia Severity Index: psychometric indicators to detect insomnia cases and evaluate treatment response. Sleep, 34(5), 601-608.';
+                        // ISI has different options per question group
+                        questions = [
+                            { text: "Difficulty falling asleep", options: ['None', 'Mild', 'Moderate', 'Severe', 'Very Severe'] },
+                            { text: "Difficulty staying asleep", options: ['None', 'Mild', 'Moderate', 'Severe', 'Very Severe'] },
+                            { text: "Problems waking up too early", options: ['None', 'Mild', 'Moderate', 'Severe', 'Very Severe'] },
+                            { text: "How satisfied/dissatisfied are you with your current sleep pattern?", options: ['Very Satisfied', 'Satisfied', 'Moderately Satisfied', 'Dissatisfied', 'Very Dissatisfied'] },
+                            { text: "To what extent do you consider your sleep problem to interfere with your daily functioning (e.g., daytime fatigue, mood, ability to function at work/daily chores, concentration, memory, etc.)?", options: ['Not at all Interfering', 'A Little', 'Somewhat', 'Much', 'Very Much Interfering'] },
+                            { text: "How noticeable to others do you think your sleep problem is in terms of impairing the quality of your life?", options: ['Not at all Noticeable', 'A Little', 'Somewhat', 'Much', 'Very Much Noticeable'] },
+                            { text: "How worried/distressed are you about your current sleep problem?", options: ['Not at all Worried', 'A Little', 'Somewhat', 'Much', 'Very Much Worried'] }
+                        ];
+                        options = null; // Signal to use per-question options
+                        break;
+                    case 'psqi':
+                        citation = 'Buysse, D. J., Reynolds, C. F., Monk, T. H., Berman, S. R., & Kupfer, D. J. (1989). The Pittsburgh Sleep Quality Index: a new instrument for psychiatric practice and research. Psychiatry Research, 28(2), 193-213.';
+                        options = ['Very good', 'Fairly good', 'Fairly bad', 'Very bad'];
+                        questions = [
+                            "During the past month, how would you rate your sleep quality overall?",
+                            "During the past month, how long has it usually taken you to fall asleep each night?",
+                            "During the past month, how many hours of actual sleep did you get at night?",
+                            "During the past month, how often have you had trouble sleeping because you wake up in the middle of the night or early morning?",
+                            "During the past month, how often have you had trouble sleeping because you feel too cold?",
+                            "During the past month, how often have you had trouble sleeping because you feel too hot?",
+                            "During the past month, how often have you had trouble sleeping because you had bad dreams?",
+                            "During the past month, how often have you had trouble sleeping because you have pain?",
+                            "During the past month, how often have you taken medicine to help you sleep?"
+                        ];
+                        break;
+                    case 'ess':
+                        citation = 'Johns, M. W. (1991). A new method for measuring daytime sleepiness: the Epworth sleepiness scale. Sleep, 14(6), 540-545.';
+                        options = ['Would never doze', 'Slight chance of dozing', 'Moderate chance of dozing', 'High chance of dozing'];
+                        questions = [
+                            "Sitting and reading",
+                            "Watching TV",
+                            "Sitting inactive in a public place (e.g., a theater or a meeting)",
+                            "As a passenger in a car for an hour without a break",
+                            "Lying down to rest in the afternoon when circumstances permit",
+                            "Sitting and talking to someone",
+                            "Sitting quietly after a lunch without alcohol",
+                            "In a car, while stopped for a few minutes in traffic"
+                        ];
+                        break;
+                    case 'pss':
+                        citation = 'Cohen, S., Kamarck, T., & Mermelstein, R. (1983). A global measure of perceived stress. Journal of Health and Social Behavior, 24(4), 385-396.';
+                        options = ['Never', 'Almost never', 'Sometimes', 'Fairly often', 'Very often'];
+                        questions = [
+                            "In the last month, how often have you been upset because of something that happened unexpectedly?",
+                            "In the last month, how often have you felt that you were unable to control the important things in your life?",
+                            "In the last month, how often have you felt nervous and stressed?",
+                            "In the last month, how often have you felt confident about your ability to handle your personal problems?",
+                            "In the last month, how often have you felt that things were going your way?",
+                            "In the last month, how often have you found that you could not cope with all the things that you had to do?",
+                            "In the last month, how often have you been able to control irritations in your life?",
+                            "In the last month, how often have you felt that you were on top of things?",
+                            "In the last month, how often have you been angered because of things that happened that were outside of your control?",
+                            "In the last month, how often have you felt difficulties were piling up so high that you could not overcome them?"
+                        ];
+                        break;
                     case 'whiteley':
                     default:
+                        citation = 'Pilowsky, I. (1967). Dimensions of hypochondriasis. British Journal of Psychiatry, 113(494), 89-93. / Fink, P., et al. (1999). The prevalence of somatoform disorders among internal medical inpatients. Journal of Psychosomatic Research, 46(5), 391-399.';
                         options = ['Not at all', 'A little', 'Moderately', 'Quite a bit', 'Extremely'];
                         questions = [
                             "Do you worry a lot about your health?",
@@ -3356,12 +3487,12 @@
                 }
             }
             
-            return { questions, options };
+            return { questions, options, citation };
         }
 
         function startProgressiveAssessment() {
             const assessmentContent = document.getElementById('assessmentContent');
-            const { questions, options } = chatState.assessmentQuestions;
+            const { questions, options, citation } = chatState.assessmentQuestions;
             
             // Create progress indicator
             const progressHtml = `
@@ -3382,6 +3513,9 @@
                         ${currentLanguage === 'zh' ? '下一題' : 'Next'}
                     </button>
                 </div>
+                <div class="assessment-citation" style="margin-top: 20px; padding: 10px; background: rgba(0,0,0,0.05); border-radius: 8px; font-size: 11px; color: #666; line-height: 1.4;">
+                    <strong>${currentLanguage === 'zh' ? '來源：' : 'Source:'}</strong> ${citation}
+                </div>
             `;
             
             assessmentContent.innerHTML = progressHtml;
@@ -3391,7 +3525,12 @@
         function showCurrentQuestion() {
             const { questions, options } = chatState.assessmentQuestions;
             const currentIndex = chatState.currentQuestionIndex;
-            const currentQuestion = questions[currentIndex];
+            const currentQuestionData = questions[currentIndex];
+            
+            // Handle per-question options (ISI) vs shared options
+            const isPerQuestionOptions = typeof currentQuestionData === 'object' && currentQuestionData.text;
+            const questionText = isPerQuestionOptions ? currentQuestionData.text : currentQuestionData;
+            const questionOptions = isPerQuestionOptions ? currentQuestionData.options : options;
             
             // Update progress
             const progressFill = document.getElementById('progressFill');
@@ -3408,11 +3547,11 @@
             let questionHtml = `
                 <div class="question-item fade-in">
                     <h3 class="question-number">${currentLanguage === 'zh' ? '問題' : 'Question'} ${currentIndex + 1}</h3>
-                    <p class="question-text">${currentQuestion}</p>
+                    <p class="question-text">${questionText}</p>
                     <div class="rating-scale">
             `;
             
-            options.forEach((option, optionIndex) => {
+            questionOptions.forEach((option, optionIndex) => {
                 const isChecked = savedResponse === optionIndex ? 'checked' : '';
                 questionHtml += `
                     <label class="option-label">

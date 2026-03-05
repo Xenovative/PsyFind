@@ -20,6 +20,10 @@ SERVICE_NAME="psyfind"
 NGINX_AVAILABLE="/etc/nginx/sites-available"
 NGINX_ENABLED="/etc/nginx/sites-enabled"
 DOMAIN="${DOMAIN:-localhost}"
+ENABLE_SSL="${ENABLE_SSL:-false}"
+SSL_CERT_PATH="${SSL_CERT_PATH:-/etc/ssl/certs/psyfind.crt}"
+SSL_KEY_PATH="${SSL_KEY_PATH:-/etc/ssl/private/psyfind.key}"
+FORCE_HTTPS="${FORCE_HTTPS:-true}"
 APP_PORT="${APP_PORT:-5000}"
 HTTP_PORT="${HTTP_PORT:-80}"
 HTTPS_PORT="${HTTPS_PORT:-443}"
@@ -75,6 +79,10 @@ show_banner() {
 show_config() {
     echo -e "${BLUE}Current Configuration:${NC}"
     echo "  Domain:     $DOMAIN"
+    echo "  Enable SSL: ${ENABLE_SSL}"
+    echo "  Force HTTPS:${FORCE_HTTPS}"
+    echo "  SSL Cert:   $SSL_CERT_PATH"
+    echo "  SSL Key:    $SSL_KEY_PATH"
     echo "  App Port:   $APP_PORT"
     echo "  HTTP Port:  $HTTP_PORT"
     echo "  HTTPS Port: $HTTPS_PORT"
@@ -98,8 +106,20 @@ show_config() {
     echo
 }
 
+show_onboarding() {
+    echo -e "${GREEN}Getting you ready for deployment...${NC}"
+    echo "Steps: 1) Ask your config preferences 2) Install deps 3) Setup app+venv 4) Configure systemd 5) Configure nginx/proxy 6) Start services"
+    echo "Tips:"
+    echo " - Use a real domain if enabling SSL"
+    echo " - HTTP port (default 80) will proxy to app port $APP_PORT"
+    echo " - SSL expects cert/key paths you provide (no auto-issue)"
+    echo " - Use DRY_RUN=true to preview actions"
+    echo
+}
+
 interactive_config() {
     show_banner
+    show_onboarding
     echo -e "${GREEN}Interactive Configuration${NC}"
     echo "Press Enter to accept defaults shown in brackets."
     echo
@@ -112,6 +132,33 @@ interactive_config() {
     
     read -p "HTTP port [$HTTP_PORT]: " input
     HTTP_PORT="${input:-$HTTP_PORT}"
+
+    read -p "Enable SSL? (y/N) [${ENABLE_SSL}]: " input
+    if [[ "$input" =~ ^[Yy]$ ]]; then
+        ENABLE_SSL="true"
+    fi
+
+    if [[ "$ENABLE_SSL" == "true" ]]; then
+        read -p "Force HTTP->HTTPS redirect? (Y/n) [${FORCE_HTTPS}]: " input
+        if [[ "$input" =~ ^[Nn]$ ]]; then
+            FORCE_HTTPS="false"
+        else
+            FORCE_HTTPS="true"
+        fi
+        read -p "SSL cert path [$SSL_CERT_PATH]: " input
+        SSL_CERT_PATH="${input:-$SSL_CERT_PATH}"
+        read -p "SSL key path [$SSL_KEY_PATH]: " input
+        SSL_KEY_PATH="${input:-$SSL_KEY_PATH}"
+    else
+        FORCE_HTTPS="false"
+    fi
+
+    # Safety: avoid SSL on localhost unless user supplies real certs
+    if [[ "$ENABLE_SSL" == "true" && ( "$DOMAIN" == "localhost" || "$DOMAIN" == "127.0.0.1" ) ]]; then
+        log_warning "SSL enabled but domain is $DOMAIN. Disabling SSL (no certs for localhost)."
+        ENABLE_SSL="false"
+        FORCE_HTTPS="false"
+    fi
     
     read -p "Skip Nginx setup? (y/N) [${SKIP_NGINX:-n}]: " input
     if [[ "$input" =~ ^[Yy]$ ]]; then
@@ -155,6 +202,8 @@ interactive_config() {
     
     echo
     show_config
+    echo "Review: Domain=$DOMAIN SSL=$ENABLE_SSL ForceHTTPS=$FORCE_HTTPS HTTP=$HTTP_PORT HTTPS=$HTTPS_PORT AppPort=$APP_PORT"
+    echo "LLM: Provider=$LLM_PROVIDER (OpenAI set? $([[ -n "$OPENAI_API_KEY" ]] && echo yes || echo no), OpenRouter set? $([[ -n "$OPENROUTER_API_KEY" ]] && echo yes || echo no))"
     read -p "Proceed with these settings? [Y/n] " confirm
     if [[ "$confirm" =~ ^[Nn]$ ]]; then
         log_error "Deployment cancelled by user"
@@ -424,45 +473,61 @@ setup_nginx() {
     fi
     
     cat > $NGINX_CONFIG_FILE << EOF
+# Redirect www to root
+server {
+    listen $HTTP_PORT;
+    server_name www.$DOMAIN;
+    return 301 http://$DOMAIN$request_uri;
+}
+
+# Primary HTTP server
 server {
     listen $HTTP_PORT;
     server_name $DOMAIN;
-    
+
+    # Allow ACME HTTP-01 challenges
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+    }
+
+    # Optional redirect to HTTPS
+    $( [[ "$FORCE_HTTPS" == "true" ]] && echo "return 301 https://$DOMAIN$request_uri;" )
+
     # Security headers
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header X-XSS-Protection "1; mode=block" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header Referrer-Policy "no-referrer-when-downgrade" always;
     add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
-    
+
     # Gzip compression
     gzip on;
     gzip_vary on;
     gzip_min_length 1024;
     gzip_proxied expired no-cache no-store private must-revalidate auth;
     gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml+rss;
-    
+
     location / {
         proxy_pass http://127.0.0.1:$APP_PORT;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
         proxy_redirect off;
-        
+
         # Timeout settings
         proxy_connect_timeout 60s;
         proxy_send_timeout 60s;
         proxy_read_timeout 60s;
     }
-    
+
     # Static files
     location /static {
         alias $APP_DIR/static;
         expires 1y;
         add_header Cache-Control "public, immutable";
     }
-    
+
     # Health check endpoint
     location /health {
         access_log off;
@@ -470,6 +535,62 @@ server {
         add_header Content-Type text/plain;
     }
 }
+
+# HTTPS server (enabled when certs exist)
+$(if [[ "$ENABLE_SSL" == "true" ]]; then cat << SSL_BLOCK
+server {
+    listen $HTTPS_PORT ssl http2;
+    server_name $DOMAIN;
+
+    ssl_certificate $SSL_CERT_PATH;
+    ssl_certificate_key $SSL_KEY_PATH;
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:SSL:10m;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    # Security headers
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "no-referrer-when-downgrade" always;
+    add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
+
+    # Gzip compression
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_proxied expired no-cache no-store private must-revalidate auth;
+    gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml+rss;
+
+    location / {
+        proxy_pass http://127.0.0.1:$APP_PORT;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_redirect off;
+
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    location /static {
+        alias $APP_DIR/static;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    location /health {
+        access_log off;
+        return 200 "healthy\n";
+        add_header Content-Type text/plain;
+    }
+}
+SSL_BLOCK
+fi)
 EOF
     
     # Enable site (only if using sites-available/enabled structure)

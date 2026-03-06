@@ -111,8 +111,12 @@ if [[ ! -d "$APP_DIR" ]]; then
 fi
 
 if [[ ! -f "$ENV_FILE_PATH" ]]; then
-  err "Environment file missing: $ENV_FILE_PATH (matches EnvironmentFile in systemd unit)"
-  exit 1
+  if [[ -f "$APP_DIR/.env.example" ]]; then
+    log "Environment file missing; copying from $APP_DIR/.env.example to $ENV_FILE_PATH"
+    cp "$APP_DIR/.env.example" "$ENV_FILE_PATH"
+  else
+    log "Environment file missing: $ENV_FILE_PATH (matches EnvironmentFile in systemd unit); skipping copy (no template)."
+  fi
 fi
 
 if [[ ! -x "$GUNICORN_BIN" ]]; then

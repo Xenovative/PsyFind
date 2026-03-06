@@ -9,6 +9,16 @@ SERVICE_NAME="${SERVICE_NAME:-psyfind}"
 PYTHON_BIN="${PYTHON_BIN:-}"
 RSYNC_EXCLUDES=(".git" "__pycache__" "*.pyc" ".venv" "node_modules")
 
+# Precompute requirements hash (before sync) to decide on pip install
+SRC_REQ_HASH=""
+DEST_REQ_HASH=""
+if [[ -f "requirements.txt" ]]; then
+  SRC_REQ_HASH="$(sha256sum requirements.txt | awk '{print $1}')"
+fi
+if [[ -f "$APP_DIR/requirements.txt" ]]; then
+  DEST_REQ_HASH="$(sha256sum "$APP_DIR/requirements.txt" | awk '{print $1}')"
+fi
+
 log()  { printf "[INFO] %s\n" "$*"; }
 
 create_venv() {
@@ -76,18 +86,22 @@ rsync -a --delete \
 
 # Install dependencies if requirements present
 if [[ -f "$APP_DIR/requirements.txt" ]]; then
-  PY_BIN_RESOLVED="$(find_python || true)"
-
-  # If we only found a system python (likely PEP 668 managed), create a project venv
-  if [[ -z "$PY_BIN_RESOLVED" || "$PY_BIN_RESOLVED" != "$APP_DIR"/*/bin/python* ]]; then
-    PY_BIN_RESOLVED="$(create_venv || true)"
-  fi
-
-  if [[ -n "$PY_BIN_RESOLVED" ]]; then
-    log "Installing Python deps using $PY_BIN_RESOLVED"
-    "$PY_BIN_RESOLVED" -m pip install --upgrade -r "$APP_DIR/requirements.txt"
+  if [[ -n "$SRC_REQ_HASH" && "$SRC_REQ_HASH" == "$DEST_REQ_HASH" ]]; then
+    log "requirements.txt unchanged; skipping pip install"
   else
-    err "No usable python found (set PYTHON_BIN or install python3-venv); skipping pip install"
+    PY_BIN_RESOLVED="$(find_python || true)"
+
+    # If we only found a system python (likely PEP 668 managed), create a project venv
+    if [[ -z "$PY_BIN_RESOLVED" || "$PY_BIN_RESOLVED" != "$APP_DIR"/*/bin/python* ]]; then
+      PY_BIN_RESOLVED="$(create_venv || true)"
+    fi
+
+    if [[ -n "$PY_BIN_RESOLVED" ]]; then
+      log "Installing Python deps using $PY_BIN_RESOLVED"
+      "$PY_BIN_RESOLVED" -m pip install --upgrade -r "$APP_DIR/requirements.txt"
+    else
+      err "No usable python found (set PYTHON_BIN or install python3-venv); skipping pip install"
+    fi
   fi
 fi
 

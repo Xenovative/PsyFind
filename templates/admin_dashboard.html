@@ -1029,14 +1029,19 @@
             overlay.classList.toggle('active');
         }
 
-        function showSection(sectionName) {
+        function showSection(sectionName, evt) {
+            const navEvent = evt || window.event;
+            const clickedItem = navEvent && navEvent.currentTarget ? navEvent.currentTarget : null;
+            
             // Remove active class from all nav items
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
             });
             
-            // Add active class to clicked item
-            event.target.classList.add('active');
+            // Add active class to clicked item when available
+            if (clickedItem) {
+                clickedItem.classList.add('active');
+            }
             
             // Hide ALL sections - both content-section and dashboard elements
             document.querySelectorAll('.content-section').forEach(section => {
@@ -1077,46 +1082,66 @@
                     
                     loadDashboard();
                     break;
-                case 'analytics':
-                    document.getElementById('analytics-section').style.display = 'block';
+                case 'analytics': {
+                    const el = document.getElementById('analytics-section');
+                    if (el) el.style.display = 'block';
                     refreshAnalytics();
                     break;
-                case 'sessions':
-                    document.getElementById('sessions-section').style.display = 'block';
+                }
+                case 'sessions': {
+                    const el = document.getElementById('sessions-section');
+                    if (el) el.style.display = 'block';
                     refreshSessions();
                     break;
-                case 'health':
-                    document.getElementById('health-section').style.display = 'block';
+                }
+                case 'health': {
+                    const el = document.getElementById('health-section');
+                    if (el) el.style.display = 'block';
                     refreshHealth();
                     break;
-                case 'assessments':
-                    document.getElementById('assessments-section').style.display = 'block';
+                }
+                case 'assessments': {
+                    const el = document.getElementById('assessments-section');
+                    if (el) el.style.display = 'block';
                     refreshAssessments();
                     break;
-                case 'clinical':
-                    document.getElementById('clinical-section').style.display = 'block';
+                }
+                case 'clinical': {
+                    const el = document.getElementById('clinical-section');
+                    if (el) el.style.display = 'block';
                     refreshClinicalSessions();
                     refreshClinicalReports();
                     break;
-                case 'doctors':
-                    document.getElementById('doctors-section').style.display = 'block';
+                }
+                case 'doctors': {
+                    const el = document.getElementById('doctors-section');
+                    if (el) el.style.display = 'block';
                     refreshDoctors();
                     break;
-                case 'reports':
-                    document.getElementById('reports-section').style.display = 'block';
+                }
+                case 'reports': {
+                    const el = document.getElementById('reports-section');
+                    if (el) el.style.display = 'block';
                     break;
-                case 'settings':
-                    document.getElementById('settings-section').style.display = 'block';
+                }
+                case 'settings': {
+                    const el = document.getElementById('settings-section');
+                    if (el) el.style.display = 'block';
                     refreshSettings();
                     break;
-                case 'logs':
-                    document.getElementById('logs-section').style.display = 'block';
+                }
+                case 'logs': {
+                    const el = document.getElementById('logs-section');
+                    if (el) el.style.display = 'block';
                     refreshLogs();
                     break;
-                case 'backup':
-                    document.getElementById('backup-section').style.display = 'block';
+                }
+                case 'backup': {
+                    const el = document.getElementById('backup-section');
+                    if (el) el.style.display = 'block';
                     refreshBackups();
                     break;
+                }
             }
         }
 

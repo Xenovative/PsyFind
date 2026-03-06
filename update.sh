@@ -5,12 +5,38 @@ set -euo pipefail
 # Defaults match deploy.sh
 APP_DIR="${APP_DIR:-/opt/psyfind}"
 SERVICE_NAME="${SERVICE_NAME:-psyfind}"
-PYTHON_BIN="${PYTHON_BIN:-/opt/psyfind/venv/bin/python3}"
+# PYTHON_BIN can be provided, otherwise we'll try to discover it.
+PYTHON_BIN="${PYTHON_BIN:-}"
 RSYNC_EXCLUDES=(".git" "__pycache__" "*.pyc" ".venv" "node_modules")
 
 log()  { printf "[INFO] %s\n" "$*"; }
 err()  { printf "[ERROR] %s\n" "$*" >&2; }
 success(){ printf "[OK] %s\n" "$*"; }
+
+find_python() {
+  # If user provided and exists, use it
+  if [[ -n "$PYTHON_BIN" && -x "$PYTHON_BIN" ]]; then
+    printf '%s' "$PYTHON_BIN"
+    return 0
+  fi
+
+  # Common virtualenv locations
+  local candidates=(
+    "$APP_DIR/venv/bin/python3" "$APP_DIR/venv/bin/python"
+    "$APP_DIR/.venv/bin/python3" "$APP_DIR/.venv/bin/python"
+    "/opt/psyfind/venv/bin/python3" "/opt/psyfind/venv/bin/python"
+    "$(command -v python3 2>/dev/null)" "$(command -v python 2>/dev/null)"
+  )
+
+  for cand in "${candidates[@]}"; do
+    if [[ -n "$cand" && -x "$cand" ]]; then
+      printf '%s' "$cand"
+      return 0
+    fi
+  done
+
+  return 1
+}
 
 if [[ ! -d "$APP_DIR" ]]; then
   err "APP_DIR '$APP_DIR' does not exist"
@@ -31,8 +57,13 @@ rsync -a --delete \
 
 # Install dependencies if requirements present
 if [[ -f "$APP_DIR/requirements.txt" ]]; then
-  log "Installing Python deps"
-  "$PYTHON_BIN" -m pip install --upgrade -r "$APP_DIR/requirements.txt"
+  PY_BIN_RESOLVED="$(find_python || true)"
+  if [[ -n "$PY_BIN_RESOLVED" ]]; then
+    log "Installing Python deps using $PY_BIN_RESOLVED"
+    "$PY_BIN_RESOLVED" -m pip install --upgrade -r "$APP_DIR/requirements.txt"
+  else
+    err "No python interpreter found (set PYTHON_BIN or create venv); skipping pip install"
+  fi
 fi
 
 # Restart service

@@ -10,6 +10,25 @@ PYTHON_BIN="${PYTHON_BIN:-}"
 RSYNC_EXCLUDES=(".git" "__pycache__" "*.pyc" ".venv" "node_modules")
 
 log()  { printf "[INFO] %s\n" "$*"; }
+
+create_venv() {
+  local venv_dir="$APP_DIR/venv"
+  local base_py
+
+  base_py="$(command -v python3 || command -v python || true)"
+  if [[ -z "$base_py" ]]; then
+    err "No python3/python found to create virtualenv"
+    return 1
+  fi
+
+  log "Creating virtualenv at $venv_dir using $base_py"
+  if ! "$base_py" -m venv "$venv_dir"; then
+    err "Failed to create venv. Install python3-venv or ensure venv module is available."
+    return 1
+  fi
+
+  printf '%s' "$venv_dir/bin/python3"
+}
 err()  { printf "[ERROR] %s\n" "$*" >&2; }
 success(){ printf "[OK] %s\n" "$*"; }
 
@@ -58,11 +77,17 @@ rsync -a --delete \
 # Install dependencies if requirements present
 if [[ -f "$APP_DIR/requirements.txt" ]]; then
   PY_BIN_RESOLVED="$(find_python || true)"
+
+  # If we only found a system python (likely PEP 668 managed), create a project venv
+  if [[ -z "$PY_BIN_RESOLVED" || "$PY_BIN_RESOLVED" != "$APP_DIR"/*/bin/python* ]]; then
+    PY_BIN_RESOLVED="$(create_venv || true)"
+  fi
+
   if [[ -n "$PY_BIN_RESOLVED" ]]; then
     log "Installing Python deps using $PY_BIN_RESOLVED"
     "$PY_BIN_RESOLVED" -m pip install --upgrade -r "$APP_DIR/requirements.txt"
   else
-    err "No python interpreter found (set PYTHON_BIN or create venv); skipping pip install"
+    err "No usable python found (set PYTHON_BIN or install python3-venv); skipping pip install"
   fi
 fi
 

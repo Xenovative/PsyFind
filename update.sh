@@ -3,11 +3,45 @@ set -euo pipefail
 
 # Lightweight updater: sync current working tree into APP_DIR and restart service
 # Defaults match deploy.sh
-APP_DIR="${APP_DIR:-/opt/psyfind}"
 SERVICE_NAME="${SERVICE_NAME:-psyfind}"
+# Allow override via APP_DIR env; otherwise we detect
+APP_DIR_ENV="${APP_DIR:-}"
+APP_DIR="${APP_DIR:-}"
 # PYTHON_BIN can be provided, otherwise we'll try to discover it.
 PYTHON_BIN="${PYTHON_BIN:-}"
 RSYNC_EXCLUDES=(".git" "__pycache__" "*.pyc" ".venv" "node_modules")
+
+detect_app_dir() {
+  # 1) explicit env
+  if [[ -n "$APP_DIR_ENV" ]]; then
+    printf '%s' "$APP_DIR_ENV"
+    return 0
+  fi
+
+  # 2) systemd WorkingDirectory
+  local wd
+  wd="$(systemctl show "$SERVICE_NAME" -p WorkingDirectory --value 2>/dev/null || true)"
+  if [[ -n "$wd" && -d "$wd" ]]; then
+    printf '%s' "$wd"
+    return 0
+  fi
+
+  # 3) parse unit file
+  local unit_file="/etc/systemd/system/${SERVICE_NAME}.service"
+  if [[ -f "$unit_file" ]]; then
+    wd="$(awk -F= '/^WorkingDirectory=/ {print $2; exit}' "$unit_file" 2>/dev/null)"
+    if [[ -n "$wd" && -d "$wd" ]]; then
+      printf '%s' "$wd"
+      return 0
+    fi
+  fi
+
+  # 4) fallback to /opt/<service>
+  printf '/opt/%s' "$SERVICE_NAME"
+}
+
+# Resolve application directory
+APP_DIR="$(detect_app_dir)"
 
 # Precompute requirements hash (before sync) to decide on pip install
 SRC_REQ_HASH=""

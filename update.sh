@@ -105,9 +105,18 @@ if [[ -f "$APP_DIR/requirements.txt" ]]; then
   fi
 fi
 
-# Restart service
-log "Restarting systemd service: $SERVICE_NAME"
-systemctl restart "$SERVICE_NAME"
+# Restart or start service
+log "Reloading systemd units"
+systemctl daemon-reload
+
+if systemctl is-active --quiet "$SERVICE_NAME"; then
+  log "Restarting service: $SERVICE_NAME"
+  systemctl restart "$SERVICE_NAME"
+else
+  log "Starting service: $SERVICE_NAME"
+  systemctl start "$SERVICE_NAME"
+fi
+
 systemctl status --no-pager "$SERVICE_NAME"
 
 success "Update complete"

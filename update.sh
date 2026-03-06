@@ -43,6 +43,10 @@ detect_app_dir() {
 # Resolve application directory
 APP_DIR="$(detect_app_dir)"
 
+# Expected paths from unit (adjust if unit changes)
+ENV_FILE_PATH="${ENV_FILE_PATH:-$APP_DIR/.env.production}"
+GUNICORN_BIN="${GUNICORN_BIN:-$APP_DIR/venv/bin/gunicorn}"
+
 # Precompute requirements hash (before sync) to decide on pip install
 SRC_REQ_HASH=""
 DEST_REQ_HASH=""
@@ -103,6 +107,17 @@ find_python() {
 
 if [[ ! -d "$APP_DIR" ]]; then
   err "APP_DIR '$APP_DIR' does not exist"
+  exit 1
+fi
+
+if [[ ! -f "$ENV_FILE_PATH" ]]; then
+  err "Environment file missing: $ENV_FILE_PATH (matches EnvironmentFile in systemd unit)"
+  exit 1
+fi
+
+if [[ ! -x "$GUNICORN_BIN" ]]; then
+  err "Gunicorn binary missing: $GUNICORN_BIN (matches ExecStart in systemd unit)"
+  err "Create/repair the venv or set GUNICORN_BIN to the correct path"
   exit 1
 fi
 

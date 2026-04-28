@@ -208,21 +208,6 @@
   --mood-tired: #a78bfa;
 }
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text-primary: var(--color-gray-100);
-    --text-secondary: var(--color-gray-400);
-    --text-muted: var(--color-gray-500);
-    --bg-primary: var(--color-gray-900);
-    --bg-secondary: var(--color-gray-800);
-    --bg-tertiary: var(--color-gray-700);
-    --bg-elevated: var(--color-gray-800);
-    --border-light: var(--color-gray-700);
-    --border-medium: var(--color-gray-600);
-  }
-}
-
 /* --------------------------------------------------------------------------
    CSS Reset & Base Styles
    -------------------------------------------------------------------------- */

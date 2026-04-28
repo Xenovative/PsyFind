@@ -1040,19 +1040,6 @@
             // Update sidebar to show the recommended assessment as priority
             updateSidebarAssessmentRecommendation(resolvedType);
 
-            const assessmentNames = {
-                'gad7':     userLanguage === 'zh' ? 'GAD-7 焦慮症篩檢'       : 'GAD-7 Anxiety Screening',
-                'phq9':     userLanguage === 'zh' ? 'PHQ-9 憂鬱症篩檢'       : 'PHQ-9 Depression Screening',
-                'isi':      userLanguage === 'zh' ? '失眠嚴重程度指數'         : 'Insomnia Severity Index',
-                'whiteley': userLanguage === 'zh' ? 'Whiteley-7 健康焦慮評估' : 'Whiteley-7 Health Anxiety Assessment'
-            };
-            const assessmentName = assessmentNames[resolvedType] || (userLanguage === 'zh' ? '心理健康評估' : 'Mental Health Assessment');
-
-            const promptMsg = userLanguage === 'zh'
-                ? `根據您的描述，我建議您進行 ${assessmentName}。這大約需要 3-5 分鐘完成。您願意現在進行嗎？`
-                : `Based on what you've shared, I recommend taking the ${assessmentName}. It takes about 3-5 minutes. Would you like to start?`;
-            addMessage(promptMsg, 'assistant');
-
             const container = document.getElementById('quickResponses');
             if (!container) {
                 console.error('quickResponses container not found');

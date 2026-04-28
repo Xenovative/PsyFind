@@ -61,6 +61,55 @@ log()  { printf "[INFO] %s\n" "$*"; }
 err()  { printf "[ERROR] %s\n" "$*" >&2; }
 success(){ printf "[OK] %s\n" "$*"; }
 
+# Repair virtual environment (integrated from fix-venv-complete.sh)
+repair_venv() {
+  log "Repairing virtual environment..."
+  
+  # Detect app user from service or fallback
+  local app_user
+  app_user="$(systemctl show "$SERVICE_NAME" -p User --value 2>/dev/null || true)"
+  app_user="${app_user:-$SERVICE_NAME}"
+  
+  # Install python3-venv if missing
+  if ! dpkg -l | grep -q python3.*-venv 2>/dev/null; then
+    log "Installing python3-venv..."
+    apt-get update -qq
+    apt-get install -y -qq python3-venv python3-full
+  fi
+  
+  # Remove corrupted venv
+  if [[ -d "$APP_DIR/venv" ]]; then
+    log "Removing old virtual environment..."
+    rm -rf "$APP_DIR/venv"
+  fi
+  
+  # Create new venv
+  log "Creating new virtual environment..."
+  python3 -m venv "$APP_DIR/venv"
+  chown -R "$app_user:$app_user" "$APP_DIR/venv"
+  
+  # Install dependencies as app user
+  log "Installing dependencies..."
+  sudo -u "$app_user" bash << EOF
+set -e
+VENV_PYTHON="$APP_DIR/venv/bin/python"
+VENV_PIP="$APP_DIR/venv/bin/pip"
+
+"\$VENV_PIP" install --upgrade pip
+"\$VENV_PIP" install -r "$APP_DIR/requirements.txt"
+"\$VENV_PIP" install gunicorn
+EOF
+
+  # Verify gunicorn
+  if [[ ! -f "$APP_DIR/venv/bin/gunicorn" ]]; then
+    err "Gunicorn installation failed after venv repair"
+    return 1
+  fi
+  
+  log "Virtual environment repaired successfully"
+  return 0
+}
+
 create_venv() {
   local venv_dir="$APP_DIR/venv"
   local base_py
@@ -110,13 +159,28 @@ if [[ ! -d "$APP_DIR" ]]; then
   exit 1
 fi
 
+# Create .env.production ONLY if it doesn't exist (preserve existing configuration)
 if [[ ! -f "$ENV_FILE_PATH" ]]; then
   if [[ -f "$APP_DIR/.env.example" ]]; then
     log "Environment file missing; copying from $APP_DIR/.env.example to $ENV_FILE_PATH"
     cp "$APP_DIR/.env.example" "$ENV_FILE_PATH"
+    app_user="$(systemctl show "$SERVICE_NAME" -p User --value 2>/dev/null || true)"
+    app_user="${app_user:-$SERVICE_NAME}"
+    chown "$app_user:$app_user" "$ENV_FILE_PATH"
   else
-    log "Environment file missing: $ENV_FILE_PATH (matches EnvironmentFile in systemd unit); skipping copy (no template)."
+    log "Environment file missing: $ENV_FILE_PATH - creating minimal env file"
+    cat > "$ENV_FILE_PATH" << 'EOF'
+FLASK_ENV=production
+FLASK_PORT=5000
+DATABASE_PATH=/opt/psyfind/data/psyfind.db
+LOG_LEVEL=INFO
+EOF
+    app_user="$(systemctl show "$SERVICE_NAME" -p User --value 2>/dev/null || true)"
+    app_user="${app_user:-$SERVICE_NAME}"
+    chown "$app_user:$app_user" "$ENV_FILE_PATH"
   fi
+else
+  log "Environment file exists: $ENV_FILE_PATH (preserving existing configuration)"
 fi
 
 # Ensure we run from repo root (has app.py or requirements.txt)
@@ -157,8 +221,37 @@ fi
 # Verify gunicorn is available after setup
 if [[ ! -x "$GUNICORN_BIN" ]]; then
   err "Gunicorn binary missing after update: $GUNICORN_BIN"
-  err "The virtual environment may need repair. Try running with: sudo ./fix-venv-complete.sh"
-  exit 1
+  log "Attempting virtual environment repair..."
+  
+  if ! repair_venv; then
+    err "Virtual environment repair failed"
+    exit 1
+  fi
+  
+  # Re-check gunicorn after repair
+  if [[ ! -x "$GUNICORN_BIN" ]]; then
+    err "Gunicorn still missing after repair"
+    exit 1
+  fi
+fi
+
+# Fix permissions (from fix-venv-complete.sh)
+log "Fixing permissions..."
+app_user="$(systemctl show "$SERVICE_NAME" -p User --value 2>/dev/null || true)"
+app_user="${app_user:-$SERVICE_NAME}"
+chown -R "$app_user:$app_user" "$APP_DIR"
+
+# Ensure .env.production has correct permissions (never overwrite, just fix perms)
+if [[ -f "$APP_DIR/.env.production" ]]; then
+  chmod 600 "$APP_DIR/.env.production" 2>/dev/null || true
+fi
+
+# Test application import before restart
+log "Testing application import..."
+if sudo -u "$app_user" "$APP_DIR/venv/bin/python" -c "import app; print('App imports OK')" 2>&1; then
+  log "Application imports successfully"
+else
+  err "Application import test failed - may have missing dependencies"
 fi
 
 # Restart or start service
@@ -173,6 +266,12 @@ else
   systemctl start "$SERVICE_NAME"
 fi
 
-systemctl status --no-pager "$SERVICE_NAME"
+sleep 2
+if systemctl is-active --quiet "$SERVICE_NAME"; then
+  success "Update complete - service is running"
+else
+  err "Service failed to start - check logs: sudo journalctl -u $SERVICE_NAME -n 20"
+  exit 1
+fi
 
-success "Update complete"
+systemctl status --no-pager "$SERVICE_NAME"

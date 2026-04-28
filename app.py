@@ -778,12 +778,14 @@ class LLMService:
         # API keys
         self.openai_api_key = os.getenv('OPENAI_API_KEY')
         self.openrouter_api_key = os.getenv('OPENROUTER_API_KEY')
+        self.openrouter_url = os.getenv('OPENROUTER_URL', 'https://openrouter.ai/api/v1/chat/completions')
         self.ollama_url = os.getenv('OLLAMA_URL', 'http://localhost:11434')
         
         # Log configuration status
         logger.info(f"LLM Service initialized with provider: {self.preferred_provider}")
         logger.info(f"OpenAI API Key configured: {bool(self.openai_api_key)}")
         logger.info(f"OpenRouter API Key configured: {bool(self.openrouter_api_key)}")
+        logger.info(f"OpenRouter URL: {self.openrouter_url}")
         logger.info(f"Ollama URL: {self.ollama_url}")
         
         # Use database for session management
@@ -855,30 +857,48 @@ class LLMService:
         # Create detailed prompt for psychiatric analysis
         prompt = self._create_analysis_prompt(symptoms, age, duration, dsm_matches, language)
         
+        logger.info(f"Generating analysis report - provider: {self.preferred_provider}, language: {language}")
+        logger.info(f"DSM matches count: {len(dsm_matches)}, symptoms length: {len(symptoms)}")
+        
         # Use specified provider or auto-fallback
         try:
+            report = None
+            provider_used = None
+            
             if self.preferred_provider == 'ollama':
-                return self._query_ollama(prompt)
-            elif self.preferred_provider == 'openai':
-                return self._query_openai(prompt)
+                report = self._query_ollama(prompt)
+                provider_used = 'ollama'
+            elif self.preferred_provider == 'openai' and self.openai_api_key:
+                report = self._query_openai(prompt)
+                provider_used = 'openai'
             elif self.preferred_provider == 'openrouter':
-                return self._query_openrouter(prompt)
+                report = self._query_openrouter(prompt)
+                provider_used = 'openrouter'
             elif self.preferred_provider == 'fallback':
                 return self._generate_fallback_report(dsm_matches, language)
             else:  # auto mode - try in priority order
                 if self._is_ollama_available():
-                    return self._query_ollama(prompt)
+                    report = self._query_ollama(prompt)
+                    provider_used = 'ollama'
                 elif self.openai_api_key:
-                    return self._query_openai(prompt)
+                    report = self._query_openai(prompt)
+                    provider_used = 'openai'
                 elif self.openrouter_api_key:
-                    return self._query_openrouter(prompt)
+                    report = self._query_openrouter(prompt)
+                    provider_used = 'openrouter'
                 else:
+                    logger.warning("No LLM provider available for report generation - using fallback")
                     return self._generate_fallback_report(dsm_matches, language)
+            
+            if report:
+                logger.info(f"Report generated successfully using {provider_used}, length: {len(report)}")
+                return report
+            else:
+                logger.error(f"Empty report received from {provider_used}")
+                return self._generate_fallback_report(dsm_matches, language)
+                
         except Exception as e:
-            logger.error(f"LLM analysis failed with {self.preferred_provider}: {str(e)}")
-            # If specific provider fails and not in auto mode, still try fallback
-            if self.preferred_provider != 'auto':
-                logger.info("Falling back to basic report due to provider failure")
+            logger.error(f"LLM report generation failed with {self.preferred_provider}: {str(e)}")
             return self._generate_fallback_report(dsm_matches, language)
     
     def _create_analysis_prompt(self, symptoms: str, age: int, duration: str, dsm_matches: List[Dict], language: str) -> str:
@@ -990,29 +1010,49 @@ Format the response as a professional clinical report that could be shared with 
         prompt = self._create_chat_prompt(session, user_message, language, session_id)
         
         # Get LLM response
+        llm_response = None
+        provider_used = None
+        
         try:
             if self.preferred_provider == 'ollama':
                 llm_response = self._query_ollama(prompt)
+                provider_used = 'ollama'
             elif self.preferred_provider == 'openai' and self.openai_api_key:
                 llm_response = self._query_openai(prompt)
+                provider_used = 'openai'
             elif self.preferred_provider == 'openrouter' and self.openrouter_api_key:
                 llm_response = self._query_openrouter(prompt)
+                provider_used = 'openrouter'
             else:
                 # Auto-select available provider
                 if self._is_ollama_available():
                     llm_response = self._query_ollama(prompt)
+                    provider_used = 'ollama'
                 elif self.openai_api_key:
                     llm_response = self._query_openai(prompt)
+                    provider_used = 'openai'
                 elif self.openrouter_api_key:
                     llm_response = self._query_openrouter(prompt)
+                    provider_used = 'openrouter'
                 else:
+                    logger.warning("No LLM provider available - using fallback response")
                     return self._generate_fallback_chat_response(language, session)
             
+            logger.info(f"LLM response received from {provider_used}: {llm_response[:200]}...")
+            
             # Parse LLM response for structured data
-            return self._parse_chat_response(llm_response, session, language)
+            parsed_response = self._parse_chat_response(llm_response, session, language)
+            
+            logger.info(f"Parsed response - message: {parsed_response.get('message', 'N/A')[:100]}...")
+            logger.info(f"Parsed response - assessment_recommendation: {parsed_response.get('assessment_recommendation', 'none')}")
+            logger.info(f"Parsed response - conversation_stage: {parsed_response.get('conversation_stage', 'support')}")
+            
+            return parsed_response
             
         except Exception as e:
-            logger.error(f"LLM chat response error: {str(e)}")
+            logger.error(f"LLM chat response error from {provider_used or 'unknown'}: {str(e)}")
+            if llm_response:
+                logger.error(f"Raw LLM response that caused error: {llm_response[:500]}")
             return self._generate_fallback_chat_response(language, session)
     
     def _create_chat_prompt(self, session: Dict, user_message: str, language: str, session_id: str = None) -> str:

@@ -397,6 +397,11 @@
             try {
                 const response = await API.Chat.sendMessage(sessionId, message, userLanguage);
                 
+                // Log response for debugging
+                console.log('Chat response:', response);
+                console.log('Assessment recommendation:', response.assessment_recommendation);
+                console.log('Conversation stage:', response.conversation_stage);
+                
                 // Remove typing indicator
                 removeTypingIndicator();
 
@@ -405,7 +410,10 @@
 
                 // Handle assessment trigger
                 if (response.assessment_recommendation && response.assessment_recommendation !== 'none') {
+                    console.log('Triggering assessment:', response.assessment_recommendation);
                     showAssessment(response.assessment_recommendation);
+                } else {
+                    console.log('No assessment recommendation');
                 }
 
             } catch (error) {

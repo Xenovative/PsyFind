@@ -981,9 +981,19 @@
         }
 
         // Assessment Rendering Functions
+        // State tracker for current question index per assessment type
+        const assessmentState = {};
+
         function renderAssessmentSection(type, questionCount, scaleType) {
             const container = document.getElementById(type + '-section');
-            if (!container || container.innerHTML.trim()) return; // Already rendered
+            if (!container || container.dataset.rendered === 'true') return; // Already rendered
+
+            // Initialize state for this assessment
+            assessmentState[type] = {
+                currentIndex: 0,
+                answers: {},
+                totalQuestions: questionCount
+            };
 
             const whiteleyScale = [
                 { value: 0, label: 'not_at_all' },
@@ -1002,18 +1012,28 @@
 
             const scale = scaleType === 'whiteley' ? whiteleyScale : phq9Scale;
 
-            let html = '';
+            // Generate all questions but hide them initially
+            let html = `
+                <div class="assessment-progress">
+                    <div class="assessment-progress__bar">
+                        <div class="assessment-progress__fill" id="${type}-progress"></div>
+                    </div>
+                    <div class="assessment-progress__text" id="${type}-progress-text">Question 1 of ${questionCount}</div>
+                </div>
+                <div class="assessment-questions" id="${type}-questions">
+            `;
+
             for (let i = 1; i <= questionCount; i++) {
                 const questionKey = `${type}_q${i}`;
                 const questionText = I18n.t(questionKey) || `Question ${i}`;
 
                 html += `
-                    <div class="question-card">
+                    <div class="question-card" id="${type}-q${i}-card" style="display: ${i === 1 ? 'block' : 'none'};">
                         <div class="question-card__text">${i}. ${escapeHtml(questionText)}</div>
                         <div class="rating-options">
                             ${scale.map(option => `
-                                <label class="rating-option">
-                                    <input type="radio" name="q${i}" value="${option.value}">
+                                <label class="rating-option" onclick="handleAssessmentAnswer('${type}', ${i}, ${option.value}, ${questionCount})">
+                                    <input type="radio" name="q${i}" value="${option.value}" id="${type}-q${i}-opt${option.value}">
                                     <span>${escapeHtml(I18n.t(option.label))}</span>
                                 </label>
                             `).join('')}
@@ -1022,7 +1042,79 @@
                 `;
             }
 
+            html += '</div>';
             container.innerHTML = html;
+            container.dataset.rendered = 'true';
+            container.dataset.type = type;
+        }
+
+        function handleAssessmentAnswer(type, questionNum, value, totalQuestions) {
+            const state = assessmentState[type];
+            if (!state) return;
+
+            // Record the answer
+            state.answers[questionNum] = value;
+
+            // Check if this was the last question
+            if (questionNum >= totalQuestions) {
+                updateProgressBar(type, totalQuestions, totalQuestions);
+                // All questions answered - trigger submit button visibility
+                setTimeout(() => showAssessmentSubmitButton(type), 300);
+                return;
+            }
+
+            // Update progress
+            updateProgressBar(type, questionNum, totalQuestions);
+
+            // Auto-advance to next question with a brief delay for visual feedback
+            setTimeout(() => {
+                // Hide current question
+                const currentCard = document.getElementById(`${type}-q${questionNum}-card`);
+                if (currentCard) {
+                    currentCard.style.display = 'none';
+                }
+
+                // Show next question
+                const nextCard = document.getElementById(`${type}-q${questionNum + 1}-card`);
+                if (nextCard) {
+                    nextCard.style.display = 'block';
+                    nextCard.classList.add('question-card--animate-in');
+                }
+
+                // Update progress text
+                const progressText = document.getElementById(`${type}-progress-text`);
+                if (progressText) {
+                    const userLang = localStorage.getItem('userLanguage') || 'en';
+                    const text = userLang === 'zh' 
+                        ? `問題 ${questionNum + 1} / ${totalQuestions}`
+                        : `Question ${questionNum + 1} of ${totalQuestions}`;
+                    progressText.textContent = text;
+                }
+            }, 250);
+        }
+
+        function updateProgressBar(type, current, total) {
+            const fill = document.getElementById(`${type}-progress`);
+            if (fill) {
+                const percentage = (current / total) * 100;
+                fill.style.width = `${percentage}%`;
+            }
+        }
+
+        function showAssessmentSubmitButton(type) {
+            // Find the submit button for this assessment type and make it visible
+            const section = document.getElementById(type + '-section');
+            if (!section) return;
+
+            // Look for the submit button in the parent form
+            const form = section.closest('form');
+            if (form) {
+                const submitBtn = form.querySelector('.btn--submit, button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.style.display = 'block';
+                    submitBtn.classList.add('btn--pulse');
+                }
+            }
         }
 
         function renderAllAssessments() {
@@ -1230,14 +1322,6 @@
 
         async function submitAssessment() {
             const responses = getAssessmentResponses();
-            
-            // Debug logging
-            console.log('Submitting assessment:', {
-                type: currentAssessment,
-                responses: responses,
-                responseCount: Object.keys(responses).length,
-                userInfo: userInfo
-            });
             
             try {
                 const data = await API.Assessment.submit(sessionId, currentAssessment, {

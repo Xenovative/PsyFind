@@ -41,14 +41,7 @@ const API = (function() {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        const errorText = await response.text().catch(() => '');
-        console.error('API error response:', errorText);
-        let error = {};
-        try {
-          error = JSON.parse(errorText);
-        } catch (e) {
-          // Not JSON, use text
-        }
+        const error = await response.json().catch(() => ({}));
         throw new APIError(
           error.message || `HTTP ${response.status}: ${response.statusText}`,
           response.status,
@@ -119,19 +112,17 @@ const API = (function() {
      * @returns {Promise} Assessment results
      */
     async submit(sessionId, type, data) {
-      const requestBody = {
-        session_id: sessionId,
-        assessment_type: type,
-        age: data.age || 25,
-        duration: data.duration || '',
-        location: data.location || '',
-        language: data.language || 'English',
-        ...data.responses
-      };
-      console.log('API submit request body:', requestBody);
       return request('/analyze', {
         method: 'POST',
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify({
+          session_id: sessionId,
+          assessment_type: type,
+          age: data.age || 25,
+          duration: data.duration || '',
+          location: data.location || '',
+          language: data.language || 'English',
+          ...data.responses
+        })
       });
     }
   };

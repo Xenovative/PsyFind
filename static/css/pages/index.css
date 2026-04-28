@@ -114,6 +114,14 @@
   font-weight: var(--font-bold);
 }
 
+.main-nav__title.gradient-text {
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  -webkit-text-fill-color: initial;
+  color: #6d28d9;
+}
+
 .main-nav__subtitle {
   font-size: var(--text-xs);
   color: var(--text-muted);
@@ -2281,5 +2289,53 @@
 
   .mobile-only {
     display: block !important;
+  }
+}
+
+/* Assessment Progress Bar - Step-by-Step Mode */
+.assessment-progress {
+  margin-bottom: var(--space-6);
+  padding: var(--space-4);
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.assessment-progress__bar {
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: var(--space-3);
+}
+
+.assessment-progress__fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6 0%, #ec4899 100%);
+  border-radius: var(--radius-full);
+  transition: width 0.3s ease;
+  width: 0%;
+}
+
+.assessment-progress__text {
+  text-align: center;
+  font-size: var(--text-sm);
+  color: #6b7280;
+  font-weight: var(--font-medium);
+}
+
+/* Question Card Animation for Step-by-Step */
+.question-card--animate-in {
+  animation: fadeSlideIn 0.3s ease-out;
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }

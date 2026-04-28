@@ -90,7 +90,7 @@ repair_venv() {
   
   # Install dependencies as app user
   log "Installing dependencies..."
-  sudo -u "$app_user" bash << EOF
+  sudo -u "$app_user" bash << 'INNEREOF'
 set -e
 VENV_PYTHON="$APP_DIR/venv/bin/python"
 VENV_PIP="$APP_DIR/venv/bin/pip"
@@ -98,7 +98,7 @@ VENV_PIP="$APP_DIR/venv/bin/pip"
 "$VENV_PIP" install --upgrade pip
 "$VENV_PIP" install -r "$APP_DIR/requirements.txt"
 "$VENV_PIP" install gunicorn
-EOF
+INNEREOF
 
   # Verify gunicorn
   if [[ ! -f "$APP_DIR/venv/bin/gunicorn" ]]; then

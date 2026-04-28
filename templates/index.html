@@ -87,41 +87,44 @@
                     </div>
                 </div>
 
-                <!-- Assessment Panel (Hidden by default) -->
-                <div class="assessment-panel" id="assessmentPanel" role="dialog" aria-modal="true" aria-labelledby="assessmentTitle" style="display: none;">
-                    <div class="assessment-panel__header">
-                        <h2 class="assessment-panel__title" id="assessmentTitle" data-lang="assessment">Assessment</h2>
-                        <button 
-                            class="assessment-panel__close" 
-                            onclick="closeAssessment()"
-                            aria-label="Close assessment"
-                        >
-                            <i class="fas fa-times" aria-hidden="true"></i>
-                        </button>
-                    </div>
-                    <div class="assessment-panel__content" id="assessmentContent">
-                        <form id="assessmentForm">
-                            <!-- Assessment Type Selector -->
-                            <div class="assessment-tabs" id="assessmentTabs" style="display: none;">
-                                <button type="button" class="assessment-tab" data-type="whiteley" data-lang="whiteley_tab" onclick="switchAssessment('whiteley')">Health Anxiety</button>
-                                <button type="button" class="assessment-tab" data-type="phq9" data-lang="phq9_tab" onclick="switchAssessment('phq9')">PHQ-9 (Depression)</button>
-                                <button type="button" class="assessment-tab" data-type="gad7" data-lang="gad7_tab" onclick="switchAssessment('gad7')">GAD-7 (Anxiety)</button>
-                            </div>
-
-                            <div class="assessment-questions" id="assessmentQuestionsContainer">
-                                <!-- Assessment sections will be rendered dynamically by JavaScript -->
-                                <div class="assessment-section" id="whiteley-section" style="display: none;"></div>
-                                <div class="assessment-section" id="phq9-section" style="display: none;"></div>
-                                <div class="assessment-section" id="gad7-section" style="display: none;"></div>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="assessment-panel__actions">
-                        <button class="btn btn--secondary" onclick="closeAssessment()" data-lang="cancel">Cancel</button>
-                        <button class="btn btn--primary" onclick="submitAssessment()" data-lang="submit_assessment">Submit Assessment</button>
-                    </div>
-                </div>
             </section>
+
+    <!-- Assessment Modal -->
+    <div class="modal-overlay" id="assessmentPanel" role="dialog" aria-modal="true" aria-labelledby="assessmentTitle">
+        <div class="modal modal--xl assessment-modal">
+            <div class="modal__header assessment-panel__header">
+                <h2 class="modal__title assessment-panel__title" id="assessmentTitle" data-lang="assessment">Assessment</h2>
+                <button 
+                    class="modal__close assessment-panel__close" 
+                    onclick="closeAssessment()"
+                    aria-label="Close assessment"
+                >
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="assessment-panel__content" id="assessmentContent">
+                <form id="assessmentForm">
+                    <!-- Assessment Type Selector -->
+                    <div class="assessment-tabs" id="assessmentTabs" style="display: none;">
+                        <button type="button" class="assessment-tab" data-type="whiteley" data-lang="whiteley_tab" onclick="switchAssessment('whiteley')">Health Anxiety</button>
+                        <button type="button" class="assessment-tab" data-type="phq9" data-lang="phq9_tab" onclick="switchAssessment('phq9')">PHQ-9 (Depression)</button>
+                        <button type="button" class="assessment-tab" data-type="gad7" data-lang="gad7_tab" onclick="switchAssessment('gad7')">GAD-7 (Anxiety)</button>
+                    </div>
+
+                    <div class="assessment-questions" id="assessmentQuestionsContainer">
+                        <!-- Assessment sections will be rendered dynamically by JavaScript -->
+                        <div class="assessment-section" id="whiteley-section" style="display: none;"></div>
+                        <div class="assessment-section" id="phq9-section" style="display: none;"></div>
+                        <div class="assessment-section" id="gad7-section" style="display: none;"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="assessment-panel__actions modal__footer">
+                <button class="btn btn--secondary" onclick="closeAssessment()" data-lang="cancel">Cancel</button>
+                <button class="btn btn--primary" onclick="submitAssessment()" data-lang="submit_assessment">Submit Assessment</button>
+            </div>
+        </div>
+    </div>
 
             <!-- Results Panel (Hidden by default) -->
             <div class="results-panel" id="resultsPanel" role="dialog" aria-modal="true" aria-labelledby="resultsTitle" style="display: none;">
@@ -332,16 +335,30 @@
             }, 500);
         }
 
-        function initializeChat() {
+        async function initializeChat() {
             // Enable input
             chatInput.disabled = false;
             sendButton.disabled = false;
             chatInput.placeholder = I18n.t('chat_placeholder');
-            chatInput.focus();
 
-            // Display welcome message - use i18n
-            const welcomeMsg = I18n.t('welcome_message');
-            addMessage(welcomeMsg, 'assistant');
+            // Show typing indicator while LLM generates the greeting
+            showTypingIndicator();
+            isWaitingForResponse = true;
+            sendButton.disabled = true;
+
+            try {
+                const response = await API.Chat.sendMessage(sessionId, 'START_CONVERSATION', userLanguage);
+                removeTypingIndicator();
+                addMessage(response.message, 'assistant');
+            } catch (error) {
+                removeTypingIndicator();
+                console.error('Failed to fetch LLM greeting:', error);
+                addMessage(I18n.t('welcome_message'), 'assistant');
+            } finally {
+                isWaitingForResponse = false;
+                sendButton.disabled = !chatInput.value.trim();
+                chatInput.focus();
+            }
 
             // Setup quick responses
             setupQuickResponses();
@@ -410,8 +427,8 @@
 
                 // Handle assessment trigger
                 if (response.assessment_recommendation && response.assessment_recommendation !== 'none') {
-                    console.log('Triggering assessment:', response.assessment_recommendation);
-                    showAssessment(response.assessment_recommendation);
+                    console.log('Triggering assessment offer:', response.assessment_recommendation);
+                    setTimeout(() => showAssessmentOption(response.assessment_recommendation), 800);
                 } else {
                     console.log('No assessment recommendation');
                 }
@@ -510,20 +527,28 @@
             showUserInfoModal();
         }
 
-        // Close disclaimer when clicking outside
+        // Close modals when clicking outside
         document.addEventListener('click', function(event) {
-            const modal = document.getElementById('disclaimerModal');
-            if (event.target === modal) {
+            const disclaimerModal = document.getElementById('disclaimerModal');
+            if (event.target === disclaimerModal) {
                 closeDisclaimerModal();
+            }
+            const assessmentModal = document.getElementById('assessmentPanel');
+            if (event.target === assessmentModal) {
+                closeAssessment();
             }
         });
 
-        // Close disclaimer with Escape key
+        // Close modals with Escape key
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
-                const modal = document.getElementById('disclaimerModal');
-                if (modal && modal.classList.contains('modal-overlay--open')) {
+                const disclaimerModal = document.getElementById('disclaimerModal');
+                if (disclaimerModal && disclaimerModal.classList.contains('modal-overlay--open')) {
                     closeDisclaimerModal();
+                }
+                const assessmentModal = document.getElementById('assessmentPanel');
+                if (assessmentModal && assessmentModal.classList.contains('modal-overlay--open')) {
+                    closeAssessment();
                 }
             }
         });
@@ -615,31 +640,62 @@
         }
 
         // Assessment Functions
-        function showAssessment(type) {
-            currentAssessment = type || 'whiteley';
-            assessmentResponses = {};
-            
-            // Show the embedded assessment form
-            const title = document.getElementById('assessmentTitle');
-            const titles = {
-                'whiteley': I18n.t('whiteley_title'),
-                'phq9': I18n.t('phq9_title'),
-                'gad7': I18n.t('gad7_title')
+        function showAssessmentOption(assessmentType) {
+            const validTypes = ['phq9', 'gad7', 'whiteley', 'isi'];
+            const resolvedType = validTypes.includes(assessmentType) ? assessmentType : 'phq9';
+
+            const assessmentNames = {
+                'gad7':     userLanguage === 'zh' ? 'GAD-7 焦慮症篩檢'       : 'GAD-7 Anxiety Screening',
+                'phq9':     userLanguage === 'zh' ? 'PHQ-9 憂鬱症篩檢'       : 'PHQ-9 Depression Screening',
+                'isi':      userLanguage === 'zh' ? '失眠嚴重程度指數'         : 'Insomnia Severity Index',
+                'whiteley': userLanguage === 'zh' ? 'Whiteley-7 健康焦慮評估' : 'Whiteley-7 Health Anxiety Assessment'
             };
-            title.textContent = titles[currentAssessment] || I18n.t('assessment');
+            const assessmentName = assessmentNames[resolvedType] || (userLanguage === 'zh' ? '心理健康評估' : 'Mental Health Assessment');
+
+            const promptMsg = userLanguage === 'zh'
+                ? `根據您的描述，我建議您進行 ${assessmentName}。這大約需要 3-5 分鐘完成。您願意現在進行嗎？`
+                : `Based on what you've shared, I recommend taking the ${assessmentName}. It takes about 3-5 minutes. Would you like to start?`;
+            addMessage(promptMsg, 'assistant');
+
+            const container = document.getElementById('quickResponses');
+            container.innerHTML = '';
+
+            const yesBtn = document.createElement('button');
+            yesBtn.className = 'quick-response-btn';
+            yesBtn.innerHTML = `<i class="fas fa-clipboard-check" aria-hidden="true"></i> ${userLanguage === 'zh' ? '是的，開始評估' : 'Yes, start assessment'}`;
+            yesBtn.onclick = () => { container.innerHTML = ''; showAssessment(resolvedType); };
+
+            const noBtn = document.createElement('button');
+            noBtn.className = 'quick-response-btn';
+            noBtn.innerHTML = `<i class="fas fa-times" aria-hidden="true"></i> ${userLanguage === 'zh' ? '暫時不用' : 'Not right now'}`;
+            noBtn.onclick = () => { container.innerHTML = ''; setupQuickResponses(); };
+
+            container.appendChild(yesBtn);
+            container.appendChild(noBtn);
+        }
+
+        function showAssessment(type) {
+            const validTypes = ['phq9', 'gad7', 'whiteley'];
+            currentAssessment = validTypes.includes(type) ? type : 'phq9';
+            assessmentResponses = {};
             
             // Reset form
             document.querySelectorAll('#assessmentForm input[type="radio"]').forEach(r => r.checked = false);
             
-            // Show assessment tabs for manual selection
+            // Hide tabs — LLM has already chosen the right type
             const tabs = document.getElementById('assessmentTabs');
-            if (tabs) tabs.style.display = 'flex';
+            if (tabs) tabs.style.display = 'none';
             
             // Show the correct assessment section
             switchAssessment(currentAssessment);
+
+            // Scroll content to top
+            const content = document.getElementById('assessmentContent');
+            if (content) content.scrollTop = 0;
             
-            assessmentPanel.style.display = 'flex';
-            assessmentPanel.classList.add('assessment-panel--active');
+            // Open as modal overlay
+            assessmentPanel.classList.add('modal-overlay--open');
+            document.body.style.overflow = 'hidden';
         }
 
         function switchAssessment(type) {
@@ -709,8 +765,8 @@
         }
 
         function closeAssessment() {
-            assessmentPanel.style.display = 'none';
-            assessmentPanel.classList.remove('assessment-panel--active');
+            assessmentPanel.classList.remove('modal-overlay--open');
+            document.body.style.overflow = 'auto';
         }
 
         // Results Functions

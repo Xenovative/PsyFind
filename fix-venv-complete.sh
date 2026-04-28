@@ -83,12 +83,13 @@ echo ""
 echo "🔧 Fixing permissions..."
 chown -R "$APP_USER:$APP_USER" "$APP_DIR"
 
-# Create .env.production if missing
-if [[ ! -f "$APP_DIR/.env.production" ]]; then
+# Create .env.production only if it does not already exist and is non-empty
+if [[ -s "$APP_DIR/.env.production" ]]; then
+    echo "✅ .env.production already exists — skipping (will not overwrite)"
+else
     if [[ -f "$APP_DIR/.env.example" ]]; then
         echo "📄 Creating .env.production from .env.example"
         cp "$APP_DIR/.env.example" "$APP_DIR/.env.production"
-        chown "$APP_USER:$APP_USER" "$APP_DIR/.env.production"
     else
         echo "⚠️  No .env.production or .env.example found - creating minimal env file"
         cat > "$APP_DIR/.env.production" << 'EOF'
@@ -97,11 +98,10 @@ FLASK_PORT=5000
 DATABASE_PATH=/opt/psyfind/data/psyfind.db
 LOG_LEVEL=INFO
 EOF
-        chown "$APP_USER:$APP_USER" "$APP_DIR/.env.production"
     fi
+    chown "$APP_USER:$APP_USER" "$APP_DIR/.env.production"
+    chmod 600 "$APP_DIR/.env.production"
 fi
-
-chmod 600 "$APP_DIR/.env.production" 2>/dev/null || true
 
 # Verify the app can start (test import)
 echo ""

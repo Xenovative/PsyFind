@@ -304,69 +304,37 @@
 }
 
 /* --------------------------------------------------------------------------
-   Assessment Panel
+   Assessment Modal
    -------------------------------------------------------------------------- */
-.assessment-panel {
-  display: none;
+.assessment-modal {
+  max-height: 85vh;
+  display: flex;
   flex-direction: column;
-  height: 70vh;
-  min-height: 500px;
-  background: var(--bg-primary);
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-lg);
-  margin-top: var(--space-6);
 }
 
-.assessment-panel--active {
-  display: flex;
+.assessment-panel__content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-6);
 }
 
 .assessment-panel__header {
   background: linear-gradient(135deg, var(--color-secondary-600) 0%, var(--color-secondary-700) 100%);
   color: var(--color-white);
-  padding: var(--space-5);
   border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
 .assessment-panel__title {
   font-size: var(--text-xl);
   font-weight: var(--font-semibold);
-}
-
-.assessment-panel__close {
-  background: none;
-  border: none;
   color: var(--color-white);
-  font-size: var(--text-xl);
-  cursor: pointer;
-  padding: var(--space-2);
-  border-radius: var(--radius-full);
-  transition: background var(--transition-fast);
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .assessment-panel__close:hover {
   background: rgba(255, 255, 255, 0.2);
 }
 
-.assessment-panel__content {
-  flex: 1;
-  padding: var(--space-6);
-  overflow-y: auto;
-}
-
 .assessment-panel__actions {
-  padding: var(--space-5);
-  border-top: 1px solid var(--border-light);
-  background: var(--bg-secondary);
-  border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
   display: flex;
   gap: var(--space-3);
   justify-content: flex-end;
@@ -1075,22 +1043,6 @@
     font-size: var(--text-xs);
   }
 
-  /* Assessment Panel Mobile */
-  .assessment-panel {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: var(--z-modal);
-    height: 100vh;
-    margin: 0;
-    border-radius: 0;
-  }
-
-  .assessment-panel__content {
-    max-height: 100%;
-  }
 
   .question-card {
     padding: var(--space-5);

@@ -95,9 +95,9 @@ set -e
 VENV_PYTHON="$APP_DIR/venv/bin/python"
 VENV_PIP="$APP_DIR/venv/bin/pip"
 
-"\$VENV_PIP" install --upgrade pip
-"\$VENV_PIP" install -r "$APP_DIR/requirements.txt"
-"\$VENV_PIP" install gunicorn
+"$VENV_PIP" install --upgrade pip
+"$VENV_PIP" install -r "$APP_DIR/requirements.txt"
+"$VENV_PIP" install gunicorn
 EOF
 
   # Verify gunicorn

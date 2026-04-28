@@ -2,14 +2,14 @@
 set -euo pipefail
 
 # Lightweight updater: sync current working tree into APP_DIR and restart service
-# Defaults match deploy.sh
+# This script does NOT touch the venv - it only syncs code files
 SERVICE_NAME="${SERVICE_NAME:-psyfind}"
-# Allow override via APP_DIR env; otherwise we detect
 APP_DIR_ENV="${APP_DIR:-}"
 APP_DIR="${APP_DIR:-}"
-# PYTHON_BIN can be provided, otherwise we'll try to discover it.
-PYTHON_BIN="${PYTHON_BIN:-}"
-RSYNC_EXCLUDES=(".git" "__pycache__" "*.pyc" ".venv" "node_modules")
+
+log()  { printf "[INFO] %s\n" "$*"; }
+err()  { printf "[ERROR] %s\n" "$*" >&2; }
+success(){ printf "[OK] %s\n" "$*"; }
 
 detect_app_dir() {
   # 1) explicit env
@@ -43,144 +43,9 @@ detect_app_dir() {
 # Resolve application directory
 APP_DIR="$(detect_app_dir)"
 
-# Expected paths from unit (adjust if unit changes)
-ENV_FILE_PATH="${ENV_FILE_PATH:-$APP_DIR/.env.production}"
-GUNICORN_BIN="${GUNICORN_BIN:-$APP_DIR/venv/bin/gunicorn}"
-
-# Precompute requirements hash (before sync) to decide on pip install
-SRC_REQ_HASH=""
-DEST_REQ_HASH=""
-if [[ -f "requirements.txt" ]]; then
-  SRC_REQ_HASH="$(sha256sum requirements.txt | awk '{print $1}')"
-fi
-if [[ -f "$APP_DIR/requirements.txt" ]]; then
-  DEST_REQ_HASH="$(sha256sum "$APP_DIR/requirements.txt" | awk '{print $1}')"
-fi
-
-log()  { printf "[INFO] %s\n" "$*"; }
-err()  { printf "[ERROR] %s\n" "$*" >&2; }
-success(){ printf "[OK] %s\n" "$*"; }
-
-# Repair virtual environment (integrated from fix-venv-complete.sh)
-repair_venv() {
-  log "Repairing virtual environment..."
-  
-  # Detect app user from service or fallback
-  local app_user
-  app_user="$(systemctl show "$SERVICE_NAME" -p User --value 2>/dev/null || true)"
-  app_user="${app_user:-$SERVICE_NAME}"
-  
-  # Install python3-venv if missing
-  if ! dpkg -l | grep -q python3.*-venv 2>/dev/null; then
-    log "Installing python3-venv..."
-    apt-get update -qq
-    apt-get install -y -qq python3-venv python3-full
-  fi
-  
-  # Remove corrupted venv
-  if [[ -d "$APP_DIR/venv" ]]; then
-    log "Removing old virtual environment..."
-    rm -rf "$APP_DIR/venv"
-  fi
-  
-  # Create new venv
-  log "Creating new virtual environment..."
-  python3 -m venv "$APP_DIR/venv"
-  chown -R "$app_user:$app_user" "$APP_DIR/venv"
-  
-  # Install dependencies as app user
-  log "Installing dependencies..."
-  sudo -u "$app_user" bash << 'INNEREOF'
-set -e
-VENV_PYTHON="$APP_DIR/venv/bin/python"
-VENV_PIP="$APP_DIR/venv/bin/pip"
-
-"$VENV_PIP" install --upgrade pip
-"$VENV_PIP" install -r "$APP_DIR/requirements.txt"
-"$VENV_PIP" install gunicorn
-INNEREOF
-
-  # Verify gunicorn
-  if [[ ! -f "$APP_DIR/venv/bin/gunicorn" ]]; then
-    err "Gunicorn installation failed after venv repair"
-    return 1
-  fi
-  
-  log "Virtual environment repaired successfully"
-  return 0
-}
-
-create_venv() {
-  local venv_dir="$APP_DIR/venv"
-  local base_py
-
-  base_py="$(command -v python3 || command -v python || true)"
-  if [[ -z "$base_py" ]]; then
-    err "No python3/python found to create virtualenv"
-    return 1
-  fi
-
-  log "Creating virtualenv at $venv_dir using $base_py"
-  if ! "$base_py" -m venv "$venv_dir"; then
-    err "Failed to create venv. Install python3-venv or ensure venv module is available."
-    return 1
-  fi
-
-  printf '%s' "$venv_dir/bin/python3"
-}
-
-find_python() {
-  # If user provided and exists, use it
-  if [[ -n "$PYTHON_BIN" && -x "$PYTHON_BIN" ]]; then
-    printf '%s' "$PYTHON_BIN"
-    return 0
-  fi
-
-  # Common virtualenv locations
-  local candidates=(
-    "$APP_DIR/venv/bin/python3" "$APP_DIR/venv/bin/python"
-    "$APP_DIR/.venv/bin/python3" "$APP_DIR/.venv/bin/python"
-    "/opt/psyfind/venv/bin/python3" "/opt/psyfind/venv/bin/python"
-    "$(command -v python3 2>/dev/null)" "$(command -v python 2>/dev/null)"
-  )
-
-  for cand in "${candidates[@]}"; do
-    if [[ -n "$cand" && -x "$cand" ]]; then
-      printf '%s' "$cand"
-      return 0
-    fi
-  done
-
-  return 1
-}
-
 if [[ ! -d "$APP_DIR" ]]; then
   err "APP_DIR '$APP_DIR' does not exist"
   exit 1
-fi
-
-# Create .env.production ONLY if it doesn't exist (preserve existing configuration)
-if [[ ! -f "$ENV_FILE_PATH" ]]; then
-  if [[ -f "$APP_DIR/.env.example" ]]; then
-    log "Environment file missing; copying from $APP_DIR/.env.example to $ENV_FILE_PATH"
-    cp "$APP_DIR/.env.example" "$ENV_FILE_PATH"
-    app_user="$(systemctl show "$SERVICE_NAME" -p User --value 2>/dev/null || true)"
-    app_user="${app_user:-$SERVICE_NAME}"
-    chown "$app_user:$app_user" "$ENV_FILE_PATH"
-  else
-    log "Environment file missing: $ENV_FILE_PATH - creating minimal env file"
-    cat > "$ENV_FILE_PATH" << 'EOF'
-FLASK_ENV=production
-FLASK_PORT=5000
-DATABASE_PATH=/opt/psyfind/data/psyfind.db
-LOG_LEVEL=INFO
-EOF
-    app_user="$(systemctl show "$SERVICE_NAME" -p User --value 2>/dev/null || true)"
-    app_user="${app_user:-$SERVICE_NAME}"
-    chown "$app_user:$app_user" "$ENV_FILE_PATH"
-  fi
-else
-  log "Environment file exists: $ENV_FILE_PATH (preserving existing configuration)"
 fi
 
 # Ensure we run from repo root (has app.py or requirements.txt)
@@ -189,70 +54,24 @@ if [[ ! -f "app.py" && ! -f "requirements.txt" ]]; then
   exit 1
 fi
 
-# Sync code to APP_DIR, preserving venv/data
+# Sync code to APP_DIR, preserving venv/data/env
 log "Syncing code to $APP_DIR"
 rsync -a --delete \
-  $(printf -- "--exclude=%s " "${RSYNC_EXCLUDES[@]}") \
+  --exclude=".git" \
+  --exclude="__pycache__" \
+  --exclude="*.pyc" \
+  --exclude=".venv" \
+  --exclude="venv" \
+  --exclude="node_modules" \
+  --exclude=".env.production" \
+  --exclude="data" \
   ./ "$APP_DIR"/
 
-# Install dependencies if requirements present
-if [[ -f "$APP_DIR/requirements.txt" ]]; then
-  if [[ -n "$SRC_REQ_HASH" && "$SRC_REQ_HASH" == "$DEST_REQ_HASH" ]]; then
-    log "requirements.txt unchanged; skipping pip install"
-  else
-    PY_BIN_RESOLVED="$(find_python || true)"
-
-    # If we only found a system python (likely PEP 668 managed), create a project venv
-    if [[ -z "$PY_BIN_RESOLVED" || "$PY_BIN_RESOLVED" != "$APP_DIR"/*/bin/python* ]]; then
-      PY_BIN_RESOLVED="$(create_venv || true)"
-    fi
-
-    if [[ -n "$PY_BIN_RESOLVED" ]]; then
-      log "Installing Python deps using $PY_BIN_RESOLVED"
-      "$PY_BIN_RESOLVED" -m pip install --upgrade -r "$APP_DIR/requirements.txt"
-      # Explicitly install gunicorn to ensure it's available
-      "$PY_BIN_RESOLVED" -m pip install gunicorn
-    else
-      err "No usable python found (set PYTHON_BIN or install python3-venv); skipping pip install"
-    fi
-  fi
-fi
-
-# Verify gunicorn is available after setup
-if [[ ! -x "$GUNICORN_BIN" ]]; then
-  err "Gunicorn binary missing after update: $GUNICORN_BIN"
-  log "Attempting virtual environment repair..."
-  
-  if ! repair_venv; then
-    err "Virtual environment repair failed"
-    exit 1
-  fi
-  
-  # Re-check gunicorn after repair
-  if [[ ! -x "$GUNICORN_BIN" ]]; then
-    err "Gunicorn still missing after repair"
-    exit 1
-  fi
-fi
-
-# Fix permissions (from fix-venv-complete.sh)
+# Fix permissions only for app code (not venv)
 log "Fixing permissions..."
 app_user="$(systemctl show "$SERVICE_NAME" -p User --value 2>/dev/null || true)"
 app_user="${app_user:-$SERVICE_NAME}"
-chown -R "$app_user:$app_user" "$APP_DIR"
-
-# Ensure .env.production has correct permissions (never overwrite, just fix perms)
-if [[ -f "$APP_DIR/.env.production" ]]; then
-  chmod 600 "$APP_DIR/.env.production" 2>/dev/null || true
-fi
-
-# Test application import before restart
-log "Testing application import..."
-if sudo -u "$app_user" "$APP_DIR/venv/bin/python" -c "import app; print('App imports OK')" 2>&1; then
-  log "Application imports successfully"
-else
-  err "Application import test failed - may have missing dependencies"
-fi
+find "$APP_DIR" -not -path "$APP_DIR/venv/*" -exec chown "$app_user:$app_user" {} + 2>/dev/null || true
 
 # Restart or start service
 log "Reloading systemd units"

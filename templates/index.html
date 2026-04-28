@@ -664,9 +664,10 @@
         let sessionId = null;
         let userLanguage = 'zh';
         let isWaitingForResponse = false;
-        let currentAssessment = null;
+        let currentAssessment = 'phq9';
         let assessmentResponses = {};
         let userInfo = {};
+        let lastUserIntent = null; // Track if user explicitly requested assessment
 
         // DOM Elements
         const chatMessages = document.getElementById('chatMessages');
@@ -808,10 +809,18 @@
                 // Handle assessment trigger
                 if (response.assessment_recommendation && response.assessment_recommendation !== 'none') {
                     console.log('Triggering assessment offer:', response.assessment_recommendation);
-                    setTimeout(() => showAssessmentOption(response.assessment_recommendation), 800);
+                    console.log('Last user intent:', lastUserIntent);
+                    // Auto-show modal if user explicitly requested assessment, otherwise show Yes/No prompt
+                    if (lastUserIntent === 'assessment') {
+                        setTimeout(() => showAssessment(response.assessment_recommendation), 800);
+                    } else {
+                        setTimeout(() => showAssessmentOption(response.assessment_recommendation), 800);
+                    }
                 } else {
                     console.log('No assessment recommendation');
                 }
+                // Reset intent after handling
+                lastUserIntent = null;
 
             } catch (error) {
                 removeTypingIndicator();
@@ -1544,6 +1553,8 @@
                 'assessment': I18n.t('intent_assessment') || "I'd like to take a mental health assessment."
             };
 
+            // Track that user explicitly requested assessment
+            lastUserIntent = intent;
             chatInput.value = intentMessages[intent] || '';
             sendMessage();
         }

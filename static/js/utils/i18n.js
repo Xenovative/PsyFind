@@ -64,10 +64,10 @@ const I18n = (function() {
       moderate: 'Moderate',
       severe: 'Severe',
       interpretation: 'Interpretation',
+      clinical_report: 'Clinical Report',
       possible_matches: 'Possible DSM-5 Matches',
       confidence: 'Confidence',
       recommended_specialists: 'Recommended Specialists',
-      clinical_report: 'Clinical Report',
       recommendations: 'Recommendations',
       
       // Loading
@@ -279,10 +279,10 @@ const I18n = (function() {
       moderate: '中度',
       severe: '重度',
       interpretation: '解讀',
+      clinical_report: '臨床報告',
       possible_matches: '可能的DSM-5匹配',
       confidence: '置信度',
       recommended_specialists: '推薦專科醫生',
-      clinical_report: '臨床報告',
       recommendations: '建議',
       
       // Loading

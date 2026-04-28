@@ -780,6 +780,12 @@ class LLMService:
         self.openrouter_api_key = os.getenv('OPENROUTER_API_KEY')
         self.ollama_url = os.getenv('OLLAMA_URL', 'http://localhost:11434')
         
+        # Log configuration status
+        logger.info(f"LLM Service initialized with provider: {self.preferred_provider}")
+        logger.info(f"OpenAI API Key configured: {bool(self.openai_api_key)}")
+        logger.info(f"OpenRouter API Key configured: {bool(self.openrouter_api_key)}")
+        logger.info(f"Ollama URL: {self.ollama_url}")
+        
         # Use database for session management
         self.session_timeout = 3600  # 1 hour timeout
         
@@ -1189,6 +1195,8 @@ JSON Response:"""
     def _generate_fallback_chat_response(self, language: str, session: Dict = None) -> Dict:
         """Generate simple fallback response when LLM is unavailable"""
         
+        logger.warning("Using fallback chat response - LLM not available. Check API keys or Ollama configuration.")
+        
         # Simple supportive message - let LLM handle the complexity when available
         if language == 'zh':
             message = "我在這裡支持您。請告訴我更多關於您的感受，這樣我可以更好地幫助您。"
@@ -1340,6 +1348,8 @@ JSON Response:"""
     
     def _generate_fallback_report(self, dsm_matches: List[Dict], language: str) -> str:
         """Generate basic report when LLM is unavailable"""
+        
+        logger.warning("Using fallback clinical report - LLM not available. Check API keys or Ollama configuration.")
         
         if language == 'zh':
             report = """# 精神健康評估報告

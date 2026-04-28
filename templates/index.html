@@ -765,6 +765,20 @@
                 `;
             }
 
+            // Clinical Report - from data.detailed_report
+            const clinicalReport = data.detailed_report || '';
+            if (clinicalReport) {
+                html += `
+                    <div class="results-section">
+                        <h4 class="results-section__title">
+                            <i class="fas fa-file-medical-alt" aria-hidden="true"></i>
+                            <span data-lang="clinical_report">Clinical Report</span>
+                        </h4>
+                        <div class="clinical-report" style="white-space: pre-wrap; line-height: 1.6;">${escapeHtml(clinicalReport)}</div>
+                    </div>
+                `;
+            }
+
             // Doctors - from data.psychiatrists
             const doctors = data.psychiatrists || [];
             if (doctors.length > 0) {

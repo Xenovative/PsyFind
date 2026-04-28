@@ -1054,20 +1054,32 @@
             addMessage(promptMsg, 'assistant');
 
             const container = document.getElementById('quickResponses');
+            if (!container) {
+                console.error('quickResponses container not found');
+                return;
+            }
             container.innerHTML = '';
+            container.style.display = 'flex';
 
             const yesBtn = document.createElement('button');
-            yesBtn.className = 'quick-response-btn';
-            yesBtn.innerHTML = `<i class="fas fa-clipboard-check" aria-hidden="true"></i> ${userLanguage === 'zh' ? '是的，開始評估' : 'Yes, start assessment'}`;
-            yesBtn.onclick = () => { container.innerHTML = ''; showAssessment(resolvedType); };
+            yesBtn.className = 'quick-response-btn quick-response-btn--primary';
+            yesBtn.innerHTML = `<i class="fas fa-clipboard-check" aria-hidden="true"></i> ${userLanguage === 'zh' ? '開始評估' : 'Start Assessment'}`;
+            yesBtn.onclick = () => { 
+                container.innerHTML = ''; 
+                showAssessment(resolvedType); 
+            };
 
             const noBtn = document.createElement('button');
             noBtn.className = 'quick-response-btn';
-            noBtn.innerHTML = `<i class="fas fa-times" aria-hidden="true"></i> ${userLanguage === 'zh' ? '暫時不用' : 'Not right now'}`;
-            noBtn.onclick = () => { container.innerHTML = ''; setupQuickResponses(); };
+            noBtn.innerHTML = `<i class="fas fa-times" aria-hidden="true"></i> ${userLanguage === 'zh' ? '暫時不用' : 'Not now'}`;
+            noBtn.onclick = () => { 
+                container.innerHTML = ''; 
+                setupQuickResponses(); 
+            };
 
             container.appendChild(yesBtn);
             container.appendChild(noBtn);
+            console.log('Assessment buttons added to quickResponses');
         }
 
         // Update sidebar assessment recommendation based on AI recommendation

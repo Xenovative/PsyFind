@@ -80,85 +80,42 @@ const API = (function() {
   // Chat API
   const Chat = {
     /**
-     * Initialize a new chat session
-     * @param {string} language - Preferred language
-     * @returns {Promise} Session data
-     */
-    async init(language = 'zh') {
-      return request('/chat/init', {
-        method: 'POST',
-        body: JSON.stringify({ language })
-      });
-    },
-
-    /**
      * Send a message
      * @param {string} sessionId - Session ID
      * @param {string} message - User message
+     * @param {string} language - Language code
      * @returns {Promise} Assistant response
      */
-    async sendMessage(sessionId, message) {
-      return request('/chat/message', {
+    async sendMessage(sessionId, message, language = 'en') {
+      return request('/chat', {
         method: 'POST',
-        body: JSON.stringify({ session_id: sessionId, message })
+        body: JSON.stringify({ session_id: sessionId, message, language })
       });
-    },
-
-    /**
-     * Get chat history
-     * @param {string} sessionId - Session ID
-     * @returns {Promise} Chat history
-     */
-    async getHistory(sessionId) {
-      return request(`/chat/history?session_id=${encodeURIComponent(sessionId)}`);
     }
   };
 
   // Assessment API
   const Assessment = {
     /**
-     * Get available assessments
-     * @returns {Promise} List of assessments
-     */
-    async getTypes() {
-      return request('/assessment/types');
-    },
-
-    /**
-     * Get assessment questions
-     * @param {string} type - Assessment type
-     * @param {string} language - Language code
-     * @returns {Promise} Assessment questions
-     */
-    async getQuestions(type, language = 'zh') {
-      return request(`/assessment/questions?type=${type}&language=${language}`);
-    },
-
-    /**
-     * Submit assessment responses
+     * Submit assessment responses to /analyze endpoint
      * @param {string} sessionId - Session ID
-     * @param {string} type - Assessment type
-     * @param {Object} responses - User responses
+     * @param {string} type - Assessment type (whiteley, phq9, gad7)
+     * @param {Object} data - Assessment data including responses, age, duration, etc.
      * @returns {Promise} Assessment results
      */
-    async submit(sessionId, type, responses) {
-      return request('/assessment/submit', {
+    async submit(sessionId, type, data) {
+      return request('/analyze', {
         method: 'POST',
         body: JSON.stringify({
           session_id: sessionId,
           assessment_type: type,
-          responses
+          age: data.age || 25,
+          duration: data.duration || '',
+          location: data.location || '',
+          language: data.language || 'English',
+          ...data.responses
         })
       });
-    },
-
-    /**
-     * Get assessment results
-     * @param {string} assessmentId - Assessment ID
-     * @returns {Promise} Assessment results
-     */
-    async getResults(assessmentId) {
-      return request(`/assessment/results/${assessmentId}`);
     }
   };
 

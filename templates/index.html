@@ -253,8 +253,8 @@
 
             // Initialize chat session
             try {
-                const response = await API.Chat.init(userLanguage);
-                sessionId = response.session_id;
+                // Generate session ID client-side
+                sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 15);
                 
                 // Enable input
                 chatInput.disabled = false;
@@ -263,12 +263,10 @@
                 chatInput.focus();
 
                 // Display welcome message
-                addMessage(response.welcome_message || 'Welcome to PsyFind. How can I help you today?', 'assistant');
-
-                // Show user info modal for new sessions
-                if (response.is_new) {
-                    showUserInfoModal();
-                }
+                const welcomeMsg = userLanguage === 'zh' 
+                    ? '歡迎使用 PsyFind。我是您的臨床助理。請問今天有什麼我可以幫您的嗎？'
+                    : 'Welcome to PsyFind. I am your clinical assistant. How can I help you today?';
+                addMessage(welcomeMsg, 'assistant');
 
                 // Setup quick responses
                 setupQuickResponses();
@@ -330,7 +328,7 @@
             showTypingIndicator();
 
             try {
-                const response = await API.Chat.sendMessage(sessionId, message);
+                const response = await API.Chat.sendMessage(sessionId, message, userLanguage);
                 
                 // Remove typing indicator
                 removeTypingIndicator();
@@ -339,13 +337,8 @@
                 addMessage(response.message, 'assistant');
 
                 // Handle assessment trigger
-                if (response.trigger_assessment) {
-                    showAssessment(response.assessment_type);
-                }
-
-                // Handle doctor search
-                if (response.suggest_doctors) {
-                    showDoctorRecommendations(response.doctors);
+                if (response.assessment_recommendation && response.assessment_recommendation !== 'none') {
+                    showAssessment(response.assessment_recommendation);
                 }
 
             } catch (error) {
@@ -450,67 +443,27 @@
             currentAssessment = type;
             assessmentResponses = {};
             
-            // Load assessment questions
-            API.Assessment.getQuestions(type, userLanguage)
-                .then(data => {
-                    renderAssessment(data);
-                    assessmentPanel.style.display = 'flex';
-                    assessmentPanel.classList.add('assessment-panel--active');
-                })
-                .catch(error => {
-                    console.error('Failed to load assessment:', error);
-                    Toast.error('Failed to load assessment');
-                });
+            // Show the embedded assessment form
+            const title = document.getElementById('assessmentTitle');
+            title.textContent = I18n.t(type + '_title') || 'Assessment';
+            
+            // Reset form
+            document.querySelectorAll('#assessmentForm input[type="radio"]').forEach(r => r.checked = false);
+            
+            assessmentPanel.style.display = 'flex';
+            assessmentPanel.classList.add('assessment-panel--active');
         }
 
-        function renderAssessment(data) {
-            const title = document.getElementById('assessmentTitle');
-            title.textContent = data.title || I18n.t('assessment');
-
-            // Render questions
-            let html = `
-                <div class="assessment-progress">
-                    <div class="assessment-progress__bar">
-                        <div class="assessment-progress__fill" style="width: 0%"></div>
-                    </div>
-                    <div class="assessment-progress__text">Question 1 of ${data.questions.length}</div>
-                </div>
-            `;
-
-            data.questions.forEach((q, index) => {
-                html += `
-                    <div class="question-card" data-index="${index}" style="display: ${index === 0 ? 'block' : 'none'}">
-                        <div class="question-card__number">${I18n.t('question')} ${index + 1} ${I18n.t('of')} ${data.questions.length}</div>
-                        <div class="question-card__text">${escapeHtml(q.text)}</div>
-                        <div class="rating-options">
-                            ${q.options.map((opt, optIndex) => `
-                                <label class="rating-option">
-                                    <input type="radio" 
-                                           name="q${index}" 
-                                           value="${opt.value}" 
-                                           class="rating-option__input"
-                                           onchange="handleAssessmentResponse(${index}, ${opt.value})">
-                                    <span class="rating-option__text">${escapeHtml(opt.label)}</span>
-                                </label>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-            });
-
-            // Navigation buttons
-            html += `
-                <div class="nav-buttons">
-                    <button class="btn btn--secondary" id="prevBtn" onclick="prevQuestion()" disabled>
-                        <i class="fas fa-arrow-left"></i> ${I18n.t('previous')}
-                    </button>
-                    <button class="btn btn--primary" id="nextBtn" onclick="nextQuestion()" disabled>
-                        ${I18n.t('next')} <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
-            `;
-
-            assessmentContent.innerHTML = html;
+        function getAssessmentResponses() {
+            const responses = {};
+            const form = document.getElementById('assessmentForm');
+            if (form) {
+                const formData = new FormData(form);
+                for (let [key, value] of formData.entries()) {
+                    responses[key] = parseInt(value);
+                }
+            }
+            return responses;
         }
 
         function handleAssessmentResponse(questionIndex, value) {
@@ -595,17 +548,24 @@
             }
         }
 
-        function submitAssessment() {
-            API.Assessment.submit(sessionId, currentAssessment, assessmentResponses)
-                .then(data => {
-                    closeAssessment();
-                    showResults(data);
-                    Toast.success('Assessment completed successfully');
-                })
-                .catch(error => {
-                    console.error('Failed to submit assessment:', error);
-                    Toast.error('Failed to submit assessment');
+        async function submitAssessment() {
+            const responses = getAssessmentResponses();
+            
+            try {
+                const data = await API.Assessment.submit(sessionId, currentAssessment, {
+                    responses: responses,
+                    age: userInfo.age || 25,
+                    duration: userInfo.duration || '',
+                    language: userLanguage === 'zh' ? 'Traditional Chinese' : 'English'
                 });
+                
+                closeAssessment();
+                showResults(data);
+                Toast.success('Assessment completed successfully');
+            } catch (error) {
+                console.error('Failed to submit assessment:', error);
+                Toast.error('Failed to submit assessment');
+            }
         }
 
         function closeAssessment() {
@@ -622,61 +582,67 @@
 
         function renderResults(data) {
             let html = '';
-
-            // Score display
-            if (data.score !== undefined) {
+            
+            // The /analyze endpoint returns data in data.analysis
+            const analysis = data.analysis || data;
+            
+            // Score display - handle different assessment types
+            const score = analysis.whiteley_score || analysis.phq9_score || analysis.gad7_score || 0;
+            const maxScore = analysis.whiteley_score ? 28 : analysis.phq9_score ? 27 : analysis.gad7_score ? 21 : 28;
+            const severity = analysis.severity || 'unknown';
+            
+            if (score !== undefined) {
                 html += `
                     <div class="score-display">
-                        <div class="score-display__number">${data.score}<span class="score-display__total">/${data.max_score || '??'}</span></div>
-                        <div class="badge badge--${data.severity}">${I18n.t(data.severity)}</div>
+                        <div class="score-display__number">${score}<span class="score-display__total">/${maxScore}</span></div>
+                        <div class="badge badge--${severity}">${escapeHtml(severity)}</div>
                         <div class="score-display__label" data-lang="severity">Severity</div>
                     </div>
                 `;
             }
 
             // Interpretation
-            if (data.interpretation) {
+            if (analysis.interpretation) {
                 html += `
                     <div class="results-section">
                         <h4 class="results-section__title">
                             <i class="fas fa-info-circle" aria-hidden="true"></i>
                             <span data-lang="interpretation">Interpretation</span>
                         </h4>
-                        <p>${escapeHtml(data.interpretation)}</p>
+                        <p>${escapeHtml(analysis.interpretation)}</p>
                     </div>
                 `;
             }
 
-            // DSM Matches
-            if (data.dsm_matches && data.dsm_matches.length > 0) {
+            // Analysis items (DSM matches)
+            if (analysis.analysis && analysis.analysis.length > 0) {
                 html += `
                     <div class="results-section">
                         <h4 class="results-section__title">
                             <i class="fas fa-stethoscope" aria-hidden="true"></i>
-                            <span data-lang="possible_matches">Possible DSM-5 Matches</span>
+                            <span data-lang="analysis">Analysis</span>
                         </h4>
-                        ${data.dsm_matches.map(match => `
+                        ${analysis.analysis.map(item => `
                             <div class="disorder-card">
                                 <div class="disorder-card__header">
-                                    <span class="disorder-card__name">${escapeHtml(match.name)}</span>
-                                    <span class="disorder-card__confidence">${Math.round(match.confidence * 100)}%</span>
+                                    <span class="disorder-card__name">${escapeHtml(item.disorder || item)}</span>
                                 </div>
-                                <p class="disorder-card__description">${escapeHtml(match.description)}</p>
                             </div>
                         `).join('')}
                     </div>
                 `;
             }
 
-            // Doctors
-            if (data.recommended_doctors && data.recommended_doctors.length > 0) {
+            // Doctors - from data.psychiatrists
+            const doctors = data.psychiatrists || [];
+            if (doctors.length > 0) {
                 html += `
                     <div class="results-section">
                         <h4 class="results-section__title">
                             <i class="fas fa-user-md" aria-hidden="true"></i>
                             <span data-lang="recommended_specialists">Recommended Specialists</span>
                         </h4>
-                        ${data.recommended_doctors.map(doctor => `
+                        ${doctors.map(doctor => `
                             <div class="psychiatrist-card">
                                 <div class="psychiatrist-card__name">${escapeHtml(doctor.name)}</div>
                                 <div class="psychiatrist-card__specialty">${escapeHtml(doctor.specialty)}</div>
@@ -684,11 +650,6 @@
                                     ${doctor.phone ? `
                                         <div class="psychiatrist-card__detail">
                                             <i class="fas fa-phone" aria-hidden="true"></i> ${escapeHtml(doctor.phone)}
-                                        </div>
-                                    ` : ''}
-                                    ${doctor.email ? `
-                                        <div class="psychiatrist-card__detail">
-                                            <i class="fas fa-envelope" aria-hidden="true"></i> ${escapeHtml(doctor.email)}
                                         </div>
                                     ` : ''}
                                     ${doctor.location ? `
@@ -699,6 +660,21 @@
                                 </div>
                             </div>
                         `).join('')}
+                    </div>
+                `;
+            }
+            
+            // Clinical Report
+            if (data.detailed_report) {
+                html += `
+                    <div class="results-section">
+                        <h4 class="results-section__title">
+                            <i class="fas fa-file-medical" aria-hidden="true"></i>
+                            <span data-lang="clinical_report">Clinical Report</span>
+                        </h4>
+                        <div class="clinical-report">
+                            ${escapeHtml(data.detailed_report)}
+                        </div>
                     </div>
                 `;
             }

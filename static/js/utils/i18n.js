@@ -219,13 +219,126 @@ const I18n = (function() {
       loading_recent_assessments: 'Loading recent assessments...',
       loading_clinical_sessions: 'Loading clinical sessions...',
       loading_clinical_reports: 'Loading clinical reports...',
-      
+
       // System status
       status_online: 'Online',
       status_offline: 'Offline',
       status_degraded: 'Degraded',
+
+      // MindEase New UI Elements
+      nav_title: 'PsyFind',
+      nav_subtitle: 'Your AI Mental Health Companion',
+      nav_chat: 'Chat',
+      nav_assessment: 'Self-Check',
+      nav_journal: 'Journal',
+      nav_resources: 'Resources',
+
+      // Welcome Card
+      welcome_greeting: 'Good evening',
+      user_name: 'there',
+      welcome_text: "No matter how your day went, this is a safe space where you can relax and share. Would you like to talk? I'm here to listen and accompany you.",
+      stat_streak: 'Day Streak',
+      stat_week: 'This Week',
+
+      // Mood Selector
+      mood_question: 'How are you feeling today?',
+      mood_hint: 'Select the mood closest to you',
+      mood_happy: 'Happy',
+      mood_calm: 'Calm',
+      mood_neutral: 'Neutral',
+      mood_anxious: 'Anxious',
+      mood_sad: 'Sad',
+      mood_tired: 'Tired',
+      mood_recorded: 'Mood recorded!',
+      mood_message_happy: "I'm feeling happy today! 😄",
+      mood_message_calm: "I'm feeling calm and peaceful. 😌",
+      mood_message_neutral: "I'm feeling neutral today. 🤔",
+      mood_message_anxious: "I'm feeling anxious and worried. 😟",
+      mood_message_sad: "I'm feeling sad and down. 😢",
+      mood_message_tired: "I'm feeling tired and exhausted. 😴",
+
+      // Quick Actions
+      quick_vent: 'I want to talk',
+      quick_relax: 'Relaxation',
+      quick_assessment: 'Take Assessment',
+      send: 'Send',
+      chat_status: 'Online • Always here for you',
+
+      // Mental Status Widget
+      widget_status: 'Mental Status',
+      badge_ai: 'AI Analysis',
+      status_emotional: 'Emotional Health',
+      status_attention: 'Needs Attention',
+      status_stress: 'Stress Level',
+      status_high: 'High',
+      status_sleep: 'Sleep Quality',
+      status_poor: 'Poor',
+      status_social: 'Social Activity',
+      status_good: 'Good',
+      status_low: 'Low',
+      status_excellent: 'Excellent',
+      suggestion_text: 'Try completing the PHQ-9 assessment and practice breathing exercises before bed.',
+
+      // Recommended Assessments
+      widget_recommended: 'Recommended',
+      label_priority: 'Priority',
+      assessment_phq9: 'PHQ-9 Depression Scale',
+      assessment_phq9_desc: 'Standard tool for depression screening',
+      assessment_gad7: 'GAD-7 Anxiety Scale',
+      assessment_sleep: 'Sleep Quality Scale',
+      meta_questions: '9 questions • 3 min',
+      meta_questions_short: '7 questions • 2 min',
+      meta_questions_sleep: '10 questions • 4 min',
+      action_start: 'Start →',
+
+      // Emergency Card
+      emergency_title: 'Emergency Hotlines',
+      emergency_text: "If you're in distress or having thoughts of self-harm, please contact immediately:",
+      hotline_1_name: 'Crisis Helpline',
+      hotline_1_desc: '24/7 Free Support',
+      hotline_2_name: 'Lifeline',
+      hotline_2_desc: '24/7 Companionship',
+
+      // Mood Chart
+      chart_title: '7-Day Mood Trend',
+      chart_subtitle: 'Your emotional fluctuations this week',
+      chart_detail: 'View Details',
+      day_mon: 'Mon',
+      day_tue: 'Tue',
+      day_wed: 'Wed',
+      day_thu: 'Thu',
+      day_fri: 'Fri',
+      day_sat: 'Sat',
+      day_today: 'Today',
+      stat_avg: 'Average Score',
+      stat_weekly: 'vs Last Week',
+      stat_chats: 'Conversations',
+
+      // Daily Practices
+      practices_title: "Today's Recommended Practices",
+      practice_breathing: '4-7-8 Breathing',
+      practice_breathing_desc: 'Quick relaxation, improves sleep',
+      practice_meditation: 'Guided Meditation',
+      practice_meditation_desc: 'Relieves anxiety, returns to present',
+      practice_journal: 'Gratitude Journal',
+      practice_journal_desc: 'Record three things to be thankful for',
+      practice_sound: 'Nature Sound Healing',
+      practice_sound_desc: 'Rain, ocean waves, forest',
+
+      // Privacy Banner
+      privacy_title: 'Your conversations are completely private',
+      privacy_text: 'We use end-to-end encryption. Your conversation content will never be shared with third parties.',
+
+      // Quick Intent Messages
+      intent_vent: "I want to talk about what's been on my mind...",
+      intent_relax: "I'd like to do a relaxation exercise.",
+      intent_assessment: "I'd like to take a mental health assessment.",
+
+      // AI Analysis Loading
+      analyzing_chat: 'Analyzing conversation...',
+      analysis_complete: 'Analysis complete',
     },
-    
+
     zh: {
       // Header
       title: 'PsyFind',
@@ -439,6 +552,119 @@ const I18n = (function() {
       status_online: '在線',
       status_offline: '離線',
       status_degraded: '性能下降',
+
+      // MindEase New UI Elements
+      nav_title: 'PsyFind',
+      nav_subtitle: '您的AI心理健康夥伴',
+      nav_chat: '聊天',
+      nav_assessment: '自我檢測',
+      nav_journal: '日記',
+      nav_resources: '資源',
+
+      // Welcome Card
+      welcome_greeting: '晚安',
+      user_name: '朋友',
+      welcome_text: '無論今天過得怎麼樣，這裡是一個安全的空間，您可以放鬆並分享。想聊聊嗎？我會在這裡傾聽和陪伴您。',
+      stat_streak: '連續天數',
+      stat_week: '本週心情',
+
+      // Mood Selector
+      mood_question: '今天感覺如何？',
+      mood_hint: '選擇最接近您的心情',
+      mood_happy: '開心',
+      mood_calm: '平靜',
+      mood_neutral: '一般',
+      mood_anxious: '焦慮',
+      mood_sad: '難過',
+      mood_tired: '疲倦',
+      mood_recorded: '心情已記錄！',
+      mood_message_happy: '我今天感覺很開心！😄',
+      mood_message_calm: '我感覺很平靜祥和。😌',
+      mood_message_neutral: '我今天感覺還好。🤔',
+      mood_message_anxious: '我感到焦慮和擔心。😟',
+      mood_message_sad: '我感到難過和沮喪。😢',
+      mood_message_tired: '我感到疲倦和筋疲力盡。😴',
+
+      // Quick Actions
+      quick_vent: '我想傾訴',
+      quick_relax: '放鬆練習',
+      quick_assessment: '進行評估',
+      send: '發送',
+      chat_status: '在線 • 隨時為您服務',
+
+      // Mental Status Widget
+      widget_status: '心理狀態',
+      badge_ai: 'AI 分析',
+      status_emotional: '情緒健康',
+      status_attention: '需要關注',
+      status_stress: '壓力水平',
+      status_high: '高',
+      status_sleep: '睡眠品質',
+      status_poor: '不佳',
+      status_social: '社交活動',
+      status_good: '良好',
+      status_low: '低',
+      status_excellent: '優秀',
+      suggestion_text: '建議完成 PHQ-9 評估並在睡前練習呼吸運動。',
+
+      // Recommended Assessments
+      widget_recommended: '推薦評估',
+      label_priority: '優先',
+      assessment_phq9: 'PHQ-9 抑鬱量表',
+      assessment_phq9_desc: '標準抑鬱篩檢工具',
+      assessment_gad7: 'GAD-7 焦慮量表',
+      assessment_sleep: '睡眠品質量表',
+      meta_questions: '9題 • 3分鐘',
+      meta_questions_short: '7題 • 2分鐘',
+      meta_questions_sleep: '10題 • 4分鐘',
+      action_start: '開始 →',
+
+      // Emergency Card
+      emergency_title: '緊急求助熱線',
+      emergency_text: '如果您處於危機中或有自我傷害的想法，請立即聯繫：',
+      hotline_1_name: '生命線',
+      hotline_1_desc: '24/7 免費支援',
+      hotline_2_name: '張老師專線',
+      hotline_2_desc: '24/7 陪伴傾聽',
+
+      // Mood Chart
+      chart_title: '7天心情趨勢',
+      chart_subtitle: '您本週的情緒波動',
+      chart_detail: '查看詳情',
+      day_mon: '一',
+      day_tue: '二',
+      day_wed: '三',
+      day_thu: '四',
+      day_fri: '五',
+      day_sat: '六',
+      day_today: '今天',
+      stat_avg: '平均分數',
+      stat_weekly: '與上週相比',
+      stat_chats: '對話次數',
+
+      // Daily Practices
+      practices_title: '今日推薦練習',
+      practice_breathing: '4-7-8 呼吸法',
+      practice_breathing_desc: '快速放鬆，改善睡眠',
+      practice_meditation: '引導冥想',
+      practice_meditation_desc: '緩解焦慮，回到當下',
+      practice_journal: '感恩日記',
+      practice_journal_desc: '記錄三件值得感謝的事',
+      practice_sound: '自然聲音療癒',
+      practice_sound_desc: '雨聲、海浪、森林',
+
+      // Privacy Banner
+      privacy_title: '您的對話完全保密',
+      privacy_text: '我們使用端對端加密。您的對話內容絕不會與第三方分享。',
+
+      // Quick Intent Messages
+      intent_vent: '我想聊聊心裡在想什麼...',
+      intent_relax: '我想做個放鬆練習。',
+      intent_assessment: '我想做個心理健康評估。',
+
+      // AI Analysis Loading
+      analyzing_chat: '正在分析對話內容...',
+      analysis_complete: '分析完成',
     }
   };
 

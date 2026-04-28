@@ -200,54 +200,59 @@
             <!-- Sidebar -->
             <aside class="sidebar">
                 <!-- Mental Status Widget -->
-                <div class="widget">
+                <div class="widget" id="mentalStatusWidget">
                     <div class="widget__header">
                         <h3 class="widget__title">
                             <span>📊</span> <span data-lang="widget_status">Mental Status</span>
                         </h3>
                         <span class="widget__badge" data-lang="badge_ai">AI Analysis</span>
                     </div>
-                    <div class="status-bar">
-                        <div class="status-bar__header">
-                            <span class="status-bar__label" data-lang="status_emotional">Emotional Health</span>
-                            <span class="status-bar__value" style="color: #f59e0b;" data-lang="status_attention">Needs Attention</span>
-                        </div>
-                        <div class="status-bar__track">
-                            <div class="status-bar__fill status-bar__fill--amber" style="width: 40%;"></div>
-                        </div>
+                    <div id="analysisLoading" style="text-align: center; padding: var(--space-4); color: var(--text-muted); font-size: var(--text-sm);">
+                        <span data-lang="analyzing_chat">Analyzing conversation...</span>
                     </div>
-                    <div class="status-bar">
-                        <div class="status-bar__header">
-                            <span class="status-bar__label" data-lang="status_stress">Stress Level</span>
-                            <span class="status-bar__value" style="color: #ef4444;" data-lang="status_high">High</span>
+                    <div id="analysisContent" style="display: none;">
+                        <div class="status-bar">
+                            <div class="status-bar__header">
+                                <span class="status-bar__label" data-lang="status_emotional">Emotional Health</span>
+                                <span class="status-bar__value" id="emotionalLabel" style="color: #f59e0b;" data-lang="status_attention">Needs Attention</span>
+                            </div>
+                            <div class="status-bar__track">
+                                <div class="status-bar__fill status-bar__fill--amber" id="emotionalBar" style="width: 40%;"></div>
+                            </div>
                         </div>
-                        <div class="status-bar__track">
-                            <div class="status-bar__fill status-bar__fill--pink" style="width: 80%;"></div>
+                        <div class="status-bar">
+                            <div class="status-bar__header">
+                                <span class="status-bar__label" data-lang="status_stress">Stress Level</span>
+                                <span class="status-bar__value" id="stressLabel" style="color: #ef4444;" data-lang="status_high">High</span>
+                            </div>
+                            <div class="status-bar__track">
+                                <div class="status-bar__fill status-bar__fill--pink" id="stressBar" style="width: 80%;"></div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="status-bar">
-                        <div class="status-bar__header">
-                            <span class="status-bar__label" data-lang="status_sleep">Sleep Quality</span>
-                            <span class="status-bar__value" style="color: #f97316;" data-lang="status_poor">Poor</span>
+                        <div class="status-bar">
+                            <div class="status-bar__header">
+                                <span class="status-bar__label" data-lang="status_sleep">Sleep Quality</span>
+                                <span class="status-bar__value" id="sleepLabel" style="color: #f97316;" data-lang="status_poor">Poor</span>
+                            </div>
+                            <div class="status-bar__track">
+                                <div class="status-bar__fill status-bar__fill--amber" id="sleepBar" style="width: 35%;"></div>
+                            </div>
                         </div>
-                        <div class="status-bar__track">
-                            <div class="status-bar__fill status-bar__fill--amber" style="width: 35%;"></div>
+                        <div class="status-bar">
+                            <div class="status-bar__header">
+                                <span class="status-bar__label" data-lang="status_social">Social Activity</span>
+                                <span class="status-bar__value" id="socialLabel" style="color: #22c55e;" data-lang="status_good">Good</span>
+                            </div>
+                            <div class="status-bar__track">
+                                <div class="status-bar__fill status-bar__fill--emerald" id="socialBar" style="width: 75%;"></div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="status-bar">
-                        <div class="status-bar__header">
-                            <span class="status-bar__label" data-lang="status_social">Social Activity</span>
-                            <span class="status-bar__value" style="color: #22c55e;" data-lang="status_good">Good</span>
+                        <div style="margin-top: var(--space-4); padding: var(--space-3); background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%); border-radius: var(--radius-xl); border: 1px solid rgba(139, 92, 246, 0.15);">
+                            <p class="text-sm" style="font-size: var(--text-xs); color: var(--text-secondary); line-height: var(--leading-relaxed);">
+                                <span style="color: #8b5cf6; font-weight: var(--font-semibold);">💡 AI Suggestion:</span>
+                                <span id="aiSuggestion" data-lang="suggestion_text">Try completing the PHQ-9 assessment and practice breathing exercises before bed.</span>
+                            </p>
                         </div>
-                        <div class="status-bar__track">
-                            <div class="status-bar__fill status-bar__fill--emerald" style="width: 75%;"></div>
-                        </div>
-                    </div>
-                    <div style="margin-top: var(--space-4); padding: var(--space-3); background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%); border-radius: var(--radius-xl); border: 1px solid rgba(139, 92, 246, 0.15);">
-                        <p class="text-sm" style="font-size: var(--text-xs); color: var(--text-secondary); line-height: var(--leading-relaxed);">
-                            <span style="color: #8b5cf6; font-weight: var(--font-semibold);">💡 AI Suggestion:</span>
-                            <span data-lang="suggestion_text">Try completing the PHQ-9 assessment and practice breathing exercises before bed.</span>
-                        </p>
                     </div>
                 </div>
 
@@ -729,6 +734,9 @@
 
             // Load previous mood history
             loadMoodHistory();
+
+            // Start mental status analysis updates
+            scheduleAnalysisUpdate();
         }
 
         function setupEventListeners() {
@@ -807,6 +815,9 @@
             } finally {
                 isWaitingForResponse = false;
                 chatInput.focus();
+
+                // Trigger mental status analysis update after conversation
+                setTimeout(updateMentalStatusAnalysis, 2000);
             }
         }
 
@@ -1343,6 +1354,88 @@
             } catch (error) {
                 console.error('Failed to load mood history:', error);
             }
+        }
+
+        // Mental Status Analysis
+        async function updateMentalStatusAnalysis() {
+            const loadingDiv = document.getElementById('analysisLoading');
+            const contentDiv = document.getElementById('analysisContent');
+
+            try {
+                const response = await API.Mood.getMentalStatusAnalysis(sessionId, userLanguage);
+
+                if (response.success && response.analysis) {
+                    const analysis = response.analysis;
+
+                    // Update Emotional Health
+                    const emotional = analysis.emotional_health;
+                    document.getElementById('emotionalBar').style.width = `${emotional.score}%`;
+                    document.getElementById('emotionalBar').className = `status-bar__fill status-bar__fill--${getBarColor(emotional.score)}`;
+                    document.getElementById('emotionalLabel').textContent = emotional.label_localized;
+                    document.getElementById('emotionalLabel').style.color = getLabelColor(emotional.score);
+
+                    // Update Stress Level (inverted - lower score = higher stress display)
+                    const stress = analysis.stress_level;
+                    document.getElementById('stressBar').style.width = `${stress.score}%`;
+                    document.getElementById('stressBar').className = `status-bar__fill status-bar__fill--${getBarColor(stress.score)}`;
+                    document.getElementById('stressLabel').textContent = stress.label_localized;
+                    document.getElementById('stressLabel').style.color = getLabelColor(stress.score);
+
+                    // Update Sleep Quality
+                    const sleep = analysis.sleep_quality;
+                    document.getElementById('sleepBar').style.width = `${sleep.score}%`;
+                    document.getElementById('sleepBar').className = `status-bar__fill status-bar__fill--${getBarColor(sleep.score)}`;
+                    document.getElementById('sleepLabel').textContent = sleep.label_localized;
+                    document.getElementById('sleepLabel').style.color = getLabelColor(sleep.score);
+
+                    // Update Social Activity
+                    const social = analysis.social_activity;
+                    document.getElementById('socialBar').style.width = `${social.score}%`;
+                    document.getElementById('socialBar').className = `status-bar__fill status-bar__fill--${getBarColor(social.score)}`;
+                    document.getElementById('socialLabel').textContent = social.label_localized;
+                    document.getElementById('socialLabel').style.color = getLabelColor(social.score);
+
+                    // Update AI Suggestion
+                    if (analysis.suggestion) {
+                        document.getElementById('aiSuggestion').textContent = analysis.suggestion;
+                    }
+
+                    // Hide loading, show content
+                    loadingDiv.style.display = 'none';
+                    contentDiv.style.display = 'block';
+
+                    console.log('Mental status analysis updated:', analysis);
+                }
+            } catch (error) {
+                console.error('Failed to get mental status analysis:', error);
+                // Show default values on error
+                loadingDiv.style.display = 'none';
+                contentDiv.style.display = 'block';
+            }
+        }
+
+        // Helper functions for styling
+        function getBarColor(score) {
+            if (score >= 80) return 'emerald';
+            if (score >= 65) return 'violet';
+            if (score >= 45) return 'amber';
+            return 'pink';
+        }
+
+        function getLabelColor(score) {
+            if (score >= 80) return '#10b981'; // emerald
+            if (score >= 65) return '#8b5cf6'; // violet
+            if (score >= 45) return '#f59e0b'; // amber
+            return '#ef4444'; // red
+        }
+
+        // Schedule analysis updates
+        function scheduleAnalysisUpdate() {
+            // Initial analysis after chat starts
+            setTimeout(updateMentalStatusAnalysis, 3000);
+
+            // Update every 30 seconds during active conversation
+            setInterval(updateMentalStatusAnalysis, 30000);
         }
 
         // Quick Intent Functions

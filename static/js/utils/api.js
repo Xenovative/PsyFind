@@ -208,6 +208,16 @@ const API = (function() {
      */
     async getLatest(sessionId) {
       return request(`/api/mood/latest?session_id=${encodeURIComponent(sessionId)}`);
+    },
+
+    /**
+     * Get AI-powered mental status analysis
+     * @param {string} sessionId - Session ID
+     * @param {string} language - Language code
+     * @returns {Promise} Mental status analysis
+     */
+    async getMentalStatusAnalysis(sessionId, language = 'en') {
+      return request(`/api/analysis/mental-status?session_id=${encodeURIComponent(sessionId)}&language=${language}`);
     }
   };
 

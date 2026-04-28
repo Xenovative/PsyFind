@@ -1392,7 +1392,169 @@ JSON Response:"""
             "assessment_recommendation": assessment_rec,
             "conversation_stage": conversation_stage
         }
-    
+
+    def analyze_chat_for_mental_status(self, chat_history: List[Dict], language: str = 'en') -> Dict:
+        """Analyze chat history to determine mental status metrics using LLM"""
+
+        if not chat_history or len(chat_history) < 2:
+            # Return default/neutral status if not enough chat history
+            return {
+                "emotional_health": {"score": 50, "label": "neutral", "label_localized": "Neutral" if language == 'en' else "一般"},
+                "stress_level": {"score": 50, "label": "moderate", "label_localized": "Moderate" if language == 'en' else "中等"},
+                "sleep_quality": {"score": 50, "label": "neutral", "label_localized": "Neutral" if language == 'en' else "一般"},
+                "social_activity": {"score": 50, "label": "neutral", "label_localized": "Neutral" if language == 'en' else "一般"},
+                "analysis_summary": "Not enough conversation data" if language == 'en' else "對話數據不足",
+                "suggestion": "Continue chatting to get personalized insights" if language == 'en' else "繼續聊天以獲得個人化建議"
+            }
+
+        # Build conversation summary for analysis
+        conversation_text = "\n".join([
+            f"{msg['role']}: {msg['content']}" for msg in chat_history[-10:]  # Last 10 messages
+        ])
+
+        # Create analysis prompt
+        lang_instruction = "Respond in Traditional Chinese (繁體中文)." if language == 'zh' else "Respond in English."
+
+        prompt = f"""You are a mental health analysis AI. Analyze the following conversation and provide mental status metrics.
+
+Conversation:
+{conversation_text}
+
+{lang_instruction}
+
+Analyze the user's mental state across these 4 dimensions and respond with ONLY a valid JSON object:
+
+1. Emotional Health (0-100): Overall emotional wellbeing based on mood indicators, positive/negative sentiment
+2. Stress Level (0-100): Inverted scale where 0=very stressed, 100=no stress (inverse of stress level)
+3. Sleep Quality (0-100): Based on mentions of sleep issues, fatigue, rest quality
+4. Social Activity (0-100): Based on mentions of social interactions, isolation, connection with others
+
+For each dimension, provide:
+- score: number 0-100
+- label: one of "excellent", "good", "neutral", "needs_attention", "poor"
+- label_localized: the label translated to the user's language
+
+Also provide:
+- analysis_summary: A brief 1-sentence summary of the user's current state
+- suggestion: A helpful 1-sentence suggestion
+
+Response format:
+{{
+    "emotional_health": {{"score": 65, "label": "good", "label_localized": "Good/良好"}},
+    "stress_level": {{"score": 45, "label": "moderate", "label_localized": "Moderate/中等"}},
+    "sleep_quality": {{"score": 70, "label": "good", "label_localized": "Good/良好"}},
+    "social_activity": {{"score": 55, "label": "neutral", "label_localized": "Neutral/一般"}},
+    "analysis_summary": "Brief summary here",
+    "suggestion": "Helpful suggestion here"
+}}
+
+Respond with ONLY the JSON object, nothing else."""
+
+        try:
+            # Try LLM analysis first
+            if self.preferred_provider == 'openai' and self.openai_api_key:
+                response = self._query_openai(prompt)
+            elif self._is_ollama_available():
+                response = self._query_ollama(prompt)
+            else:
+                raise Exception("No LLM available")
+
+            # Parse the JSON response
+            import json
+            import re
+
+            # Extract JSON from response
+            json_match = re.search(r'\{.*\}', response, re.DOTALL)
+            if json_match:
+                analysis = json.loads(json_match.group())
+
+                # Validate required fields
+                required_fields = ['emotional_health', 'stress_level', 'sleep_quality', 'social_activity']
+                for field in required_fields:
+                    if field not in analysis:
+                        analysis[field] = {"score": 50, "label": "neutral", "label_localized": "Neutral"}
+
+                return analysis
+
+        except Exception as e:
+            logger.error(f"LLM mental status analysis failed: {str(e)}")
+
+        # Fallback: Simple keyword-based analysis
+        return self._fallback_mental_status_analysis(chat_history, language)
+
+    def _fallback_mental_status_analysis(self, chat_history: List[Dict], language: str) -> Dict:
+        """Fallback keyword-based mental status analysis"""
+
+        user_messages = ' '.join([msg['content'].lower() for msg in chat_history if msg['role'] == 'user'])
+
+        # Simple keyword scoring
+        emotional_keywords = {
+            'positive': ['happy', 'good', 'great', 'excited', 'joy', '开心', '好', '棒', '愉快'],
+            'negative': ['sad', 'depressed', 'upset', 'angry', 'frustrated', '难过', '沮丧', '生气', '烦']
+        }
+
+        stress_keywords = {
+            'high': ['stressed', 'overwhelmed', 'anxious', 'worried', 'panic', '压力大', '焦虑', '担心', '紧张'],
+            'low': ['calm', 'relaxed', 'peaceful', '轻松', '平静', '放松']
+        }
+
+        sleep_keywords = {
+            'poor': ['insomnia', 'tired', 'exhausted', 'fatigue', '失眠', '累', '疲惫', '睡不好', '睡不着'],
+            'good': ['rested', 'refreshed', 'slept well', '精神', '睡得好', '休息好']
+        }
+
+        social_keywords = {
+            'active': ['friends', 'family', 'social', 'hanging out', '朋友', '家人', '社交', '聚会'],
+            'isolated': ['alone', 'lonely', 'isolated', 'no one', '孤独', '孤单', '没人', '隔离']
+        }
+
+        # Calculate scores (0-100)
+        emotional_score = 50
+        if any(k in user_messages for k in emotional_keywords['positive']):
+            emotional_score = 70
+        if any(k in user_messages for k in emotional_keywords['negative']):
+            emotional_score = 35
+
+        stress_score = 50
+        if any(k in user_messages for k in stress_keywords['high']):
+            stress_score = 25  # Inverted - low score = high stress
+        if any(k in user_messages for k in stress_keywords['low']):
+            stress_score = 75
+
+        sleep_score = 50
+        if any(k in user_messages for k in sleep_keywords['poor']):
+            sleep_score = 30
+        if any(k in user_messages for k in sleep_keywords['good']):
+            sleep_score = 75
+
+        social_score = 50
+        if any(k in user_messages for k in social_keywords['active']):
+            social_score = 70
+        if any(k in user_messages for k in social_keywords['isolated']):
+            social_score = 30
+
+        # Determine labels based on scores
+        def get_label(score):
+            if score >= 80: return "excellent", ("Excellent" if language == 'en' else "優秀")
+            if score >= 65: return "good", ("Good" if language == 'en' else "良好")
+            if score >= 45: return "neutral", ("Neutral" if language == 'en' else "一般")
+            if score >= 25: return "needs_attention", ("Needs Attention" if language == 'en' else "需要關注")
+            return "poor", ("Poor" if language == 'en' else "不佳")
+
+        emotional_label, emotional_localized = get_label(emotional_score)
+        stress_label, stress_localized = get_label(stress_score)
+        sleep_label, sleep_localized = get_label(sleep_score)
+        social_label, social_localized = get_label(social_score)
+
+        return {
+            "emotional_health": {"score": emotional_score, "label": emotional_label, "label_localized": emotional_localized},
+            "stress_level": {"score": stress_score, "label": stress_label, "label_localized": stress_localized},
+            "sleep_quality": {"score": sleep_score, "label": sleep_label, "label_localized": sleep_localized},
+            "social_activity": {"score": social_score, "label": social_label, "label_localized": social_localized},
+            "analysis_summary": "Based on conversation analysis" if language == 'en' else "基於對話分析",
+            "suggestion": "Continue chatting for more personalized insights" if language == 'en' else "繼續聊天以獲得更個人化的建議"
+        }
+
     def _is_ollama_available(self) -> bool:
         """Check if Ollama service is available"""
         try:
@@ -2715,6 +2877,52 @@ def get_latest_mood():
     except Exception as e:
         logger.error(f"Get latest mood error: {str(e)}")
         return jsonify({"error": "Failed to get latest mood"}), 500
+
+@app.route('/api/analysis/mental-status', methods=['GET'])
+def get_mental_status_analysis():
+    """Get AI-powered mental status analysis for a session's chat history"""
+    try:
+        session_id = request.args.get('session_id')
+        language = request.args.get('language', 'en')
+
+        if not session_id:
+            return jsonify({"error": "session_id is required"}), 400
+
+        # Validate language
+        if language not in ['en', 'zh']:
+            language = 'en'
+
+        # Get chat history for this session
+        chat_history = db_manager.get_chat_history(session_id, limit=20)
+
+        if not chat_history or len(chat_history) < 2:
+            return jsonify({
+                "success": True,
+                "session_id": session_id,
+                "analysis": {
+                    "emotional_health": {"score": 50, "label": "neutral", "label_localized": "Neutral" if language == 'en' else "一般"},
+                    "stress_level": {"score": 50, "label": "moderate", "label_localized": "Moderate" if language == 'en' else "中等"},
+                    "sleep_quality": {"score": 50, "label": "neutral", "label_localized": "Neutral" if language == 'en' else "一般"},
+                    "social_activity": {"score": 50, "label": "neutral", "label_localized": "Neutral" if language == 'en' else "一般"},
+                    "analysis_summary": "Not enough conversation data" if language == 'en' else "對話數據不足",
+                    "suggestion": "Continue chatting to get personalized insights" if language == 'en' else "繼續聊天以獲得個人化建議"
+                },
+                "message": "Not enough chat history for analysis"
+            })
+
+        # Perform AI analysis
+        analysis = llm_service.analyze_chat_for_mental_status(chat_history, language)
+
+        return jsonify({
+            "success": True,
+            "session_id": session_id,
+            "analysis": analysis,
+            "message_count": len(chat_history)
+        })
+
+    except Exception as e:
+        logger.error(f"Mental status analysis error: {str(e)}")
+        return jsonify({"error": "Failed to analyze mental status"}), 500
 
 # Admin Routes
 @app.route('/admin/login', methods=['GET', 'POST'])

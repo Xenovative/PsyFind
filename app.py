@@ -2701,8 +2701,15 @@ def analyze():
             if key in data:
                 responses[key] = data[key]
 
+        # Debug logging
+        logger.info(f"Assessment submission: type={assessment_type}, received={len(responses)}/{question_count} responses")
+        logger.info(f"Request keys: {list(data.keys())}")
+        logger.info(f"Extracted responses: {responses}")
+
         if len(responses) < question_count:
-            return jsonify({"error": "Please complete all questionnaire items"}), 400
+            missing = [f'q{i}' for i in range(1, question_count + 1) if f'q{i}' not in responses]
+            logger.warning(f"Missing responses: {missing}")
+            return jsonify({"error": f"Please complete all questionnaire items. Missing: {missing}"}), 400
 
         # Analyze responses based on assessment type
         if assessment_type == 'whiteley':

@@ -3,227 +3,285 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PsyFind Admin Login</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="description" content="PsyFind Admin Login - Secure administration panel">
+    <title data-lang="page_title">PsyFind Admin Login</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
+          integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" 
+          crossorigin="anonymous" referrerpolicy="no-referrer">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    
+    <!-- Page-specific styles -->
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .page--login {
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: var(--space-5);
+            background: linear-gradient(135deg, var(--color-primary-600) 0%, var(--color-secondary-700) 100%);
         }
 
-        .login-container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            padding: 40px;
+        .login-card {
+            background: var(--bg-elevated);
+            border-radius: var(--radius-3xl);
+            box-shadow: var(--shadow-2xl);
+            padding: var(--space-10);
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             text-align: center;
         }
 
-        .login-header {
-            margin-bottom: 30px;
+        .login-card__icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-secondary-500) 100%);
+            border-radius: var(--radius-2xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--space-6);
+            font-size: var(--text-3xl);
+            color: var(--color-white);
         }
 
-        .login-header i {
-            font-size: 3rem;
-            color: #667eea;
-            margin-bottom: 15px;
+        .login-card__title {
+            font-size: var(--text-2xl);
+            font-weight: var(--font-semibold);
+            color: var(--text-primary);
+            margin-bottom: var(--space-2);
         }
 
-        .login-header h1 {
-            color: #2c3e50;
-            font-size: 1.8rem;
-            margin-bottom: 5px;
+        .login-card__subtitle {
+            color: var(--text-muted);
+            margin-bottom: var(--space-8);
         }
 
-        .login-header p {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
+        .login-form {
             text-align: left;
         }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #2c3e50;
-            font-weight: 600;
+        .login-form .form-group {
+            margin-bottom: var(--space-5);
         }
 
-        .form-group input {
+        .login-form .btn {
             width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e1e8ed;
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
+            margin-top: var(--space-4);
         }
 
-        .form-group input:focus {
-            outline: none;
-            border-color: #667eea;
+        .login-card__footer {
+            margin-top: var(--space-8);
+            padding-top: var(--space-6);
+            border-top: 1px solid var(--border-light);
         }
 
-        .login-btn {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-            margin-bottom: 20px;
+        .login-card__back-link {
+            color: var(--text-link);
+            font-size: var(--text-sm);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
         }
 
-        .login-btn:hover {
-            transform: translateY(-2px);
+        .login-card__back-link:hover {
+            color: var(--text-link-hover);
         }
 
-        .login-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
+        /* Alert for development mode */
+        .dev-notice {
+            background: var(--color-info-50);
+            border: 1px solid var(--color-info-200);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            margin-top: var(--space-6);
+            font-size: var(--text-sm);
         }
 
-        .error-message {
-            background: #fee;
-            color: #c33;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
+        .dev-notice__title {
+            font-weight: var(--font-semibold);
+            color: var(--color-info-700);
+            margin-bottom: var(--space-2);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
         }
 
-        .credentials-info {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
-            font-size: 0.85rem;
-            color: #666;
+        .dev-notice__content {
+            color: var(--color-info-800);
         }
 
-        .credentials-info h4 {
-            color: #2c3e50;
-            margin-bottom: 8px;
+        .dev-notice__content code {
+            background: var(--color-info-100);
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
         }
 
-        .back-link {
-            margin-top: 20px;
-        }
+        @media (max-width: 480px) {
+            .page--login {
+                padding: var(--space-4);
+            }
 
-        .back-link a {
-            color: #667eea;
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
+            .login-card {
+                padding: var(--space-6);
+            }
 
-        .back-link a:hover {
-            text-decoration: underline;
+            .login-card__icon {
+                width: 60px;
+                height: 60px;
+                font-size: var(--text-2xl);
+            }
         }
     </style>
 </head>
-<body>
-    <div class="login-container">
-        <div class="login-header">
+<body class="page--login">
+    <main class="login-card">
+        <div class="login-card__icon" aria-hidden="true">
             <i class="fas fa-shield-alt"></i>
-            <h1>Admin Login</h1>
-            <p>PsyFind Administration Panel</p>
         </div>
+        
+        <h1 class="login-card__title" data-lang="admin_login">Admin Login</h1>
+        <p class="login-card__subtitle" data-lang="admin_subtitle">PsyFind Administration Panel</p>
 
-        <div class="error-message" id="errorMessage"></div>
-
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" required>
+        <form class="login-form" id="loginForm" novalidate>
+            <div class="alert alert--error" id="errorMessage" role="alert" style="display: none;">
+                <i class="fas fa-exclamation-circle alert__icon" aria-hidden="true"></i>
+                <div class="alert__content">
+                    <p class="alert__message" id="errorText"></p>
+                </div>
             </div>
 
             <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
+                <label for="username" class="form-group__label form-group__label--required" data-lang="username">
+                    Username
+                </label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    class="form-input form-input--lg"
+                    required
+                    autocomplete="username"
+                    aria-required="true"
+                    data-lang-placeholder="enter_username"
+                    placeholder="Enter your username"
+                >
             </div>
 
-            <button type="submit" class="login-btn" id="loginBtn">
-                <i class="fas fa-sign-in-alt"></i> Login
+            <div class="form-group">
+                <label for="password" class="form-group__label form-group__label--required" data-lang="password">
+                    Password
+                </label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    class="form-input form-input--lg"
+                    required
+                    autocomplete="current-password"
+                    aria-required="true"
+                    data-lang-placeholder="enter_password"
+                    placeholder="Enter your password"
+                >
+            </div>
+
+            <button type="submit" class="btn btn--primary btn--lg" id="loginBtn">
+                <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
+                <span data-lang="sign_in">Sign In</span>
             </button>
         </form>
 
-        <div class="credentials-info">
-            <h4>Default Credentials:</h4>
-            <p><strong>Admin:</strong> admin / admin123</p>
-            <p><strong>Doctor:</strong> doctor / doctor123</p>
+        <div class="dev-notice">
+            <div class="dev-notice__title">
+                <i class="fas fa-info-circle" aria-hidden="true"></i>
+                <span data-lang="default_credentials">Default Credentials</span>
+            </div>
+            <div class="dev-notice__content">
+                <p><strong data-lang="admin">Admin:</strong> <code>admin / admin123</code></p>
+                <p><strong data-lang="doctor_user">Doctor:</strong> <code>doctor / doctor123</code></p>
+            </div>
         </div>
 
-        <div class="back-link">
-            <a href="/"><i class="fas fa-arrow-left"></i> Back to PsyFind</a>
+        <div class="login-card__footer">
+            <a href="/" class="login-card__back-link">
+                <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                <span data-lang="back_to_main">Back to PsyFind</span>
+            </a>
         </div>
-    </div>
+    </main>
 
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/utils/i18n.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/utils/api.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/components/toast.js') }}"></script>
+    
     <script>
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        // Initialize i18n
+        I18n.init('en');
+
+        // DOM Elements
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+
+        // Form submission
+        loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const loginBtn = document.getElementById('loginBtn');
-            const errorMessage = document.getElementById('errorMessage');
-            const username = document.getElementById('username').value;
+            const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
             
-            // Clear previous errors
-            errorMessage.style.display = 'none';
+            // Validation
+            if (!username || !password) {
+                showError(I18n.t('fill_all_fields') || 'Please fill in all fields');
+                return;
+            }
             
-            // Disable button and show loading
+            // Hide previous errors
+            hideError();
+            
+            // Loading state
             loginBtn.disabled = true;
-            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+            const originalText = loginBtn.innerHTML;
+            loginBtn.innerHTML = `<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> ${I18n.t('signing_in') || 'Signing in...'}`;
             
             try {
-                const response = await fetch('/admin/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        username: username,
-                        password: password
-                    })
-                });
+                const response = await API.Admin.login(username, password);
                 
-                const data = await response.json();
-                
-                if (response.ok && data.success) {
-                    // Redirect to dashboard
-                    window.location.href = data.redirect;
+                if (response.success) {
+                    Toast.success(I18n.t('login_success') || 'Login successful');
+                    window.location.href = response.redirect || '/admin/dashboard';
                 } else {
-                    // Show error
-                    errorMessage.textContent = data.error || 'Login failed';
-                    errorMessage.style.display = 'block';
+                    showError(response.error || I18n.t('login_failed') || 'Login failed');
                 }
             } catch (error) {
-                errorMessage.textContent = 'Network error. Please try again.';
-                errorMessage.style.display = 'block';
+                console.error('Login error:', error);
+                showError(I18n.t('network_error') || 'Network error. Please try again.');
             } finally {
-                // Re-enable button
                 loginBtn.disabled = false;
-                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
+                loginBtn.innerHTML = originalText;
             }
         });
+
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.style.display = 'flex';
+        }
+
+        function hideError() {
+            errorMessage.style.display = 'none';
+        }
     </script>
 </body>
 </html>

@@ -2285,7 +2285,91 @@ class DSMAnalyzer:
             "analysis": matches[:3],
             "recommendations": self.get_gad7_recommendations(total_score, severity, age)
         }
-    
+
+    def analyze_isi_responses(self, responses: Dict[str, int], age: int, duration: str) -> Dict:
+        """Analyze ISI (Insomnia Severity Index) questionnaire responses"""
+
+        # Calculate ISI total score (0-28)
+        total_score = sum(responses.values())
+
+        # Interpret ISI scores
+        if total_score >= 22:
+            severity = "severe"
+            interpretation = "Severe insomnia"
+        elif total_score >= 15:
+            severity = "moderate"
+            interpretation = "Moderate insomnia"
+        elif total_score >= 8:
+            severity = "mild"
+            interpretation = "Mild insomnia"
+        else:
+            severity = "minimal"
+            interpretation = "No clinically significant insomnia"
+
+        # Generate DSM-5-TR matches based on ISI scores
+        matches = []
+
+        if total_score >= 15:
+            confidence = min(((total_score - 15) / 13) * 100 + 70, 95)
+            matches.append({
+                "disorder": "Insomnia Disorder",
+                "disorder_zh": "失眠障礙",
+                "code": "307.42",
+                "confidence": confidence,
+                "matched_keywords": ["difficulty initiating sleep", "difficulty maintaining sleep", "early morning awakening", "sleep dissatisfaction"],
+                "matched_keywords_zh": ["入睡困難", "難以維持睡眠", "早醒", "睡眠不滿意"],
+                "criteria": {
+                    "A": "Difficulty initiating or maintaining sleep, or early morning awakening",
+                    "B": "Sleep difficulty occurs at least 3 nights per week",
+                    "C": "Present for at least 3 months"
+                }
+            })
+
+        matches.sort(key=lambda x: x["confidence"], reverse=True)
+
+        return {
+            "isi_score": total_score,
+            "severity": severity,
+            "interpretation": interpretation,
+            "analysis": matches[:3],
+            "recommendations": self.get_isi_recommendations(total_score, severity, age)
+        }
+
+    def get_isi_recommendations(self, score: int, severity: str, age: int) -> List[str]:
+        """Generate recommendations based on ISI results"""
+        recommendations = [
+            "This assessment is for screening purposes only and does not constitute a medical diagnosis.",
+            "Please consult with a qualified mental health professional for proper evaluation."
+        ]
+
+        if severity == "severe":
+            recommendations.extend([
+                "Your responses suggest severe insomnia that significantly impacts your daily functioning.",
+                "Consider consulting a sleep specialist or psychiatrist for evaluation.",
+                "Cognitive Behavioral Therapy for Insomnia (CBT-I) is the recommended first-line treatment.",
+                "Sleep medications may provide short-term relief but should be used under medical supervision."
+            ])
+        elif severity == "moderate":
+            recommendations.extend([
+                "Your responses indicate moderate insomnia that may be affecting your quality of life.",
+                "Consider implementing sleep hygiene practices and relaxation techniques.",
+                "If symptoms persist, consult with a healthcare provider about treatment options.",
+                "CBT-I has been shown to be effective for moderate insomnia."
+            ])
+        elif severity == "mild":
+            recommendations.extend([
+                "Your responses suggest mild insomnia symptoms.",
+                "Try improving sleep hygiene: regular sleep schedule, limiting caffeine, creating a restful environment.",
+                "Relaxation techniques like breathing exercises may help improve sleep quality."
+            ])
+        else:
+            recommendations.extend([
+                "Your sleep appears to be within normal ranges.",
+                "Continue maintaining good sleep habits to preserve healthy sleep patterns."
+            ])
+
+        return recommendations
+
     def get_phq9_recommendations(self, score: int, severity: str, age: int) -> List[str]:
         """Generate recommendations based on PHQ-9 results"""
         recommendations = [
@@ -2602,23 +2686,24 @@ def analyze():
         # Extract questionnaire responses
         responses = {}
         question_count = 7  # Default for Whiteley
-        
+
         if assessment_type == 'phq9':
             question_count = 9
         elif assessment_type == 'gad7':
             question_count = 7
         elif assessment_type == 'whiteley':
             question_count = 7
-        
+        elif assessment_type == 'isi':
+            question_count = 7
+
         for i in range(1, question_count + 1):
-            q_key = f'q{i}'
-            if q_key in data:
-                responses[q_key] = int(data[q_key])
-        
-        # Validate input
-        if len(responses) != question_count:
+            key = f'q{i}'
+            if key in data:
+                responses[key] = data[key]
+
+        if len(responses) < question_count:
             return jsonify({"error": "Please complete all questionnaire items"}), 400
-        
+
         # Analyze responses based on assessment type
         if assessment_type == 'whiteley':
             analysis = analyzer.analyze_whiteley_responses(responses, age, duration)
@@ -2626,6 +2711,8 @@ def analyze():
             analysis = analyzer.analyze_phq9_responses(responses, age, duration)
         elif assessment_type == 'gad7':
             analysis = analyzer.analyze_gad7_responses(responses, age, duration)
+        elif assessment_type == 'isi':
+            analysis = analyzer.analyze_isi_responses(responses, age, duration)
         else:
             # Default to Whiteley
             analysis = analyzer.analyze_whiteley_responses(responses, age, duration)
@@ -2652,6 +2739,8 @@ def analyze():
             assessment_summary = f"PHQ-9 Depression Assessment completed. Total score: {analysis['phq9_score']}/27. Severity: {analysis['severity']}. {analysis['interpretation']}"
         elif assessment_type == 'gad7':
             assessment_summary = f"GAD-7 Anxiety Assessment completed. Total score: {analysis['gad7_score']}/21. Severity: {analysis['severity']}. {analysis['interpretation']}"
+        elif assessment_type == 'isi':
+            assessment_summary = f"ISI Insomnia Severity Assessment completed. Total score: {analysis['isi_score']}/28. Severity: {analysis['severity']}. {analysis['interpretation']}"
         else:
             # Generic fallback
             assessment_summary = f"Mental health assessment completed. Severity: {analysis.get('severity', 'unknown')}. {analysis.get('interpretation', 'Assessment results available.')}"
@@ -2687,7 +2776,7 @@ def analyze():
                 session_id=session_id,
                 assessment_type=assessment_type,
                 responses=data,
-                score=analysis.get('whiteley_score') or analysis.get('phq9_score') or analysis.get('gad7_score') or 0,
+                score=analysis.get('whiteley_score') or analysis.get('phq9_score') or analysis.get('gad7_score') or analysis.get('isi_score') or 0,
                 severity=analysis.get('severity', 'unknown'),
                 interpretation=analysis.get('interpretation', ''),
                 dsm_analysis=analysis.get('analysis', []),

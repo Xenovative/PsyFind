@@ -12,6 +12,9 @@ const I18n = (function() {
   // Translation dictionaries
   const translationData = {
     en: {
+      // Page
+      page_title: 'PsyFind - AI Mental Health Companion',
+
       // Header
       title: 'PsyFind',
       subtitle: 'AI-Powered Psychiatric Analysis & Specialist Matching',
@@ -145,14 +148,23 @@ const I18n = (function() {
       phq9_q9: 'Thoughts that you would be better off dead or hurting yourself',
       
       // GAD-7 Questions
-      gad7_q1: 'Feeling nervous, anxious, or on edge',
+      gad7_q1: 'Feeling nervous, anxious or on edge',
       gad7_q2: 'Not being able to stop or control worrying',
       gad7_q3: 'Worrying too much about different things',
       gad7_q4: 'Trouble relaxing',
       gad7_q5: 'Being so restless that it is hard to sit still',
       gad7_q6: 'Becoming easily annoyed or irritable',
       gad7_q7: 'Feeling afraid as if something awful might happen',
-      
+
+      // ISI (Insomnia Severity Index) Questions
+      isi_q1: 'Difficulty falling asleep',
+      isi_q2: 'Difficulty staying asleep',
+      isi_q3: 'Problems waking up too early',
+      isi_q4: 'How satisfied/dissatisfied are you with your current sleep pattern?',
+      isi_q5: 'How noticeable to others do you think your sleep problem is?',
+      isi_q6: 'How worried/distressed are you about your current sleep problem?',
+      isi_q7: 'To what extent do you consider your sleep problem to interfere with your daily functioning?',
+
       // Validation Messages
       please_fill_required: 'Please fill in all required fields',
       thank_you_info: 'Thank you for providing your information',
@@ -267,6 +279,7 @@ const I18n = (function() {
       // Mental Status Widget
       widget_status: 'Mental Status',
       badge_ai: 'AI Analysis',
+      ai_suggestion_label: 'AI Suggestion:',
       status_emotional: 'Emotional Health',
       status_attention: 'Needs Attention',
       status_stress: 'Stress Level',
@@ -328,10 +341,24 @@ const I18n = (function() {
       practice_journal_desc: 'Record three things to be thankful for',
       practice_sound: 'Nature Sound Healing',
       practice_sound_desc: 'Rain, ocean waves, forest',
+      time_3min: '3 min',
+      time_5min: '5 min',
+      time_10min: '10 min',
+      time_15min: '15 min',
 
       // Privacy Banner
       privacy_title: 'Your conversations are completely private',
       privacy_text: 'We use end-to-end encryption. Your conversation content will never be shared with third parties.',
+      cert_iso: '✓ ISO 27001 Certified',
+      cert_hipaa: '✓ HIPAA Compliant',
+      cert_encryption: '✓ End-to-end Encryption',
+      cert_anonymous: '✓ Anonymous Chat',
+
+      // Footer
+      footer_copyright: '© 2025 PsyFind · Protecting your mental health with love and technology 💜',
+
+      // Medical Disclaimer
+      medical_disclaimer: 'This cannot replace professional medical diagnosis and treatment.',
 
       // Quick Intent Messages
       intent_vent: "I want to talk about what's been on my mind...",
@@ -341,9 +368,23 @@ const I18n = (function() {
       // AI Analysis Loading
       analyzing_chat: 'Analyzing conversation...',
       analysis_complete: 'Analysis complete',
+
+      // Accessibility Labels (ARIA)
+      aria_chat_interface: 'Chat interface',
+      aria_sound: 'Sound',
+      aria_more_options: 'More options',
+      aria_add_emoji: 'Add emoji',
+      aria_attach_file: 'Attach file',
+      aria_voice_input: 'Voice input',
+      aria_type_message: 'Type your message',
+      aria_send_message: 'Send message',
+      aria_quick_responses: 'Quick response options',
     },
 
     zh: {
+      // Page
+      page_title: 'PsyFind - AI心理健康夥伴',
+
       // Header
       title: 'PsyFind',
       subtitle: 'AI驅動精神科分析與專科醫生配對',
@@ -484,7 +525,16 @@ const I18n = (function() {
       gad7_q5: '煩躁不安，難以靜坐',
       gad7_q6: '容易生氣或煩躁',
       gad7_q7: '感到害怕，好像會發生不好的事情',
-      
+
+      // ISI (失眠嚴重程度指數) Questions
+      isi_q1: '入睡困難',
+      isi_q2: '難以維持睡眠',
+      isi_q3: '太早醒來的問題',
+      isi_q4: '您對目前的睡眠模式有多滿意/不滿意？',
+      isi_q5: '您認為您的睡眠問題對他人來說有多明顯？',
+      isi_q6: '您對目前的睡眠問題有多擔心/困擾？',
+      isi_q7: '您認為睡眠問題在多大程度上影響了您的日常功能？',
+
       // Validation Messages
       please_fill_required: '請填寫所有必填欄位',
       thank_you_info: '感謝您提供您的信息',
@@ -599,6 +649,7 @@ const I18n = (function() {
       // Mental Status Widget
       widget_status: '心理狀態',
       badge_ai: 'AI 分析',
+      ai_suggestion_label: 'AI 建議：',
       status_emotional: '情緒健康',
       status_attention: '需要關注',
       status_stress: '壓力水平',
@@ -660,10 +711,24 @@ const I18n = (function() {
       practice_journal_desc: '記錄三件值得感謝的事',
       practice_sound: '自然聲音療癒',
       practice_sound_desc: '雨聲、海浪、森林',
+      time_3min: '3 分鐘',
+      time_5min: '5 分鐘',
+      time_10min: '10 分鐘',
+      time_15min: '15 分鐘',
 
       // Privacy Banner
       privacy_title: '您的對話完全保密',
       privacy_text: '我們使用端對端加密。您的對話內容絕不會與第三方分享。',
+      cert_iso: '✓ ISO 27001 認證',
+      cert_hipaa: '✓ HIPAA 合規',
+      cert_encryption: '✓ 端對端加密',
+      cert_anonymous: '✓ 匿名聊天',
+
+      // Footer
+      footer_copyright: '© 2025 PsyFind · 用愛與科技守護您的心理健康 💜',
+
+      // Medical Disclaimer
+      medical_disclaimer: '這不能取代專業的醫療診斷和治療。',
 
       // Quick Intent Messages
       intent_vent: '我想聊聊心裡在想什麼...',
@@ -673,6 +738,17 @@ const I18n = (function() {
       // AI Analysis Loading
       analyzing_chat: '正在分析對話內容...',
       analysis_complete: '分析完成',
+
+      // Accessibility Labels (ARIA)
+      aria_chat_interface: '聊天介面',
+      aria_sound: '聲音',
+      aria_more_options: '更多選項',
+      aria_add_emoji: '添加表情',
+      aria_attach_file: '附加檔案',
+      aria_voice_input: '語音輸入',
+      aria_type_message: '輸入您的訊息',
+      aria_send_message: '發送訊息',
+      aria_quick_responses: '快速回覆選項',
     }
   };
 
@@ -730,6 +806,14 @@ const I18n = (function() {
       const key = element.getAttribute('data-lang-placeholder');
       if (translations[key]) {
         element.placeholder = translations[key];
+      }
+    });
+
+    // Translate aria-labels
+    document.querySelectorAll('[data-lang-aria]').forEach(element => {
+      const key = element.getAttribute('data-lang-aria');
+      if (translations[key]) {
+        element.setAttribute('aria-label', translations[key]);
       }
     });
   }

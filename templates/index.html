@@ -125,7 +125,7 @@
         <div class="chat-layout">
             <!-- Chat Section -->
             <section class="chat-section">
-                <div class="chat-interface" role="region" aria-label="Chat interface">
+                <div class="chat-interface" role="region" aria-label="Chat interface" data-lang-aria="aria_chat_interface">
                     <div class="chat-interface__header">
                         <div class="chat-interface__header-main">
                             <div class="chat-interface__avatar">
@@ -137,10 +137,10 @@
                             </div>
                         </div>
                         <div class="chat-interface__actions">
-                            <button class="chat-interface__action-btn" aria-label="Sound">
+                            <button class="chat-interface__action-btn" aria-label="Sound" data-lang-aria="aria_sound">
                                 <i class="fas fa-volume-up"></i>
                             </button>
-                            <button class="chat-interface__action-btn" aria-label="More options">
+                            <button class="chat-interface__action-btn" aria-label="More options" data-lang-aria="aria_more_options">
                                 <i class="fas fa-ellipsis-h"></i>
                             </button>
                         </div>
@@ -163,10 +163,10 @@
                             </button>
                         </div>
                         <div class="chat-input-area">
-                            <button class="chat-input-area__btn" aria-label="Add emoji">
+                            <button class="chat-input-area__btn" aria-label="Add emoji" data-lang-aria="aria_add_emoji">
                                 <i class="far fa-smile"></i>
                             </button>
-                            <button class="chat-input-area__btn" aria-label="Attach file">
+                            <button class="chat-input-area__btn" aria-label="Attach file" data-lang-aria="aria_attach_file">
                                 <i class="fas fa-paperclip"></i>
                             </button>
                             <textarea
@@ -175,22 +175,22 @@
                                 data-lang-placeholder="chat_placeholder"
                                 placeholder="Type anything, this is a safe space..."
                                 disabled
-                                aria-label="Type your message"
+                                aria-label="Type your message" data-lang-aria="aria_type_message"
                                 rows="1"
                             ></textarea>
-                            <button class="chat-input-area__btn" aria-label="Voice input">
+                            <button class="chat-input-area__btn" aria-label="Voice input" data-lang-aria="aria_voice_input">
                                 <i class="fas fa-microphone"></i>
                             </button>
                             <button
                                 id="sendButton"
                                 class="chat-input-area__send"
                                 disabled
-                                aria-label="Send message"
+                                aria-label="Send message" data-lang-aria="aria_send_message">
                             >
                                 <span data-lang="send">Send</span>
                             </button>
                         </div>
-                        <div class="quick-responses" id="quickResponses" role="list" aria-label="Quick response options">
+                        <div class="quick-responses" id="quickResponses" role="list" aria-label="Quick response options" data-lang-aria="aria_quick_responses">
                             <!-- Quick response buttons will be added here -->
                         </div>
                     </div>
@@ -249,7 +249,7 @@
                         </div>
                         <div style="margin-top: var(--space-4); padding: var(--space-3); background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%); border-radius: var(--radius-xl); border: 1px solid rgba(139, 92, 246, 0.15);">
                             <p class="text-sm" style="font-size: var(--text-xs); color: var(--text-secondary); line-height: var(--leading-relaxed);">
-                                <span style="color: #8b5cf6; font-weight: var(--font-semibold);">💡 AI Suggestion:</span>
+                                <span style="color: #8b5cf6; font-weight: var(--font-semibold);">💡 <span data-lang="ai_suggestion_label">AI Suggestion:</span></span>
                                 <span id="aiSuggestion" data-lang="suggestion_text">Try completing the PHQ-9 assessment and practice breathing exercises before bed.</span>
                             </p>
                         </div>
@@ -408,7 +408,7 @@
                             <h4 class="practice-card__title" data-lang="practice_breathing">4-7-8 Breathing</h4>
                             <p class="practice-card__desc" data-lang="practice_breathing_desc">Quick relaxation, improves sleep</p>
                         </div>
-                        <div class="practice-card__time">5 min</div>
+                        <div class="practice-card__time" data-lang="time_5min">5 min</div>
                     </div>
                     <div class="practice-card practice-card--cyan">
                         <div class="practice-card__icon practice-card__icon--cyan">🧘‍♀️</div>
@@ -416,7 +416,7 @@
                             <h4 class="practice-card__title" data-lang="practice_meditation">Guided Meditation</h4>
                             <p class="practice-card__desc" data-lang="practice_meditation_desc">Relieves anxiety, returns to present</p>
                         </div>
-                        <div class="practice-card__time">10 min</div>
+                        <div class="practice-card__time" data-lang="time_10min">10 min</div>
                     </div>
                     <div class="practice-card practice-card--amber">
                         <div class="practice-card__icon practice-card__icon--amber">✍️</div>
@@ -424,7 +424,7 @@
                             <h4 class="practice-card__title" data-lang="practice_journal">Gratitude Journal</h4>
                             <p class="practice-card__desc" data-lang="practice_journal_desc">Record three things to be thankful for</p>
                         </div>
-                        <div class="practice-card__time">3 min</div>
+                        <div class="practice-card__time" data-lang="time_3min">3 min</div>
                     </div>
                     <div class="practice-card practice-card--rose">
                         <div class="practice-card__icon practice-card__icon--rose">🎵</div>
@@ -432,7 +432,7 @@
                             <h4 class="practice-card__title" data-lang="practice_sound">Nature Sound Healing</h4>
                             <p class="practice-card__desc" data-lang="practice_sound_desc">Rain, ocean waves, forest</p>
                         </div>
-                        <div class="practice-card__time">∞</div>
+                        <div class="practice-card__time" data-lang="time_15min">15 min</div>
                     </div>
                 </div>
             </div>
@@ -446,20 +446,20 @@
             </div>
             <p class="privacy-banner__text" data-lang="privacy_text">
                 We use end-to-end encryption. Your conversation content will never be shared with third parties.
-                <span class="privacy-banner__highlight">This cannot replace professional medical diagnosis and treatment.</span>
+                <span class="privacy-banner__highlight" data-lang="medical_disclaimer">This cannot replace professional medical diagnosis and treatment.</span>
             </p>
             <div class="privacy-banner__badges">
-                <span>✓ ISO 27001 Certified</span>
-                <span>✓ HIPAA Compliant</span>
-                <span>✓ End-to-end Encryption</span>
-                <span>✓ Anonymous Chat</span>
+                <span data-lang="cert_iso">✓ ISO 27001 Certified</span>
+                <span data-lang="cert_hipaa">✓ HIPAA Compliant</span>
+                <span data-lang="cert_encryption">✓ End-to-end Encryption</span>
+                <span data-lang="cert_anonymous">✓ Anonymous Chat</span>
             </div>
         </div>
     </div>
 
     <!-- Footer -->
     <footer class="main-footer">
-        <p>© 2025 PsyFind · Protecting your mental health with love and technology 💜</p>
+        <p data-lang="footer_copyright">© 2025 PsyFind · Protecting your mental health with love and technology 💜</p>
     </footer>
 
     <!-- Assessment Modal -->
@@ -1020,6 +1020,7 @@
             renderAssessmentSection('whiteley', 7, 'whiteley');
             renderAssessmentSection('phq9', 9, 'phq9');
             renderAssessmentSection('gad7', 7, 'phq9');
+            renderAssessmentSection('isi', 7, 'whiteley'); // ISI uses 0-4 scale like Whiteley
         }
 
         // Assessment Functions
@@ -1149,7 +1150,7 @@
         }
 
         function showAssessment(type) {
-            const validTypes = ['phq9', 'gad7', 'whiteley'];
+            const validTypes = ['phq9', 'gad7', 'whiteley', 'isi'];
             currentAssessment = validTypes.includes(type) ? type : 'phq9';
             assessmentResponses = {};
             
@@ -1192,7 +1193,8 @@
             const titles = {
                 'whiteley': I18n.t('whiteley_title'),
                 'phq9': I18n.t('phq9_title'),
-                'gad7': I18n.t('gad7_title')
+                'gad7': I18n.t('gad7_title'),
+                'isi': I18n.t('assessment_sleep') || 'ISI Sleep Assessment'
             };
             if (title) title.textContent = titles[type] || I18n.t('assessment');
         }

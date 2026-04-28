@@ -22,6 +22,7 @@ const I18n = (function() {
       chat_placeholder: 'Type your message here...',
       status_online: 'Online',
       status_typing: 'Typing...',
+      welcome_message: 'Welcome to PsyFind. I am your clinical assistant. How can I help you today?',
       
       // Quick responses
       quick_feeling_anxious: "I'm feeling anxious",
@@ -35,6 +36,9 @@ const I18n = (function() {
       whiteley_title: 'Whiteley 7 Health Anxiety Assessment',
       phq9_title: 'PHQ-9 Depression Assessment',
       gad7_title: 'GAD-7 Anxiety Assessment',
+      whiteley_tab: 'Health Anxiety',
+      phq9_tab: 'PHQ-9 (Depression)',
+      gad7_tab: 'GAD-7 (Anxiety)',
       assessment_instruction: 'Please answer the following questions honestly.',
       question: 'Question',
       of: 'of',
@@ -74,6 +78,86 @@ const I18n = (function() {
       // Errors
       error_network: 'Network error. Please try again.',
       error_generic: 'Something went wrong. Please try again.',
+      
+      // Disclaimer
+      disclaimer_title: 'Important Disclaimer',
+      disclaimer_text: 'This tool is for informational purposes only and does not provide medical diagnosis or treatment recommendations. Always consult with qualified mental health professionals for proper evaluation and care.',
+      disclaimer_note_title: 'Please Note:',
+      disclaimer_note_1: 'This assessment is a screening tool, not a diagnostic instrument',
+      disclaimer_note_2: 'Results should be discussed with a qualified healthcare provider',
+      disclaimer_note_3: 'If you\'re experiencing a mental health emergency, contact emergency services immediately',
+      disclaimer_note_4: 'Your privacy is protected - no personal data is stored permanently',
+      disclaimer_understand: 'I Understand',
+      disclaimer_close: 'Close',
+      
+      // User Info Modal
+      user_info_title: 'About You',
+      user_info_description: 'Please provide some basic information to help us provide better assistance:',
+      age_label: 'Age',
+      age_placeholder: 'Enter your age',
+      gender_label: 'Gender',
+      select_gender: 'Select gender (optional)',
+      male: 'Male',
+      female: 'Female',
+      non_binary: 'Non-binary',
+      prefer_not_to_say: 'Prefer not to say',
+      duration_label: 'How long have you been experiencing symptoms?',
+      select_duration: 'Select duration',
+      less_than_week: 'Less than a week',
+      '1-2_weeks': '1-2 weeks',
+      '2-4_weeks': '2-4 weeks',
+      '1-3_months': '1-3 months',
+      '3-6_months': '3-6 months',
+      '6-12_months': '6-12 months',
+      more_than_year: 'More than a year',
+      privacy_note: 'Your information is kept private and secure. It\'s only used to provide personalized assistance.',
+      continue: 'Continue',
+      submit_assessment: 'Submit Assessment',
+      assessment: 'Assessment',
+      
+      // Assessment Scale Labels
+      several_days: 'Several days',
+      more_than_half_days: 'More than half the days',
+      nearly_every_day: 'Nearly every day',
+      rarely: 'Rarely',
+      sometimes: 'Sometimes',
+      often: 'Often',
+      very_often: 'Very Often',
+      
+      // Whiteley Questions
+      whiteley_q1: 'Do you often worry about having a serious illness?',
+      whiteley_q2: 'Do you frequently check your body for signs of illness?',
+      whiteley_q3: 'Do health concerns cause you significant distress?',
+      whiteley_q4: 'Do you seek reassurance from doctors or family about your health?',
+      whiteley_q5: 'Do you avoid medical information because it triggers anxiety?',
+      whiteley_q6: 'Do minor symptoms make you worry about serious diseases?',
+      whiteley_q7: 'Do you believe you have a serious illness that doctors haven\'t found?',
+      
+      // PHQ-9 Questions
+      phq9_q1: 'Little interest or pleasure in doing things',
+      phq9_q2: 'Feeling down, depressed, or hopeless',
+      phq9_q3: 'Trouble falling or staying asleep, or sleeping too much',
+      phq9_q4: 'Feeling tired or having little energy',
+      phq9_q5: 'Poor appetite or overeating',
+      phq9_q6: 'Feeling bad about yourself or that you are a failure',
+      phq9_q7: 'Trouble concentrating on things',
+      phq9_q8: 'Moving or speaking slowly, or being fidgety/restless',
+      phq9_q9: 'Thoughts that you would be better off dead or hurting yourself',
+      
+      // GAD-7 Questions
+      gad7_q1: 'Feeling nervous, anxious, or on edge',
+      gad7_q2: 'Not being able to stop or control worrying',
+      gad7_q3: 'Worrying too much about different things',
+      gad7_q4: 'Trouble relaxing',
+      gad7_q5: 'Being so restless that it is hard to sit still',
+      gad7_q6: 'Becoming easily annoyed or irritable',
+      gad7_q7: 'Feeling afraid as if something awful might happen',
+      
+      // Validation Messages
+      please_fill_required: 'Please fill in all required fields',
+      thank_you_info: 'Thank you for providing your information',
+      assessment_completed: 'Assessment completed successfully',
+      failed_submit_assessment: 'Failed to submit assessment',
       
       // Admin
       admin_title: 'Admin Dashboard',
@@ -153,6 +237,7 @@ const I18n = (function() {
       chat_placeholder: '在此輸入您的訊息...',
       status_online: '在線',
       status_typing: '輸入中...',
+      welcome_message: '歡迎使用 PsyFind。我是您的臨床助理。請問今天有什麼我可以幫您的嗎？',
       
       // Quick responses
       quick_feeling_anxious: '我感到焦慮',
@@ -166,6 +251,9 @@ const I18n = (function() {
       whiteley_title: 'Whiteley 7 健康焦慮評估',
       phq9_title: 'PHQ-9 抑鬱症評估',
       gad7_title: 'GAD-7 焦慮症評估',
+      whiteley_tab: '健康焦慮',
+      phq9_tab: 'PHQ-9 (抑鬱)',
+      gad7_tab: 'GAD-7 (焦慮)',
       assessment_instruction: '請誠實回答以下問題。',
       question: '問題',
       of: '/',
@@ -205,6 +293,86 @@ const I18n = (function() {
       // Errors
       error_network: '網絡錯誤，請重試。',
       error_generic: '出現問題，請重試。',
+      
+      // Disclaimer
+      disclaimer_title: '重要聲明',
+      disclaimer_text: '此工具僅供參考，不提供醫療診斷或治療建議。請務必諮詢合格的心理健康專業人員進行適當的評估和護理。',
+      disclaimer_note_title: '請注意：',
+      disclaimer_note_1: '此評估是篩檢工具，而非診斷儀器',
+      disclaimer_note_2: '結果應與合格的醫療保健提供者討論',
+      disclaimer_note_3: '如果您正在經歷心理健康緊急情況，請立即聯繫緊急服務',
+      disclaimer_note_4: '您的隱私受到保護 - 不會永久存儲個人數據',
+      disclaimer_understand: '我明白',
+      disclaimer_close: '關閉',
+      
+      // User Info Modal
+      user_info_title: '關於您',
+      user_info_description: '請提供一些基本信息，以便我們提供更好的協助：',
+      age_label: '年齡',
+      age_placeholder: '輸入您的年齡',
+      gender_label: '性別',
+      select_gender: '選擇性別（可選）',
+      male: '男性',
+      female: '女性',
+      non_binary: '非二元性別',
+      prefer_not_to_say: '不願透露',
+      duration_label: '您出現這些症狀有多久了？',
+      select_duration: '選擇持續時間',
+      less_than_week: '少於一週',
+      '1-2_weeks': '1-2 週',
+      '2-4_weeks': '2-4 週',
+      '1-3_months': '1-3 個月',
+      '3-6_months': '3-6 個月',
+      '6-12_months': '6-12 個月',
+      more_than_year: '超過一年',
+      privacy_note: '您的信息將被保密且安全。它僅用於提供個性化協助。',
+      continue: '繼續',
+      submit_assessment: '提交評估',
+      assessment: '評估',
+      
+      // Assessment Scale Labels
+      several_days: '幾天',
+      more_than_half_days: '超過一半天數',
+      nearly_every_day: '幾乎每天',
+      rarely: '很少',
+      sometimes: '有時',
+      often: '經常',
+      very_often: '非常經常',
+      
+      // Whiteley Questions
+      whiteley_q1: '您是否經常擔心患有嚴重疾病？',
+      whiteley_q2: '您是否經常檢查身體是否有疾病跡象？',
+      whiteley_q3: '健康問題是否給您帶來重大困擾？',
+      whiteley_q4: '您是否會向醫生或家人尋求健康保證？',
+      whiteley_q5: '您是否因為會引發焦慮而迴避醫療資訊？',
+      whiteley_q6: '輕微症狀是否會讓您擔心嚴重疾病？',
+      whiteley_q7: '您是否認為自己患有醫生尚未發現的嚴重疾病？',
+      
+      // PHQ-9 Questions
+      phq9_q1: '做事情的興趣或樂趣減少',
+      phq9_q2: '感到沮喪、抑鬱或絕望',
+      phq9_q3: '入睡困難、睡眠不安或睡眠過多',
+      phq9_q4: '感到疲勞或沒有精力',
+      phq9_q5: '食慾不振或暴飲暴食',
+      phq9_q6: '對自己感覺不好，或認為自己是失敗者',
+      phq9_q7: '難以集中注意力',
+      phq9_q8: '動作或說話緩慢，或煩躁不安',
+      phq9_q9: '認為死了會更好，或想傷害自己的念頭',
+      
+      // GAD-7 Questions
+      gad7_q1: '感到緊張、焦慮或煩躁',
+      gad7_q2: '無法停止或控制擔憂',
+      gad7_q3: '對不同事情過度擔憂',
+      gad7_q4: '難以放鬆',
+      gad7_q5: '煩躁不安，難以靜坐',
+      gad7_q6: '容易生氣或煩躁',
+      gad7_q7: '感到害怕，好像會發生不好的事情',
+      
+      // Validation Messages
+      please_fill_required: '請填寫所有必填欄位',
+      thank_you_info: '感謝您提供您的信息',
+      assessment_completed: '評估成功完成',
+      failed_submit_assessment: '提交評估失敗',
       
       // Admin
       admin_title: '管理員儀表板',

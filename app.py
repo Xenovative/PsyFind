@@ -2169,6 +2169,85 @@ def index():
     """Main page"""
     return render_template('index.html')
 
+@app.route('/api/assessments')
+def get_assessments():
+    """Get available assessment definitions"""
+    assessments = {
+        'whiteley': {
+            'id': 'whiteley',
+            'name': 'Whiteley Health Anxiety Assessment',
+            'name_zh': 'Whiteley 健康焦慮評估',
+            'description': '7-item assessment for health anxiety and hypochondriasis',
+            'question_count': 7,
+            'max_score': 28,
+            'scale': [
+                {'value': 0, 'label': 'Not at all', 'label_zh': '完全沒有'},
+                {'value': 1, 'label': 'Rarely', 'label_zh': '很少'},
+                {'value': 2, 'label': 'Sometimes', 'label_zh': '有時'},
+                {'value': 3, 'label': 'Often', 'label_zh': '經常'},
+                {'value': 4, 'label': 'Very Often', 'label_zh': '非常經常'}
+            ],
+            'questions': [
+                {'id': 'q1', 'text': 'Do you often worry about having a serious illness?', 'text_zh': '您是否經常擔心患有嚴重疾病？'},
+                {'id': 'q2', 'text': 'Do you frequently check your body for signs of illness?', 'text_zh': '您是否經常檢查身體是否有疾病跡象？'},
+                {'id': 'q3', 'text': 'Do health concerns cause you significant distress?', 'text_zh': '健康問題是否給您帶來重大困擾？'},
+                {'id': 'q4', 'text': 'Do you seek reassurance from doctors or family about your health?', 'text_zh': '您是否會向醫生或家人尋求健康保證？'},
+                {'id': 'q5', 'text': 'Do you avoid medical information because it triggers anxiety?', 'text_zh': '您是否因為會引發焦慮而迴避醫療資訊？'},
+                {'id': 'q6', 'text': 'Do minor symptoms make you worry about serious diseases?', 'text_zh': '輕微症狀是否會讓您擔心嚴重疾病？'},
+                {'id': 'q7', 'text': 'Do you believe you have a serious illness that doctors haven\'t found?', 'text_zh': '您是否認為自己患有醫生尚未發現的嚴重疾病？'}
+            ]
+        },
+        'phq9': {
+            'id': 'phq9',
+            'name': 'PHQ-9 Depression Assessment',
+            'name_zh': 'PHQ-9 抑鬱症評估',
+            'description': '9-item depression severity assessment',
+            'question_count': 9,
+            'max_score': 27,
+            'scale': [
+                {'value': 0, 'label': 'Not at all', 'label_zh': '完全沒有'},
+                {'value': 1, 'label': 'Several days', 'label_zh': '幾天'},
+                {'value': 2, 'label': 'More than half the days', 'label_zh': '超過一半天數'},
+                {'value': 3, 'label': 'Nearly every day', 'label_zh': '幾乎每天'}
+            ],
+            'questions': [
+                {'id': 'q1', 'text': 'Little interest or pleasure in doing things', 'text_zh': '做事情的興趣或樂趣減少'},
+                {'id': 'q2', 'text': 'Feeling down, depressed, or hopeless', 'text_zh': '感到沮喪、抑鬱或絕望'},
+                {'id': 'q3', 'text': 'Trouble falling or staying asleep, or sleeping too much', 'text_zh': '入睡困難、睡眠不安或睡眠過多'},
+                {'id': 'q4', 'text': 'Feeling tired or having little energy', 'text_zh': '感到疲勞或沒有精力'},
+                {'id': 'q5', 'text': 'Poor appetite or overeating', 'text_zh': '食慾不振或暴飲暴食'},
+                {'id': 'q6', 'text': 'Feeling bad about yourself or that you are a failure', 'text_zh': '對自己感覺不好，或認為自己是失敗者'},
+                {'id': 'q7', 'text': 'Trouble concentrating on things', 'text_zh': '難以集中注意力'},
+                {'id': 'q8', 'text': 'Moving or speaking slowly, or being fidgety/restless', 'text_zh': '動作或說話緩慢，或煩躁不安'},
+                {'id': 'q9', 'text': 'Thoughts that you would be better off dead or hurting yourself', 'text_zh': '認為死了會更好，或想傷害自己的念頭'}
+            ]
+        },
+        'gad7': {
+            'id': 'gad7',
+            'name': 'GAD-7 Anxiety Assessment',
+            'name_zh': 'GAD-7 焦慮症評估',
+            'description': '7-item generalized anxiety disorder assessment',
+            'question_count': 7,
+            'max_score': 21,
+            'scale': [
+                {'value': 0, 'label': 'Not at all', 'label_zh': '完全沒有'},
+                {'value': 1, 'label': 'Several days', 'label_zh': '幾天'},
+                {'value': 2, 'label': 'More than half the days', 'label_zh': '超過一半天數'},
+                {'value': 3, 'label': 'Nearly every day', 'label_zh': '幾乎每天'}
+            ],
+            'questions': [
+                {'id': 'q1', 'text': 'Feeling nervous, anxious, or on edge', 'text_zh': '感到緊張、焦慮或煩躁'},
+                {'id': 'q2', 'text': 'Not being able to stop or control worrying', 'text_zh': '無法停止或控制擔憂'},
+                {'id': 'q3', 'text': 'Worrying too much about different things', 'text_zh': '對不同事情過度擔憂'},
+                {'id': 'q4', 'text': 'Trouble relaxing', 'text_zh': '難以放鬆'},
+                {'id': 'q5', 'text': 'Being so restless that it is hard to sit still', 'text_zh': '煩躁不安，難以靜坐'},
+                {'id': 'q6', 'text': 'Becoming easily annoyed or irritable', 'text_zh': '容易生氣或煩躁'},
+                {'id': 'q7', 'text': 'Feeling afraid as if something awful might happen', 'text_zh': '感到害怕，好像會發生不好的事情'}
+            ]
+        }
+    }
+    return jsonify({'assessments': assessments})
+
 @app.route('/analyze', methods=['POST'])
 def analyze():
     """Analyze Whiteley questionnaire responses and recommend psychiatrists"""

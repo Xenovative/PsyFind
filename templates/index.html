@@ -103,46 +103,16 @@
                         <form id="assessmentForm">
                             <!-- Assessment Type Selector -->
                             <div class="assessment-tabs" id="assessmentTabs" style="display: none;">
-                                <button type="button" class="assessment-tab" data-type="whiteley" onclick="switchAssessment('whiteley')">Health Anxiety</button>
-                                <button type="button" class="assessment-tab" data-type="phq9" onclick="switchAssessment('phq9')">PHQ-9 (Depression)</button>
-                                <button type="button" class="assessment-tab" data-type="gad7" onclick="switchAssessment('gad7')">GAD-7 (Anxiety)</button>
+                                <button type="button" class="assessment-tab" data-type="whiteley" data-lang="whiteley_tab" onclick="switchAssessment('whiteley')">Health Anxiety</button>
+                                <button type="button" class="assessment-tab" data-type="phq9" data-lang="phq9_tab" onclick="switchAssessment('phq9')">PHQ-9 (Depression)</button>
+                                <button type="button" class="assessment-tab" data-type="gad7" data-lang="gad7_tab" onclick="switchAssessment('gad7')">GAD-7 (Anxiety)</button>
                             </div>
 
-                            <div class="assessment-questions">
-                                <!-- Whiteley Health Anxiety Assessment (7 questions) -->
-                                <div class="assessment-section" id="whiteley-section" style="display: none;">
-                                    <div class="question-card"><div class="question-card__text">1. Do you often worry about having a serious illness?</div><div class="rating-options"><label class="rating-option"><input type="radio" name="q1" value="0"><span>Not at all</span></label><label class="rating-option"><input type="radio" name="q1" value="1"><span>Rarely</span></label><label class="rating-option"><input type="radio" name="q1" value="2"><span>Sometimes</span></label><label class="rating-option"><input type="radio" name="q1" value="3"><span>Often</span></label><label class="rating-option"><input type="radio" name="q1" value="4"><span>Very Often</span></label></div></div>
-                                    <div class="question-card"><div class="question-card__text">2. Do you frequently check your body for signs of illness?</div><div class="rating-options"><label class="rating-option"><input type="radio" name="q2" value="0"><span>Not at all</span></label><label class="rating-option"><input type="radio" name="q2" value="1"><span>Rarely</span></label><label class="rating-option"><input type="radio" name="q2" value="2"><span>Sometimes</span></label><label class="rating-option"><input type="radio" name="q2" value="3"><span>Often</span></label><label class="rating-option"><input type="radio" name="q2" value="4"><span>Very Often</span></label></div></div>
-                                    <div class="question-card"><div class="question-card__text">3. Do health concerns cause you significant distress?</div><div class="rating-options"><label class="rating-option"><input type="radio" name="q3" value="0"><span>Not at all</span></label><label class="rating-option"><input type="radio" name="q3" value="1"><span>Rarely</span></label><label class="rating-option"><input type="radio" name="q3" value="2"><span>Sometimes</span></label><label class="rating-option"><input type="radio" name="q3" value="3"><span>Often</span></label><label class="rating-option"><input type="radio" name="q3" value="4"><span>Very Often</span></label></div></div>
-                                    <div class="question-card"><div class="question-card__text">4. Do you seek reassurance from doctors or family about your health?</div><div class="rating-options"><label class="rating-option"><input type="radio" name="q4" value="0"><span>Not at all</span></label><label class="rating-option"><input type="radio" name="q4" value="1"><span>Rarely</span></label><label class="rating-option"><input type="radio" name="q4" value="2"><span>Sometimes</span></label><label class="rating-option"><input type="radio" name="q4" value="3"><span>Often</span></label><label class="rating-option"><input type="radio" name="q4" value="4"><span>Very Often</span></label></div></div>
-                                    <div class="question-card"><div class="question-card__text">5. Do you avoid medical information because it triggers anxiety?</div><div class="rating-options"><label class="rating-option"><input type="radio" name="q5" value="0"><span>Not at all</span></label><label class="rating-option"><input type="radio" name="q5" value="1"><span>Rarely</span></label><label class="rating-option"><input type="radio" name="q5" value="2"><span>Sometimes</span></label><label class="rating-option"><input type="radio" name="q5" value="3"><span>Often</span></label><label class="rating-option"><input type="radio" name="q5" value="4"><span>Very Often</span></label></div></div>
-                                    <div class="question-card"><div class="question-card__text">6. Do minor symptoms make you worry about serious diseases?</div><div class="rating-options"><label class="rating-option"><input type="radio" name="q6" value="0"><span>Not at all</span></label><label class="rating-option"><input type="radio" name="q6" value="1"><span>Rarely</span></label><label class="rating-option"><input type="radio" name="q6" value="2"><span>Sometimes</span></label><label class="rating-option"><input type="radio" name="q6" value="3"><span>Often</span></label><label class="rating-option"><input type="radio" name="q6" value="4"><span>Very Often</span></label></div></div>
-                                    <div class="question-card"><div class="question-card__text">7. Do you believe you have a serious illness that doctors haven't found?</div><div class="rating-options"><label class="rating-option"><input type="radio" name="q7" value="0"><span>Not at all</span></label><label class="rating-option"><input type="radio" name="q7" value="1"><span>Rarely</span></label><label class="rating-option"><input type="radio" name="q7" value="2"><span>Sometimes</span></label><label class="rating-option"><input type="radio" name="q7" value="3"><span>Often</span></label><label class="rating-option"><input type="radio" name="q7" value="4"><span>Very Often</span></label></div></div>
-                                </div>
-
-                                <!-- PHQ-9 Depression Assessment (9 questions) -->
-                                <div class="assessment-section" id="phq9-section" style="display: none;">
-                                    <div class="question-card"><div class="question-card__text">1. Little interest or pleasure in doing things</div><div class="rating-options"><label class="rating-option"><input type="radio" name="q1" value="0"><span>Not at all</span></label><label class="rating-option"><input type="radio" name="q1" value="1"><span>Several days</span></label><label class="rating-option"><input type="radio" name="q1" value="2"><span>More than half the days</span></label><label class="rating-option"><input type="radio" name="q1" value="3"><span>Nearly every day</span></label></div></div>
-                                    <div class="question-card"><div class="question-card__text">2. Feeling down, depressed, or hopeless</div><div class="rating-options"><label class="rating-option"><input type="radio" name="q2" value="0"><span>Not at all</span></label><label class="rating-option"><input type="radio" name="q2" value="1"><span>Several days</span></label><label class="rating-option"><input type="radio" name="q2" value="2"><span>More than half the days</span></label><label class="rating-option"><input type="radio" name="q2" value="3"><span>Nearly every day</span></label></div></div>
-                                    <div class="question-card"><div class="question-card__text">3. Trouble falling or staying asleep, or sleeping too much</div><div class="rating-options"><label class="rating-option"><input type="radio" name="q3" value="0"><span>Not at all</span></label><label class="rating-option"><input type="radio" name="q3" value="1"><span>Several days</span></label><label class="rating-option"><input type="radio" name="q3" value="2"><span>More than half the days</span></label><label class="rating-option"><input type="radio" name="q3" value="3"><span>Nearly every day</span></label></div></div>
-                                    <div class="question-card"><div class="question-card__text">4. Feeling tired or having little energy</div><div class="rating-options"><label class="rating-option"><input type="radio" name="q4" value="0"><span>Not at all</span></label><label class="rating-option"><input type="radio" name="q4" value="1"><span>Several days</span></label><label class="rating-option"><input type="radio" name="q4" value="2"><span>More than half the days</span></label><label class="rating-option"><input type="radio" name="q4" value="3"><span>Nearly every day</span></label></div></div>
-                                    <div class="question-card"><div class="question-card__text">5. Poor appetite or overeating</div><div class="rating-options"><label class="rating-option"><input type="radio" name="q5" value="0"><span>Not at all</span></label><label class="rating-option"><input type="radio" name="q5" value="1"><span>Several days</span></label><label class="rating-option"><input type="radio" name="q5" value="2"><span>More than half the days</span></label><label class="rating-option"><input type="radio" name="q5" value="3"><span>Nearly every day</span></label></div></div>
-                                    <div class="question-card"><div class="question-card__text">6. Feeling bad about yourself or that you are a failure</div><div class="rating-options"><label class="rating-option"><input type="radio" name="q6" value="0"><span>Not at all</span></label><label class="rating-option"><input type="radio" name="q6" value="1"><span>Several days</span></label><label class="rating-option"><input type="radio" name="q6" value="2"><span>More than half the days</span></label><label class="rating-option"><input type="radio" name="q6" value="3"><span>Nearly every day</span></label></div></div>
-                                    <div class="question-card"><div class="question-card__text">7. Trouble concentrating on things</div><div class="rating-options"><label class="rating-option"><input type="radio" name="q7" value="0"><span>Not at all</span></label><label class="rating-option"><input type="radio" name="q7" value="1"><span>Several days</span></label><label class="rating-option"><input type="radio" name="q7" value="2"><span>More than half the days</span></label><label class="rating-option"><input type="radio" name="q7" value="3"><span>Nearly every day</span></label></div></div>
-                                    <div class="question-card"><div class="question-card__text">8. Moving or speaking slowly, or being fidgety/restless</div><div class="rating-options"><label class="rating-option"><input type="radio" name="q8" value="0"><span>Not at all</span></label><label class="rating-option"><input type="radio" name="q8" value="1"><span>Several days</span></label><label class="rating-option"><input type="radio" name="q8" value="2"><span>More than half the days</span></label><label class="rating-option"><input type="radio" name="q8" value="3"><span>Nearly every day</span></label></div></div>
-                                    <div class="question-card"><div class="question-card__text">9. Thoughts that you would be better off dead or hurting yourself</div><div class="rating-options"><label class="rating-option"><input type="radio" name="q9" value="0"><span>Not at all</span></label><label class="rating-option"><input type="radio" name="q9" value="1"><span>Several days</span></label><label class="rating-option"><input type="radio" name="q9" value="2"><span>More than half the days</span></label><label class="rating-option"><input type="radio" name="q9" value="3"><span>Nearly every day</span></label></div></div>
-                                </div>
-
-                                <!-- GAD-7 Generalized Anxiety Assessment (7 questions) -->
-                                <div class="assessment-section" id="gad7-section" style="display: none;">
-                                    <div class="question-card"><div class="question-card__text">1. Feeling nervous, anxious, or on edge</div><div class="rating-options"><label class="rating-option"><input type="radio" name="q1" value="0"><span>Not at all</span></label><label class="rating-option"><input type="radio" name="q1" value="1"><span>Several days</span></label><label class="rating-option"><input type="radio" name="q1" value="2"><span>More than half the days</span></label><label class="rating-option"><input type="radio" name="q1" value="3"><span>Nearly every day</span></label></div></div>
-                                    <div class="question-card"><div class="question-card__text">2. Not being able to stop or control worrying</div><div class="rating-options"><label class="rating-option"><input type="radio" name="q2" value="0"><span>Not at all</span></label><label class="rating-option"><input type="radio" name="q2" value="1"><span>Several days</span></label><label class="rating-option"><input type="radio" name="q2" value="2"><span>More than half the days</span></label><label class="rating-option"><input type="radio" name="q2" value="3"><span>Nearly every day</span></label></div></div>
-                                    <div class="question-card"><div class="question-card__text">3. Worrying too much about different things</div><div class="rating-options"><label class="rating-option"><input type="radio" name="q3" value="0"><span>Not at all</span></label><label class="rating-option"><input type="radio" name="q3" value="1"><span>Several days</span></label><label class="rating-option"><input type="radio" name="q3" value="2"><span>More than half the days</span></label><label class="rating-option"><input type="radio" name="q3" value="3"><span>Nearly every day</span></label></div></div>
-                                    <div class="question-card"><div class="question-card__text">4. Trouble relaxing</div><div class="rating-options"><label class="rating-option"><input type="radio" name="q4" value="0"><span>Not at all</span></label><label class="rating-option"><input type="radio" name="q4" value="1"><span>Several days</span></label><label class="rating-option"><input type="radio" name="q4" value="2"><span>More than half the days</span></label><label class="rating-option"><input type="radio" name="q4" value="3"><span>Nearly every day</span></label></div></div>
-                                    <div class="question-card"><div class="question-card__text">5. Being so restless that it is hard to sit still</div><div class="rating-options"><label class="rating-option"><input type="radio" name="q5" value="0"><span>Not at all</span></label><label class="rating-option"><input type="radio" name="q5" value="1"><span>Several days</span></label><label class="rating-option"><input type="radio" name="q5" value="2"><span>More than half the days</span></label><label class="rating-option"><input type="radio" name="q5" value="3"><span>Nearly every day</span></label></div></div>
-                                    <div class="question-card"><div class="question-card__text">6. Becoming easily annoyed or irritable</div><div class="rating-options"><label class="rating-option"><input type="radio" name="q6" value="0"><span>Not at all</span></label><label class="rating-option"><input type="radio" name="q6" value="1"><span>Several days</span></label><label class="rating-option"><input type="radio" name="q6" value="2"><span>More than half the days</span></label><label class="rating-option"><input type="radio" name="q6" value="3"><span>Nearly every day</span></label></div></div>
-                                    <div class="question-card"><div class="question-card__text">7. Feeling afraid as if something awful might happen</div><div class="rating-options"><label class="rating-option"><input type="radio" name="q7" value="0"><span>Not at all</span></label><label class="rating-option"><input type="radio" name="q7" value="1"><span>Several days</span></label><label class="rating-option"><input type="radio" name="q7" value="2"><span>More than half the days</span></label><label class="rating-option"><input type="radio" name="q7" value="3"><span>Nearly every day</span></label></div></div>
-                                </div>
+                            <div class="assessment-questions" id="assessmentQuestionsContainer">
+                                <!-- Assessment sections will be rendered dynamically by JavaScript -->
+                                <div class="assessment-section" id="whiteley-section" style="display: none;"></div>
+                                <div class="assessment-section" id="phq9-section" style="display: none;"></div>
+                                <div class="assessment-section" id="gad7-section" style="display: none;"></div>
                             </div>
                         </form>
                     </div>
@@ -257,6 +227,58 @@
         </div>
     </div>
 
+    <!-- Disclaimer Modal -->
+    <div id="disclaimerModal" class="modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="disclaimerTitle">
+        <div class="modal">
+            <div class="modal__header modal__header--warning">
+                <h3 class="modal__title" id="disclaimerTitle">
+                    <i class="fas fa-exclamation-triangle disclaimer__list-icon"></i>
+                    <span data-lang="disclaimer_title">Important Disclaimer</span>
+                </h3>
+            </div>
+            <div class="modal__body">
+                <div class="alert alert--warning" style="margin-bottom: var(--space-4);">
+                    <i class="fas fa-info-circle alert__icon" aria-hidden="true"></i>
+                    <div class="alert__content">
+                        <p class="alert__message" data-lang="disclaimer_text">This tool is for informational purposes only and does not provide medical diagnosis or treatment recommendations. Always consult with qualified mental health professionals for proper evaluation and care.</p>
+                    </div>
+                </div>
+                
+                <h4 class="disclaimer__title">
+                    <span data-lang="disclaimer_note_title">Please Note:</span>
+                </h4>
+                <ul class="disclaimer__list">
+                    <li class="disclaimer__list-item">
+                        <i class="fas fa-check-circle disclaimer__list-icon"></i>
+                        <span data-lang="disclaimer_note_1">This assessment is a screening tool, not a diagnostic instrument</span>
+                    </li>
+                    <li class="disclaimer__list-item">
+                        <i class="fas fa-check-circle disclaimer__list-icon"></i>
+                        <span data-lang="disclaimer_note_2">Results should be discussed with a qualified healthcare provider</span>
+                    </li>
+                    <li class="disclaimer__list-item">
+                        <i class="fas fa-check-circle disclaimer__list-icon"></i>
+                        <span data-lang="disclaimer_note_3">If you're experiencing a mental health emergency, contact emergency services immediately</span>
+                    </li>
+                    <li class="disclaimer__list-item">
+                        <i class="fas fa-check-circle disclaimer__list-icon"></i>
+                        <span data-lang="disclaimer_note_4">Your privacy is protected - no personal data is stored permanently</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="modal__footer modal__footer--between">
+                <button type="button" class="btn btn--secondary" onclick="closeDisclaimerModal()">
+                    <i class="fas fa-times" aria-hidden="true"></i> 
+                    <span data-lang="disclaimer_close">Close</span>
+                </button>
+                <button type="button" class="btn btn--primary" onclick="acceptDisclaimer()">
+                    <i class="fas fa-check" aria-hidden="true"></i> 
+                    <span data-lang="disclaimer_understand">I Understand</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript Modules -->
     <script src="{{ url_for('static', filename='js/utils/i18n.js') }}"></script>
     <script src="{{ url_for('static', filename='js/utils/api.js') }}"></script>
@@ -295,33 +317,34 @@
             // Initialize toast container
             Toast.init();
 
-            // Initialize chat session
-            try {
-                // Generate session ID client-side
-                sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 15);
-                
-                // Enable input
-                chatInput.disabled = false;
-                sendButton.disabled = false;
-                chatInput.placeholder = I18n.t('chat_placeholder');
-                chatInput.focus();
-
-                // Display welcome message
-                const welcomeMsg = userLanguage === 'zh' 
-                    ? '歡迎使用 PsyFind。我是您的臨床助理。請問今天有什麼我可以幫您的嗎？'
-                    : 'Welcome to PsyFind. I am your clinical assistant. How can I help you today?';
-                addMessage(welcomeMsg, 'assistant');
-
-                // Setup quick responses
-                setupQuickResponses();
-
-            } catch (error) {
-                console.error('Failed to initialize chat:', error);
-                Toast.error(I18n.t('error_network'), 'Connection Error');
-            }
+            // Generate session ID client-side
+            sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 15);
 
             // Setup event listeners
             setupEventListeners();
+
+            // Render assessment sections (questions rendered dynamically via i18n)
+            renderAllAssessments();
+
+            // Show disclaimer modal on startup
+            setTimeout(() => {
+                showDisclaimerModal();
+            }, 500);
+        }
+
+        function initializeChat() {
+            // Enable input
+            chatInput.disabled = false;
+            sendButton.disabled = false;
+            chatInput.placeholder = I18n.t('chat_placeholder');
+            chatInput.focus();
+
+            // Display welcome message - use i18n
+            const welcomeMsg = I18n.t('welcome_message');
+            addMessage(welcomeMsg, 'assistant');
+
+            // Setup quick responses
+            setupQuickResponses();
         }
 
         function setupEventListeners() {
@@ -456,6 +479,47 @@
             return div.innerHTML;
         }
 
+        // Disclaimer Modal Functions
+        function showDisclaimerModal() {
+            const modal = document.getElementById('disclaimerModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeDisclaimerModal() {
+            const modal = document.getElementById('disclaimerModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        function acceptDisclaimer() {
+            closeDisclaimerModal();
+            // Show user info modal after accepting disclaimer
+            showUserInfoModal();
+        }
+
+        // Close disclaimer when clicking outside
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('disclaimerModal');
+            if (event.target === modal) {
+                closeDisclaimerModal();
+            }
+        });
+
+        // Close disclaimer with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const modal = document.getElementById('disclaimerModal');
+                if (modal && modal.style.display === 'flex') {
+                    closeDisclaimerModal();
+                }
+            }
+        });
+
         // User Info Modal Functions
         function showUserInfoModal() {
             document.getElementById('userInfoModal').style.display = 'flex';
@@ -472,14 +536,68 @@
             const duration = document.getElementById('userDuration').value;
 
             if (!age || !duration) {
-                Toast.warning('Please fill in all required fields');
+                Toast.warning(I18n.t('please_fill_required'));
                 return;
             }
 
             userInfo = { age: parseInt(age), gender, duration };
             closeUserInfoModal();
             
-            Toast.success('Thank you for providing your information');
+            // Initialize chat after collecting user info
+            initializeChat();
+            
+            Toast.success(I18n.t('thank_you_info'));
+        }
+
+        // Assessment Rendering Functions
+        function renderAssessmentSection(type, questionCount, scaleType) {
+            const container = document.getElementById(type + '-section');
+            if (!container || container.innerHTML.trim()) return; // Already rendered
+
+            const whiteleyScale = [
+                { value: 0, label: 'not_at_all' },
+                { value: 1, label: 'rarely' },
+                { value: 2, label: 'sometimes' },
+                { value: 3, label: 'often' },
+                { value: 4, label: 'very_often' }
+            ];
+
+            const phq9Scale = [
+                { value: 0, label: 'not_at_all' },
+                { value: 1, label: 'several_days' },
+                { value: 2, label: 'more_than_half_days' },
+                { value: 3, label: 'nearly_every_day' }
+            ];
+
+            const scale = scaleType === 'whiteley' ? whiteleyScale : phq9Scale;
+
+            let html = '';
+            for (let i = 1; i <= questionCount; i++) {
+                const questionKey = `${type}_q${i}`;
+                const questionText = I18n.t(questionKey) || `Question ${i}`;
+
+                html += `
+                    <div class="question-card">
+                        <div class="question-card__text">${i}. ${escapeHtml(questionText)}</div>
+                        <div class="rating-options">
+                            ${scale.map(option => `
+                                <label class="rating-option">
+                                    <input type="radio" name="q${i}" value="${option.value}">
+                                    <span>${escapeHtml(I18n.t(option.label))}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function renderAllAssessments() {
+            renderAssessmentSection('whiteley', 7, 'whiteley');
+            renderAssessmentSection('phq9', 9, 'phq9');
+            renderAssessmentSection('gad7', 7, 'phq9');
         }
 
         // Assessment Functions
@@ -490,11 +608,11 @@
             // Show the embedded assessment form
             const title = document.getElementById('assessmentTitle');
             const titles = {
-                'whiteley': 'Health Anxiety Assessment',
-                'phq9': 'PHQ-9 Depression Assessment',
-                'gad7': 'GAD-7 Anxiety Assessment'
+                'whiteley': I18n.t('whiteley_title'),
+                'phq9': I18n.t('phq9_title'),
+                'gad7': I18n.t('gad7_title')
             };
-            title.textContent = titles[currentAssessment] || 'Assessment';
+            title.textContent = titles[currentAssessment] || I18n.t('assessment');
             
             // Reset form
             document.querySelectorAll('#assessmentForm input[type="radio"]').forEach(r => r.checked = false);
@@ -528,11 +646,11 @@
             // Update title
             const title = document.getElementById('assessmentTitle');
             const titles = {
-                'whiteley': 'Health Anxiety Assessment',
-                'phq9': 'PHQ-9 Depression Assessment',
-                'gad7': 'GAD-7 Anxiety Assessment'
+                'whiteley': I18n.t('whiteley_title'),
+                'phq9': I18n.t('phq9_title'),
+                'gad7': I18n.t('gad7_title')
             };
-            if (title) title.textContent = titles[type] || 'Assessment';
+            if (title) title.textContent = titles[type] || I18n.t('assessment');
         }
 
         function getAssessmentResponses() {
@@ -569,10 +687,10 @@
                 
                 closeAssessment();
                 showResults(data);
-                Toast.success('Assessment completed successfully');
+                Toast.success(I18n.t('assessment_completed'));
             } catch (error) {
                 console.error('Failed to submit assessment:', error);
-                Toast.error('Failed to submit assessment');
+                Toast.error(I18n.t('failed_submit_assessment'));
             }
         }
 

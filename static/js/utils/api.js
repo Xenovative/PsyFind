@@ -97,6 +97,14 @@ const API = (function() {
   // Assessment API
   const Assessment = {
     /**
+     * Fetch available assessments from the backend
+     * @returns {Promise} Assessment definitions
+     */
+    async getTypes() {
+      return request('/api/assessments');
+    },
+
+    /**
      * Submit assessment responses to /analyze endpoint
      * @param {string} sessionId - Session ID
      * @param {string} type - Assessment type (whiteley, phq9, gad7)

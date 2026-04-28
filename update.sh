@@ -58,6 +58,8 @@ if [[ -f "$APP_DIR/requirements.txt" ]]; then
 fi
 
 log()  { printf "[INFO] %s\n" "$*"; }
+err()  { printf "[ERROR] %s\n" "$*" >&2; }
+success(){ printf "[OK] %s\n" "$*"; }
 
 create_venv() {
   local venv_dir="$APP_DIR/venv"
@@ -77,8 +79,6 @@ create_venv() {
 
   printf '%s' "$venv_dir/bin/python3"
 }
-err()  { printf "[ERROR] %s\n" "$*" >&2; }
-success(){ printf "[OK] %s\n" "$*"; }
 
 find_python() {
   # If user provided and exists, use it
@@ -119,12 +119,6 @@ if [[ ! -f "$ENV_FILE_PATH" ]]; then
   fi
 fi
 
-if [[ ! -x "$GUNICORN_BIN" ]]; then
-  err "Gunicorn binary missing: $GUNICORN_BIN (matches ExecStart in systemd unit)"
-  err "Create/repair the venv or set GUNICORN_BIN to the correct path"
-  exit 1
-fi
-
 # Ensure we run from repo root (has app.py or requirements.txt)
 if [[ ! -f "app.py" && ! -f "requirements.txt" ]]; then
   err "Run this from the project root (app.py or requirements.txt missing)"
@@ -152,10 +146,19 @@ if [[ -f "$APP_DIR/requirements.txt" ]]; then
     if [[ -n "$PY_BIN_RESOLVED" ]]; then
       log "Installing Python deps using $PY_BIN_RESOLVED"
       "$PY_BIN_RESOLVED" -m pip install --upgrade -r "$APP_DIR/requirements.txt"
+      # Explicitly install gunicorn to ensure it's available
+      "$PY_BIN_RESOLVED" -m pip install gunicorn
     else
       err "No usable python found (set PYTHON_BIN or install python3-venv); skipping pip install"
     fi
   fi
+fi
+
+# Verify gunicorn is available after setup
+if [[ ! -x "$GUNICORN_BIN" ]]; then
+  err "Gunicorn binary missing after update: $GUNICORN_BIN"
+  err "The virtual environment may need repair. Try running with: sudo ./fix-venv-complete.sh"
+  exit 1
 fi
 
 # Restart or start service

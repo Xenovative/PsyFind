@@ -257,37 +257,39 @@
                 </div>
 
                 <!-- Recommended Assessments -->
-                <div class="widget">
+                <div class="widget" id="recommendedAssessmentsWidget">
                     <h3 class="widget__title" style="margin-bottom: var(--space-4);">
                         <span>🎯</span> <span data-lang="widget_recommended">Recommended</span>
                     </h3>
-                    <div style="display: flex; flex-direction: column; gap: var(--space-3);">
-                        <div class="assessment-card" onclick="showAssessment('phq9')">
-                            <div class="assessment-card__priority" data-lang="label_priority">Priority</div>
-                            <div class="assessment-card__icon">📋</div>
-                            <h4 class="assessment-card__title" data-lang="assessment_phq9">PHQ-9 Depression Scale</h4>
-                            <p class="assessment-card__desc" data-lang="assessment_phq9_desc">Standard tool for depression screening</p>
+                    <div style="display: flex; flex-direction: column; gap: var(--space-3);" id="assessmentsList">
+                        <!-- Primary/Priority Assessment - dynamically updated based on AI recommendation -->
+                        <div class="assessment-card" id="primaryAssessmentCard" onclick="showAssessment('phq9')">
+                            <div class="assessment-card__priority" id="priorityBadge" data-lang="label_priority">Priority</div>
+                            <div class="assessment-card__icon" id="primaryAssessmentIcon">📋</div>
+                            <h4 class="assessment-card__title" id="primaryAssessmentTitle" data-lang="assessment_phq9">PHQ-9 Depression Scale</h4>
+                            <p class="assessment-card__desc" id="primaryAssessmentDesc" data-lang="assessment_phq9_desc">Standard tool for depression screening</p>
                             <div class="assessment-card__footer">
-                                <span data-lang="meta_questions">9 questions • 3 min</span>
+                                <span id="primaryAssessmentMeta" data-lang="meta_questions">9 questions • 3 min</span>
                                 <span data-lang="action_start">Start →</span>
                             </div>
                         </div>
-                        <div class="assessment-card--secondary" onclick="showAssessment('gad7')">
+                        <!-- Secondary Assessments -->
+                        <div class="assessment-card--secondary" id="secondaryAssessment1" onclick="showAssessment('gad7')">
                             <div style="display: flex; align-items: center; gap: var(--space-3);">
-                                <div style="font-size: 1.5rem;">🧘</div>
+                                <div style="font-size: 1.5rem;" id="secondaryIcon1">🧘</div>
                                 <div style="flex: 1;">
-                                    <h4 class="assessment-card__title" style="margin-bottom: var(--space-1);" data-lang="assessment_gad7">GAD-7 Anxiety Scale</h4>
-                                    <p class="assessment-card__desc" style="margin-bottom: 0;" data-lang="meta_questions_short">7 questions • 2 min</p>
+                                    <h4 class="assessment-card__title" style="margin-bottom: var(--space-1);" id="secondaryTitle1" data-lang="assessment_gad7">GAD-7 Anxiety Scale</h4>
+                                    <p class="assessment-card__desc" style="margin-bottom: 0;" id="secondaryMeta1" data-lang="meta_questions_short">7 questions • 2 min</p>
                                 </div>
                                 <span style="color: #8b5cf6;">→</span>
                             </div>
                         </div>
-                        <div class="assessment-card--secondary" onclick="showAssessment('isi')">
+                        <div class="assessment-card--secondary" id="secondaryAssessment2" onclick="showAssessment('isi')">
                             <div style="display: flex; align-items: center; gap: var(--space-3);">
-                                <div style="font-size: 1.5rem;">💤</div>
+                                <div style="font-size: 1.5rem;" id="secondaryIcon2">💤</div>
                                 <div style="flex: 1;">
-                                    <h4 class="assessment-card__title" style="margin-bottom: var(--space-1);" data-lang="assessment_sleep">Sleep Quality Scale</h4>
-                                    <p class="assessment-card__desc" style="margin-bottom: 0;" data-lang="meta_questions_sleep">10 questions • 4 min</p>
+                                    <h4 class="assessment-card__title" style="margin-bottom: var(--space-1);" id="secondaryTitle2" data-lang="assessment_sleep">Sleep Quality Scale</h4>
+                                    <p class="assessment-card__desc" style="margin-bottom: 0;" id="secondaryMeta2" data-lang="meta_questions_sleep">10 questions • 4 min</p>
                                 </div>
                                 <span style="color: #8b5cf6;">→</span>
                             </div>
@@ -735,6 +737,9 @@
             // Load previous mood history
             loadMoodHistory();
 
+            // Initialize sidebar assessments (default to PHQ-9)
+            updateSidebarAssessmentRecommendation('phq9');
+
             // Start mental status analysis updates
             scheduleAnalysisUpdate();
         }
@@ -1022,6 +1027,9 @@
             const validTypes = ['phq9', 'gad7', 'whiteley', 'isi'];
             const resolvedType = validTypes.includes(assessmentType) ? assessmentType : 'phq9';
 
+            // Update sidebar to show the recommended assessment as priority
+            updateSidebarAssessmentRecommendation(resolvedType);
+
             const assessmentNames = {
                 'gad7':     userLanguage === 'zh' ? 'GAD-7 焦慮症篩檢'       : 'GAD-7 Anxiety Screening',
                 'phq9':     userLanguage === 'zh' ? 'PHQ-9 憂鬱症篩檢'       : 'PHQ-9 Depression Screening',
@@ -1050,6 +1058,94 @@
 
             container.appendChild(yesBtn);
             container.appendChild(noBtn);
+        }
+
+        // Update sidebar assessment recommendation based on AI recommendation
+        function updateSidebarAssessmentRecommendation(primaryType) {
+            const assessmentData = {
+                'phq9': {
+                    icon: '📋',
+                    titleKey: 'assessment_phq9',
+                    title: 'PHQ-9 Depression Scale',
+                    descKey: 'assessment_phq9_desc',
+                    desc: 'Standard tool for depression screening',
+                    metaKey: 'meta_questions',
+                    meta: '9 questions • 3 min'
+                },
+                'gad7': {
+                    icon: '🧘',
+                    titleKey: 'assessment_gad7',
+                    title: 'GAD-7 Anxiety Scale',
+                    descKey: 'assessment_gad7_desc',
+                    desc: 'Standard tool for anxiety screening',
+                    metaKey: 'meta_questions_short',
+                    meta: '7 questions • 2 min'
+                },
+                'whiteley': {
+                    icon: '🏥',
+                    titleKey: 'assessment_whiteley',
+                    title: 'Whiteley-7 Health Anxiety',
+                    descKey: 'assessment_whiteley_desc',
+                    desc: 'Health anxiety screening tool',
+                    metaKey: 'meta_questions_short',
+                    meta: '7 questions • 2 min'
+                },
+                'isi': {
+                    icon: '💤',
+                    titleKey: 'assessment_sleep',
+                    title: 'Sleep Quality Scale',
+                    descKey: 'assessment_sleep_desc',
+                    desc: 'Insomnia severity assessment',
+                    metaKey: 'meta_questions_sleep',
+                    meta: '10 questions • 4 min'
+                }
+            };
+
+            // Define secondary assessments (the other two that aren't primary)
+            const allTypes = ['phq9', 'gad7', 'whiteley', 'isi'];
+            const secondaryTypes = allTypes.filter(t => t !== primaryType).slice(0, 2);
+
+            // Update primary card
+            const primary = assessmentData[primaryType] || assessmentData['phq9'];
+            const primaryCard = document.getElementById('primaryAssessmentCard');
+            if (primaryCard) {
+                primaryCard.onclick = () => showAssessment(primaryType);
+                document.getElementById('primaryAssessmentIcon').textContent = primary.icon;
+
+                const titleEl = document.getElementById('primaryAssessmentTitle');
+                titleEl.textContent = I18n.t(primary.titleKey) || primary.title;
+                titleEl.setAttribute('data-lang', primary.titleKey);
+
+                const descEl = document.getElementById('primaryAssessmentDesc');
+                descEl.textContent = I18n.t(primary.descKey) || primary.desc;
+                descEl.setAttribute('data-lang', primary.descKey);
+
+                const metaEl = document.getElementById('primaryAssessmentMeta');
+                metaEl.textContent = I18n.t(primary.metaKey) || primary.meta;
+                metaEl.setAttribute('data-lang', primary.metaKey);
+            }
+
+            // Update secondary cards
+            secondaryTypes.forEach((type, index) => {
+                const data = assessmentData[type];
+                const cardIndex = index + 1;
+
+                const card = document.getElementById(`secondaryAssessment${cardIndex}`);
+                if (card) {
+                    card.onclick = () => showAssessment(type);
+                    document.getElementById(`secondaryIcon${cardIndex}`).textContent = data.icon;
+
+                    const titleEl = document.getElementById(`secondaryTitle${cardIndex}`);
+                    titleEl.textContent = I18n.t(data.titleKey) || data.title;
+                    titleEl.setAttribute('data-lang', data.titleKey);
+
+                    const metaEl = document.getElementById(`secondaryMeta${cardIndex}`);
+                    metaEl.textContent = I18n.t(data.metaKey) || data.meta;
+                    metaEl.setAttribute('data-lang', data.metaKey);
+                }
+            });
+
+            console.log('Sidebar assessment recommendation updated to:', primaryType);
         }
 
         function showAssessment(type) {

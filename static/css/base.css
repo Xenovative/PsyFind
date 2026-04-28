@@ -178,8 +178,34 @@
 
   /* Component Specific */
   --header-height: 4rem;
-  --sidebar-width: 250px;
+  --sidebar-width: 320px;
   --sidebar-width-collapsed: 64px;
+
+  /* Glass Morphism */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.8);
+  --glass-blur: blur(20px);
+
+  /* Soft Gradients - MindEase Theme */
+  --gradient-bg: linear-gradient(135deg, #f5f3ff 0%, #fef3f2 50%, #ecfeff 100%);
+  --gradient-primary: linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #06b6d4 100%);
+  --gradient-violet-pink: linear-gradient(135deg, #a78bfa 0%, #ec4899 100%);
+  --gradient-violet-cyan: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+  --gradient-amber-pink: linear-gradient(135deg, #fbbf24 0%, #ec4899 100%);
+  --gradient-cyan-emerald: linear-gradient(135deg, #06b6d4 0%, #10b981 100%);
+  --gradient-rose-pink: linear-gradient(135deg, #f43f5e 0%, #ec4899 100%);
+  --gradient-amber-orange: linear-gradient(135deg, #fbbf24 0%, #f97316 100%);
+
+  /* Chat Bubble Gradients */
+  --gradient-user-bubble: linear-gradient(135deg, #a78bfa 0%, #ec4899 100%);
+
+  /* Mood Colors */
+  --mood-happy: #fbbf24;
+  --mood-calm: #34d399;
+  --mood-neutral: #9ca3af;
+  --mood-anxious: #f87171;
+  --mood-sad: #60a5fa;
+  --mood-tired: #a78bfa;
 }
 
 /* Dark Mode Support */
@@ -475,3 +501,119 @@ table {
 .overflow-hidden { overflow: hidden; }
 .overflow-auto { overflow: auto; }
 .overflow-visible { overflow: visible; }
+
+/* --------------------------------------------------------------------------
+   Glass Morphism Utilities
+   -------------------------------------------------------------------------- */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: var(--radius-3xl);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+/* --------------------------------------------------------------------------
+   Gradient Text
+   -------------------------------------------------------------------------- */
+.gradient-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* --------------------------------------------------------------------------
+   Animations
+   -------------------------------------------------------------------------- */
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+@keyframes blob {
+  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+  50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+}
+
+.breathing {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+.float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.float-delay-1 {
+  animation-delay: 2s;
+}
+
+.float-delay-2 {
+  animation-delay: 4s;
+}
+
+.pulse-ring {
+  animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+/* --------------------------------------------------------------------------
+   Blob Background Decorations
+   -------------------------------------------------------------------------- */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.4;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.blob-purple {
+  background: #c4b5fd;
+}
+
+.blob-pink {
+  background: #fbcfe8;
+}
+
+.blob-cyan {
+  background: #a5f3fc;
+}
+
+/* --------------------------------------------------------------------------
+   Scrollbar Styling
+   -------------------------------------------------------------------------- */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #c4b5fd;
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #a78bfa;
+}

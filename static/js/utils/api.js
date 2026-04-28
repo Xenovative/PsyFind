@@ -165,6 +165,52 @@ const API = (function() {
     }
   };
 
+  // Mood Tracking API
+  const Mood = {
+    /**
+     * Record a mood entry
+     * @param {string} sessionId - Session ID
+     * @param {string} moodType - Mood type (happy, calm, neutral, anxious, sad, tired)
+     * @param {string} note - Optional note
+     * @returns {Promise} Recording result
+     */
+    async record(sessionId, moodType, note = null) {
+      return request('/api/mood/record', {
+        method: 'POST',
+        body: JSON.stringify({ session_id: sessionId, mood_type: moodType, note })
+      });
+    },
+
+    /**
+     * Get mood history for a session
+     * @param {string} sessionId - Session ID
+     * @param {number} days - Number of days to retrieve (default 7)
+     * @returns {Promise} Mood history
+     */
+    async getHistory(sessionId, days = 7) {
+      return request(`/api/mood/history?session_id=${encodeURIComponent(sessionId)}&days=${days}`);
+    },
+
+    /**
+     * Get mood statistics for a session
+     * @param {string} sessionId - Session ID
+     * @param {number} days - Number of days for stats (default 7)
+     * @returns {Promise} Mood statistics
+     */
+    async getStats(sessionId, days = 7) {
+      return request(`/api/mood/stats?session_id=${encodeURIComponent(sessionId)}&days=${days}`);
+    },
+
+    /**
+     * Get the latest mood for a session
+     * @param {string} sessionId - Session ID
+     * @returns {Promise} Latest mood entry
+     */
+    async getLatest(sessionId) {
+      return request(`/api/mood/latest?session_id=${encodeURIComponent(sessionId)}`);
+    }
+  };
+
   // Admin API
   const Admin = {
     /**
@@ -287,6 +333,7 @@ const API = (function() {
     Chat,
     Assessment,
     Doctor,
+    Mood,
     Admin
   };
 })();

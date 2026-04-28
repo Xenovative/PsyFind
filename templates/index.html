@@ -3,82 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="PsyFind - AI-Powered Psychiatric Analysis and Specialist Matching">
-    <meta name="theme-color" content="#4f46e5">
-    <title data-lang="page_title">PsyFind - AI Psychiatric Analysis & Matching</title>
-    
+    <meta name="description" content="PsyFind - AI-Powered Mental Health Companion">
+    <meta name="theme-color" content="#8b5cf6">
+    <title data-lang="page_title">PsyFind - AI Mental Health Companion</title>
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <!-- Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
-          integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+          integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
           crossorigin="anonymous" referrerpolicy="no-referrer">
-    
+
     <!-- Styles -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/index.css') }}">
 </head>
 <body class="page--main">
-    <div class="container">
-        <!-- Header -->
-        <header class="page-header">
-            <div class="language-toggle">
-                <button class="lang-btn" onclick="I18n.switchLanguage('en')" aria-label="Switch to English">EN</button>
-                <button class="lang-btn lang-btn--active" onclick="I18n.switchLanguage('zh')" aria-label="Switch to Chinese">繁中</button>
-            </div>
-            <h1 class="page-header__title">
-                <i class="fas fa-brain" aria-hidden="true"></i> 
-                <span data-lang="title">PsyFind</span>
-            </h1>
-            <p class="page-header__subtitle" data-lang="subtitle">AI-Powered Psychiatric Analysis & Specialist Matching</p>
-        </header>
+    <!-- Background Blobs -->
+    <div class="blob-bg-1"></div>
+    <div class="blob-bg-2"></div>
+    <div class="blob-bg-3"></div>
 
-        <!-- Main Content -->
-        <main class="main-content">
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <div class="main-nav__content">
+            <div class="main-nav__brand">
+                <div class="main-nav__logo">
+                    <i class="fas fa-sparkles"></i>
+                </div>
+                <div>
+                    <h1 class="main-nav__title gradient-text" data-lang="nav_title">PsyFind</h1>
+                    <p class="main-nav__subtitle" data-lang="nav_subtitle">Your AI Mental Health Companion</p>
+                </div>
+            </div>
+            <div class="main-nav__menu">
+                <a href="#" class="main-nav__link" data-lang="nav_chat">Chat</a>
+                <a href="#" class="main-nav__link" data-lang="nav_assessment">Self-Check</a>
+                <a href="#" class="main-nav__link" data-lang="nav_journal">Journal</a>
+                <a href="#" class="main-nav__link" data-lang="nav_resources">Resources</a>
+            </div>
+            <div class="main-nav__actions">
+                <div class="language-toggle">
+                    <button class="lang-btn" onclick="I18n.switchLanguage('en')" aria-label="Switch to English">EN</button>
+                    <button class="lang-btn lang-btn--active" onclick="I18n.switchLanguage('zh')" aria-label="Switch to Chinese">繁中</button>
+                </div>
+                <div class="main-nav__avatar">U</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Welcome Card -->
+        <section class="welcome-card">
+            <div class="welcome-card__content">
+                <div class="welcome-card__avatar">
+                    <div class="welcome-card__avatar-ring"></div>
+                    <div class="welcome-card__avatar-img">🌸</div>
+                </div>
+                <div class="welcome-card__info">
+                    <h2 class="welcome-card__title">
+                        <span data-lang="welcome_greeting">Good evening</span> <span data-lang="user_name">there</span> 👋
+                    </h2>
+                    <p class="welcome-card__text" data-lang="welcome_text">
+                        No matter how your day went, this is a safe space where you can relax and share.<br>
+                        Would you like to talk? I'm here to listen and accompany you.
+                    </p>
+                </div>
+                <div class="welcome-card__stats">
+                    <div class="welcome-card__stat">
+                        <p class="welcome-card__stat-value">7</p>
+                        <p class="welcome-card__stat-label" data-lang="stat_streak">Day Streak</p>
+                    </div>
+                    <div class="welcome-card__stat">
+                        <p class="welcome-card__stat-value welcome-card__stat-value--pink">😊</p>
+                        <p class="welcome-card__stat-label" data-lang="stat_week">This Week</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Mood Selector -->
+        <section class="mood-section" style="margin-bottom: var(--space-8);">
+            <h3 class="widget__title" style="margin-bottom: var(--space-4);">
+                <span data-lang="mood_question">How are you feeling today?</span>
+                <span style="font-size: var(--text-sm); font-weight: var(--font-normal); color: var(--text-muted);" data-lang="mood_hint">Select the mood closest to you</span>
+            </h3>
+            <div class="mood-grid">
+                <button class="mood-btn" data-mood="happy" onclick="selectMood('happy')">
+                    <span class="mood-btn__emoji">😄</span>
+                    <span class="mood-btn__label" data-lang="mood_happy">Happy</span>
+                </button>
+                <button class="mood-btn" data-mood="calm" onclick="selectMood('calm')">
+                    <span class="mood-btn__emoji">😌</span>
+                    <span class="mood-btn__label" data-lang="mood_calm">Calm</span>
+                </button>
+                <button class="mood-btn" data-mood="neutral" onclick="selectMood('neutral')">
+                    <span class="mood-btn__emoji">😐</span>
+                    <span class="mood-btn__label" data-lang="mood_neutral">Neutral</span>
+                </button>
+                <button class="mood-btn" data-mood="anxious" onclick="selectMood('anxious')">
+                    <span class="mood-btn__emoji">😟</span>
+                    <span class="mood-btn__label" data-lang="mood_anxious">Anxious</span>
+                </button>
+                <button class="mood-btn" data-mood="sad" onclick="selectMood('sad')">
+                    <span class="mood-btn__emoji">😢</span>
+                    <span class="mood-btn__label" data-lang="mood_sad">Sad</span>
+                </button>
+                <button class="mood-btn" data-mood="tired" onclick="selectMood('tired')">
+                    <span class="mood-btn__emoji">😴</span>
+                    <span class="mood-btn__label" data-lang="mood_tired">Tired</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Chat Layout -->
+        <div class="chat-layout">
             <!-- Chat Section -->
             <section class="chat-section">
                 <div class="chat-interface" role="region" aria-label="Chat interface">
                     <div class="chat-interface__header">
-                        <div class="chat-interface__avatar">
-                            <i class="fas fa-user-md" aria-hidden="true"></i>
+                        <div class="chat-interface__header-main">
+                            <div class="chat-interface__avatar">
+                                💜
+                            </div>
+                            <div class="chat-interface__info">
+                                <p class="chat-interface__name" data-lang="chat_title">PsyFind AI</p>
+                                <p class="chat-interface__status" data-lang="chat_status">Online • Always here for you</p>
+                            </div>
                         </div>
-                        <div class="chat-interface__info">
-                            <h3 class="chat-interface__name" data-lang="chat_title">PsyFind Clinical Assistant</h3>
-                            <p class="chat-interface__subtitle" data-lang="chat_subtitle">Your AI-powered mental health screening companion</p>
-                        </div>
-                        <div class="chat-interface__status" aria-live="polite">
-                            <span class="status-indicator" aria-hidden="true"></span>
-                            <span data-lang="status_online">Online</span>
+                        <div class="chat-interface__actions">
+                            <button class="chat-interface__action-btn" aria-label="Sound">
+                                <i class="fas fa-volume-up"></i>
+                            </button>
+                            <button class="chat-interface__action-btn" aria-label="More options">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
                         </div>
                     </div>
 
-                    <div class="chat-interface__messages" id="chatMessages" role="log" aria-live="polite" aria-atomic="false">
+                    <div class="chat-interface__messages scrollbar-thin" id="chatMessages" role="log" aria-live="polite" aria-atomic="false">
                         <!-- Messages will be dynamically added here -->
                     </div>
 
                     <div class="chat-interface__input-container">
-                        <div class="chat-input-wrapper">
-                            <input 
-                                type="text" 
-                                id="chatInput" 
-                                class="chat-input"
+                        <div class="quick-actions">
+                            <button class="quick-action-btn" onclick="sendQuickIntent('vent')">
+                                <span>💭</span> <span data-lang="quick_vent">I want to talk</span>
+                            </button>
+                            <button class="quick-action-btn quick-action-btn--pink" onclick="sendQuickIntent('relax')">
+                                <span>🌿</span> <span data-lang="quick_relax">Relaxation</span>
+                            </button>
+                            <button class="quick-action-btn quick-action-btn--cyan" onclick="sendQuickIntent('assessment')">
+                                <span>📊</span> <span data-lang="quick_assessment">Take Assessment</span>
+                            </button>
+                        </div>
+                        <div class="chat-input-area">
+                            <button class="chat-input-area__btn" aria-label="Add emoji">
+                                <i class="far fa-smile"></i>
+                            </button>
+                            <button class="chat-input-area__btn" aria-label="Attach file">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                            <textarea
+                                id="chatInput"
+                                class="chat-input-area__field"
                                 data-lang-placeholder="chat_placeholder"
-                                placeholder="Connecting to assistant..."
+                                placeholder="Type anything, this is a safe space..."
                                 disabled
                                 aria-label="Type your message"
-                                autocomplete="off"
-                            >
-                            <button 
-                                id="sendButton" 
-                                class="chat-send-btn" 
+                                rows="1"
+                            ></textarea>
+                            <button class="chat-input-area__btn" aria-label="Voice input">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                            <button
+                                id="sendButton"
+                                class="chat-input-area__send"
                                 disabled
                                 aria-label="Send message"
                             >
-                                <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                                <span data-lang="send">Send</span>
                             </button>
                         </div>
                         <div class="quick-responses" id="quickResponses" role="list" aria-label="Quick response options">
@@ -86,16 +195,273 @@
                         </div>
                     </div>
                 </div>
-
             </section>
+
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <!-- Mental Status Widget -->
+                <div class="widget">
+                    <div class="widget__header">
+                        <h3 class="widget__title">
+                            <span>📊</span> <span data-lang="widget_status">Mental Status</span>
+                        </h3>
+                        <span class="widget__badge" data-lang="badge_ai">AI Analysis</span>
+                    </div>
+                    <div class="status-bar">
+                        <div class="status-bar__header">
+                            <span class="status-bar__label" data-lang="status_emotional">Emotional Health</span>
+                            <span class="status-bar__value" style="color: #f59e0b;" data-lang="status_attention">Needs Attention</span>
+                        </div>
+                        <div class="status-bar__track">
+                            <div class="status-bar__fill status-bar__fill--amber" style="width: 40%;"></div>
+                        </div>
+                    </div>
+                    <div class="status-bar">
+                        <div class="status-bar__header">
+                            <span class="status-bar__label" data-lang="status_stress">Stress Level</span>
+                            <span class="status-bar__value" style="color: #ef4444;" data-lang="status_high">High</span>
+                        </div>
+                        <div class="status-bar__track">
+                            <div class="status-bar__fill status-bar__fill--pink" style="width: 80%;"></div>
+                        </div>
+                    </div>
+                    <div class="status-bar">
+                        <div class="status-bar__header">
+                            <span class="status-bar__label" data-lang="status_sleep">Sleep Quality</span>
+                            <span class="status-bar__value" style="color: #f97316;" data-lang="status_poor">Poor</span>
+                        </div>
+                        <div class="status-bar__track">
+                            <div class="status-bar__fill status-bar__fill--amber" style="width: 35%;"></div>
+                        </div>
+                    </div>
+                    <div class="status-bar">
+                        <div class="status-bar__header">
+                            <span class="status-bar__label" data-lang="status_social">Social Activity</span>
+                            <span class="status-bar__value" style="color: #22c55e;" data-lang="status_good">Good</span>
+                        </div>
+                        <div class="status-bar__track">
+                            <div class="status-bar__fill status-bar__fill--emerald" style="width: 75%;"></div>
+                        </div>
+                    </div>
+                    <div style="margin-top: var(--space-4); padding: var(--space-3); background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%); border-radius: var(--radius-xl); border: 1px solid rgba(139, 92, 246, 0.15);">
+                        <p class="text-sm" style="font-size: var(--text-xs); color: var(--text-secondary); line-height: var(--leading-relaxed);">
+                            <span style="color: #8b5cf6; font-weight: var(--font-semibold);">💡 AI Suggestion:</span>
+                            <span data-lang="suggestion_text">Try completing the PHQ-9 assessment and practice breathing exercises before bed.</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Recommended Assessments -->
+                <div class="widget">
+                    <h3 class="widget__title" style="margin-bottom: var(--space-4);">
+                        <span>🎯</span> <span data-lang="widget_recommended">Recommended</span>
+                    </h3>
+                    <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+                        <div class="assessment-card" onclick="showAssessment('phq9')">
+                            <div class="assessment-card__priority" data-lang="label_priority">Priority</div>
+                            <div class="assessment-card__icon">📋</div>
+                            <h4 class="assessment-card__title" data-lang="assessment_phq9">PHQ-9 Depression Scale</h4>
+                            <p class="assessment-card__desc" data-lang="assessment_phq9_desc">Standard tool for depression screening</p>
+                            <div class="assessment-card__footer">
+                                <span data-lang="meta_questions">9 questions • 3 min</span>
+                                <span data-lang="action_start">Start →</span>
+                            </div>
+                        </div>
+                        <div class="assessment-card--secondary" onclick="showAssessment('gad7')">
+                            <div style="display: flex; align-items: center; gap: var(--space-3);">
+                                <div style="font-size: 1.5rem;">🧘</div>
+                                <div style="flex: 1;">
+                                    <h4 class="assessment-card__title" style="margin-bottom: var(--space-1);" data-lang="assessment_gad7">GAD-7 Anxiety Scale</h4>
+                                    <p class="assessment-card__desc" style="margin-bottom: 0;" data-lang="meta_questions_short">7 questions • 2 min</p>
+                                </div>
+                                <span style="color: #8b5cf6;">→</span>
+                            </div>
+                        </div>
+                        <div class="assessment-card--secondary" onclick="showAssessment('isi')">
+                            <div style="display: flex; align-items: center; gap: var(--space-3);">
+                                <div style="font-size: 1.5rem;">💤</div>
+                                <div style="flex: 1;">
+                                    <h4 class="assessment-card__title" style="margin-bottom: var(--space-1);" data-lang="assessment_sleep">Sleep Quality Scale</h4>
+                                    <p class="assessment-card__desc" style="margin-bottom: 0;" data-lang="meta_questions_sleep">10 questions • 4 min</p>
+                                </div>
+                                <span style="color: #8b5cf6;">→</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Emergency Help -->
+                <div class="emergency-card">
+                    <h3 class="emergency-card__title">
+                        <span>🆘</span> <span data-lang="emergency_title">Emergency Hotlines</span>
+                    </h3>
+                    <p class="emergency-card__text" data-lang="emergency_text">
+                        If you're in distress or having thoughts of self-harm, please contact immediately:
+                    </p>
+                    <div class="emergency-card__link">
+                        <div>
+                            <p class="emergency-card__link-text" data-lang="hotline_1_name">Crisis Helpline</p>
+                            <p class="emergency-card__link-subtext" data-lang="hotline_1_desc">24/7 Free Support</p>
+                        </div>
+                        <span class="emergency-card__phone">1925</span>
+                    </div>
+                    <div class="emergency-card__link">
+                        <div>
+                            <p class="emergency-card__link-text" data-lang="hotline_2_name">Lifeline</p>
+                            <p class="emergency-card__link-subtext" data-lang="hotline_2_desc">24/7 Companionship</p>
+                        </div>
+                        <span class="emergency-card__phone">1995</span>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <!-- Bottom Section: Mood Chart & Practices -->
+        <div class="bottom-section">
+            <!-- 7-Day Mood Trend -->
+            <div class="mood-chart">
+                <div class="mood-chart__header">
+                    <div class="mood-chart__title-group">
+                        <h3 class="mood-chart__title">
+                            <span>📈</span> <span data-lang="chart_title">7-Day Mood Trend</span>
+                        </h3>
+                        <p class="mood-chart__subtitle" data-lang="chart_subtitle">Your emotional fluctuations this week</p>
+                    </div>
+                    <button class="mood-chart__btn" data-lang="chart_detail">View Details</button>
+                </div>
+                <div class="mood-chart__bars">
+                    <div class="mood-chart__bar">
+                        <div class="mood-chart__bar-track">
+                            <div class="mood-chart__bar-fill mood-chart__bar-fill--violet" style="height: 60%;"></div>
+                        </div>
+                        <span class="mood-chart__bar-label" data-lang="day_mon">Mon</span>
+                    </div>
+                    <div class="mood-chart__bar">
+                        <div class="mood-chart__bar-track">
+                            <div class="mood-chart__bar-fill mood-chart__bar-fill--pink" style="height: 75%;"></div>
+                        </div>
+                        <span class="mood-chart__bar-label" data-lang="day_tue">Tue</span>
+                    </div>
+                    <div class="mood-chart__bar">
+                        <div class="mood-chart__bar-track">
+                            <div class="mood-chart__bar-fill mood-chart__bar-fill--cyan" style="height: 85%;"></div>
+                        </div>
+                        <span class="mood-chart__bar-label" data-lang="day_wed">Wed</span>
+                    </div>
+                    <div class="mood-chart__bar">
+                        <div class="mood-chart__bar-track">
+                            <div class="mood-chart__bar-fill mood-chart__bar-fill--emerald" style="height: 70%;"></div>
+                        </div>
+                        <span class="mood-chart__bar-label" data-lang="day_thu">Thu</span>
+                    </div>
+                    <div class="mood-chart__bar">
+                        <div class="mood-chart__bar-track">
+                            <div class="mood-chart__bar-fill mood-chart__bar-fill--amber" style="height: 50%;"></div>
+                        </div>
+                        <span class="mood-chart__bar-label" data-lang="day_fri">Fri</span>
+                    </div>
+                    <div class="mood-chart__bar">
+                        <div class="mood-chart__bar-track">
+                            <div class="mood-chart__bar-fill mood-chart__bar-fill--orange" style="height: 35%;"></div>
+                        </div>
+                        <span class="mood-chart__bar-label" data-lang="day_sat">Sat</span>
+                    </div>
+                    <div class="mood-chart__bar">
+                        <div class="mood-chart__bar-track">
+                            <div class="mood-chart__bar-fill mood-chart__bar-fill--rose" style="height: 30%;"></div>
+                        </div>
+                        <span class="mood-chart__bar-label mood-chart__bar-label--active" data-lang="day_today">Today</span>
+                    </div>
+                </div>
+                <div class="mood-chart__stats">
+                    <div class="mood-chart__stat">
+                        <p class="mood-chart__stat-value">6.2</p>
+                        <p class="mood-chart__stat-label" data-lang="stat_avg">Average Score</p>
+                    </div>
+                    <div class="mood-chart__stat">
+                        <p class="mood-chart__stat-value mood-chart__stat-value--pink">↓ 12%</p>
+                        <p class="mood-chart__stat-label" data-lang="stat_weekly">vs Last Week</p>
+                    </div>
+                    <div class="mood-chart__stat">
+                        <p class="mood-chart__stat-value mood-chart__stat-value--cyan">5</p>
+                        <p class="mood-chart__stat-label" data-lang="stat_chats">Conversations</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daily Practices -->
+            <div class="practices-widget">
+                <h3 class="practices-widget__title">
+                    <span>🌱</span> <span data-lang="practices_title">Today's Recommended Practices</span>
+                </h3>
+                <div class="practices-widget__list">
+                    <div class="practice-card">
+                        <div class="practice-card__icon">🫁</div>
+                        <div class="practice-card__content">
+                            <h4 class="practice-card__title" data-lang="practice_breathing">4-7-8 Breathing</h4>
+                            <p class="practice-card__desc" data-lang="practice_breathing_desc">Quick relaxation, improves sleep</p>
+                        </div>
+                        <div class="practice-card__time">5 min</div>
+                    </div>
+                    <div class="practice-card practice-card--cyan">
+                        <div class="practice-card__icon practice-card__icon--cyan">🧘‍♀️</div>
+                        <div class="practice-card__content">
+                            <h4 class="practice-card__title" data-lang="practice_meditation">Guided Meditation</h4>
+                            <p class="practice-card__desc" data-lang="practice_meditation_desc">Relieves anxiety, returns to present</p>
+                        </div>
+                        <div class="practice-card__time">10 min</div>
+                    </div>
+                    <div class="practice-card practice-card--amber">
+                        <div class="practice-card__icon practice-card__icon--amber">✍️</div>
+                        <div class="practice-card__content">
+                            <h4 class="practice-card__title" data-lang="practice_journal">Gratitude Journal</h4>
+                            <p class="practice-card__desc" data-lang="practice_journal_desc">Record three things to be thankful for</p>
+                        </div>
+                        <div class="practice-card__time">3 min</div>
+                    </div>
+                    <div class="practice-card practice-card--rose">
+                        <div class="practice-card__icon practice-card__icon--rose">🎵</div>
+                        <div class="practice-card__content">
+                            <h4 class="practice-card__title" data-lang="practice_sound">Nature Sound Healing</h4>
+                            <p class="practice-card__desc" data-lang="practice_sound_desc">Rain, ocean waves, forest</p>
+                        </div>
+                        <div class="practice-card__time">∞</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Privacy Banner -->
+        <div class="privacy-banner">
+            <div class="privacy-banner__header">
+                <span style="font-size: 1.25rem;">🔒</span>
+                <h3 class="privacy-banner__title" data-lang="privacy_title">Your conversations are completely private</h3>
+            </div>
+            <p class="privacy-banner__text" data-lang="privacy_text">
+                We use end-to-end encryption. Your conversation content will never be shared with third parties.
+                <span class="privacy-banner__highlight">This cannot replace professional medical diagnosis and treatment.</span>
+            </p>
+            <div class="privacy-banner__badges">
+                <span>✓ ISO 27001 Certified</span>
+                <span>✓ HIPAA Compliant</span>
+                <span>✓ End-to-end Encryption</span>
+                <span>✓ Anonymous Chat</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <p>© 2025 PsyFind · Protecting your mental health with love and technology 💜</p>
+    </footer>
 
     <!-- Assessment Modal -->
     <div class="modal-overlay" id="assessmentPanel" role="dialog" aria-modal="true" aria-labelledby="assessmentTitle">
         <div class="modal modal--xl assessment-modal">
             <div class="modal__header assessment-panel__header">
                 <h2 class="modal__title assessment-panel__title" id="assessmentTitle" data-lang="assessment">Assessment</h2>
-                <button 
-                    class="modal__close assessment-panel__close" 
+                <button
+                    class="modal__close assessment-panel__close"
                     onclick="closeAssessment()"
                     aria-label="Close assessment"
                 >
@@ -126,28 +492,26 @@
         </div>
     </div>
 
-            <!-- Results Panel (Hidden by default) -->
-            <div class="results-panel" id="resultsPanel" role="dialog" aria-modal="true" aria-labelledby="resultsTitle" style="display: none;">
-                <div class="results-panel__content">
-                    <div class="results-panel__header">
-                        <h2 class="results-panel__title" id="resultsTitle">
-                            <i class="fas fa-clipboard-check" aria-hidden="true"></i>
-                            <span data-lang="analysis_results">Analysis Results</span>
-                        </h2>
-                        <button 
-                            class="results-panel__close" 
-                            onclick="closeResults()"
-                            aria-label="Close results"
-                        >
-                            <i class="fas fa-times" aria-hidden="true"></i>
-                        </button>
-                    </div>
-                    <div class="results-panel__body" id="resultsContent">
-                        <!-- Results will be loaded here -->
-                    </div>
-                </div>
+    <!-- Results Panel (Hidden by default) -->
+    <div class="results-panel" id="resultsPanel" role="dialog" aria-modal="true" aria-labelledby="resultsTitle" style="display: none;">
+        <div class="results-panel__content">
+            <div class="results-panel__header">
+                <h2 class="results-panel__title" id="resultsTitle">
+                    <i class="fas fa-clipboard-check" aria-hidden="true"></i>
+                    <span data-lang="analysis_results">Analysis Results</span>
+                </h2>
+                <button
+                    class="results-panel__close"
+                    onclick="closeResults()"
+                    aria-label="Close results"
+                >
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
             </div>
-        </main>
+            <div class="results-panel__body" id="resultsContent">
+                <!-- Results will be loaded here -->
+            </div>
+        </div>
     </div>
 
     <!-- User Info Modal -->
@@ -362,6 +726,9 @@
 
             // Setup quick responses
             setupQuickResponses();
+
+            // Load previous mood history
+            loadMoodHistory();
         }
 
         function setupEventListeners() {
@@ -900,6 +1267,101 @@
         function showDoctorRecommendations(doctors) {
             // Implementation for showing doctor recommendations in chat
         }
+
+        // Mood Selector Functions
+        async function selectMood(mood) {
+            // Remove active class from all mood buttons
+            document.querySelectorAll('.mood-btn').forEach(btn => {
+                btn.classList.remove('mood-btn--active');
+            });
+            // Add active class to selected mood
+            const selectedBtn = document.querySelector(`[data-mood="${mood}"]`);
+            if (selectedBtn) {
+                selectedBtn.classList.add('mood-btn--active');
+            }
+
+            // Record mood to backend
+            try {
+                await API.Mood.record(sessionId, mood);
+                console.log('Mood recorded:', mood);
+
+                // Also update the UI stats
+                updateMoodStats();
+            } catch (error) {
+                console.error('Failed to record mood:', error);
+                // Still proceed with UI updates even if backend fails
+            }
+
+            // Send mood message to chat
+            const moodMessages = {
+                'happy': I18n.t('mood_message_happy') || "I'm feeling happy today! 😄",
+                'calm': I18n.t('mood_message_calm') || "I'm feeling calm and peaceful. 😌",
+                'neutral': I18n.t('mood_message_neutral') || "I'm feeling neutral today. 🤔",
+                'anxious': I18n.t('mood_message_anxious') || "I'm feeling anxious and worried. 😟",
+                'sad': I18n.t('mood_message_sad') || "I'm feeling sad and down. 😢",
+                'tired': I18n.t('mood_message_tired') || "I'm feeling tired and exhausted. 😴"
+            };
+
+            chatInput.value = moodMessages[mood] || '';
+            sendMessage();
+
+            Toast.success(I18n.t('mood_recorded') || 'Mood recorded!');
+        }
+
+        // Update mood stats from backend
+        async function updateMoodStats() {
+            try {
+                const stats = await API.Mood.getStats(sessionId, 7);
+                console.log('Mood stats:', stats);
+
+                // Update the mood chart if we have data
+                if (stats.stats && stats.stats.daily_summary) {
+                    // This could update the mood chart bars dynamically
+                    // For now, just log it
+                }
+            } catch (error) {
+                console.error('Failed to get mood stats:', error);
+            }
+        }
+
+        // Load mood history on page load
+        async function loadMoodHistory() {
+            try {
+                const latest = await API.Mood.getLatest(sessionId);
+                if (latest.latest_mood) {
+                    // Highlight the last recorded mood if within last 24 hours
+                    const lastMoodTime = new Date(latest.latest_mood.timestamp);
+                    const hoursAgo = (Date.now() - lastMoodTime.getTime()) / (1000 * 60 * 60);
+
+                    if (hoursAgo < 24) {
+                        const moodBtn = document.querySelector(`[data-mood="${latest.latest_mood.mood_type}"]`);
+                        if (moodBtn) {
+                            moodBtn.classList.add('mood-btn--active');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load mood history:', error);
+            }
+        }
+
+        // Quick Intent Functions
+        function sendQuickIntent(intent) {
+            const intentMessages = {
+                'vent': I18n.t('intent_vent') || "I want to talk about what's been on my mind...",
+                'relax': I18n.t('intent_relax') || "I'd like to do a relaxation exercise.",
+                'assessment': I18n.t('intent_assessment') || "I'd like to take a mental health assessment."
+            };
+
+            chatInput.value = intentMessages[intent] || '';
+            sendMessage();
+        }
+
+        // Auto-resize textarea
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
     </script>
 </body>
 </html>

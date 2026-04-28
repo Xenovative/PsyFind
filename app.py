@@ -193,7 +193,25 @@ class DatabaseManager:
                         timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
                 ''')
-                
+
+                # Mood tracking table
+                conn.execute('''
+                    CREATE TABLE IF NOT EXISTS mood_tracking (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        session_id TEXT NOT NULL,
+                        mood_type TEXT NOT NULL,
+                        note TEXT,
+                        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY (session_id) REFERENCES user_sessions (session_id)
+                    )
+                ''')
+
+                # Create index for faster mood history queries
+                conn.execute('''
+                    CREATE INDEX IF NOT EXISTS idx_mood_tracking_session 
+                    ON mood_tracking(session_id, timestamp)
+                ''')
+
                 # Doctors/Psychiatrists table
                 conn.execute('''
                     CREATE TABLE IF NOT EXISTS doctors (
@@ -363,7 +381,113 @@ class DatabaseManager:
             return list(reversed(messages))  # Return in chronological order
         finally:
             conn.close()
-    
+
+    # Mood Tracking Management
+    def record_mood(self, session_id: str, mood_type: str, note: str = None) -> bool:
+        """Record a mood entry for a session"""
+        with self.lock:
+            conn = self.get_connection()
+            try:
+                conn.execute('''
+                    INSERT INTO mood_tracking (session_id, mood_type, note)
+                    VALUES (?, ?, ?)
+                ''', (session_id, mood_type, note))
+                conn.commit()
+                return True
+            except Exception as e:
+                logger.error(f"Error recording mood: {str(e)}")
+                return False
+            finally:
+                conn.close()
+
+    def get_mood_history(self, session_id: str, days: int = 7) -> List[Dict]:
+        """Get mood history for a session within the last N days"""
+        conn = self.get_connection()
+        try:
+            cursor = conn.execute('''
+                SELECT mood_type, note, timestamp
+                FROM mood_tracking
+                WHERE session_id = ? AND timestamp >= datetime('now', ?)
+                ORDER BY timestamp ASC
+            ''', (session_id, f'-{days} days'))
+            return [dict(row) for row in cursor.fetchall()]
+        except Exception as e:
+            logger.error(f"Error getting mood history: {str(e)}")
+            return []
+        finally:
+            conn.close()
+
+    def get_mood_stats(self, session_id: str, days: int = 7) -> Dict:
+        """Get mood statistics for a session within the last N days"""
+        conn = self.get_connection()
+        try:
+            # Mood counts
+            cursor = conn.execute('''
+                SELECT mood_type, COUNT(*) as count
+                FROM mood_tracking
+                WHERE session_id = ? AND timestamp >= datetime('now', ?)
+                GROUP BY mood_type
+            ''', (session_id, f'-{days} days'))
+            mood_counts = {row['mood_type']: row['count'] for row in cursor.fetchall()}
+
+            # Total entries
+            cursor = conn.execute('''
+                SELECT COUNT(*) as total FROM mood_tracking
+                WHERE session_id = ? AND timestamp >= datetime('now', ?)
+            ''', (session_id, f'-{days} days'))
+            total = cursor.fetchone()['total']
+
+            # Daily mood summary (for trend chart)
+            cursor = conn.execute('''
+                SELECT 
+                    date(timestamp) as date,
+                    mood_type,
+                    COUNT(*) as count
+                FROM mood_tracking
+                WHERE session_id = ? AND timestamp >= datetime('now', ?)
+                GROUP BY date(timestamp), mood_type
+                ORDER BY date(timestamp)
+            ''', (session_id, f'-{days} days'))
+            daily_summary = {}
+            for row in cursor.fetchall():
+                date = row['date']
+                if date not in daily_summary:
+                    daily_summary[date] = {}
+                daily_summary[date][row['mood_type']] = row['count']
+
+            return {
+                'total_entries': total,
+                'mood_counts': mood_counts,
+                'daily_summary': daily_summary,
+                'days_tracked': len(daily_summary)
+            }
+        except Exception as e:
+            logger.error(f"Error getting mood stats: {str(e)}")
+            return {'total_entries': 0, 'mood_counts': {}, 'daily_summary': {}, 'days_tracked': 0}
+        finally:
+            conn.close()
+
+    def get_session_mood_summary(self, session_id: str) -> Optional[Dict]:
+        """Get the most recent mood for a session"""
+        conn = self.get_connection()
+        try:
+            cursor = conn.execute('''
+                SELECT mood_type, note, timestamp
+                FROM mood_tracking
+                WHERE session_id = ?
+                ORDER BY timestamp DESC
+                LIMIT 1
+            ''', (session_id,))
+            row = cursor.fetchone()
+            if row:
+                return dict(row)
+            return None
+        except Exception as e:
+            logger.error(f"Error getting session mood summary: {str(e)}")
+            return None
+        finally:
+            conn.close()
+
     # Assessment Management
     def save_assessment_result(self, session_id: str, assessment_type: str, 
                              responses: Dict, score: int, severity: str,
@@ -2473,6 +2597,124 @@ def chat():
 def health():
     """Health check endpoint"""
     return jsonify({"status": "healthy", "service": "PsyFind"})
+
+# Mood Tracking API Endpoints
+@app.route('/api/mood/record', methods=['POST'])
+def record_mood():
+    """Record a mood entry for the current session"""
+    try:
+        data = request.json
+        session_id = data.get('session_id')
+        mood_type = data.get('mood_type')
+        note = data.get('note', None)
+
+        # Validate required fields
+        if not session_id or not mood_type:
+            return jsonify({"error": "session_id and mood_type are required"}), 400
+
+        # Validate mood_type is one of the allowed values
+        valid_moods = ['happy', 'calm', 'neutral', 'anxious', 'sad', 'tired']
+        if mood_type not in valid_moods:
+            return jsonify({"error": f"Invalid mood_type. Must be one of: {valid_moods}"}), 400
+
+        # Record the mood
+        success = db_manager.record_mood(session_id, mood_type, note)
+
+        if success:
+            return jsonify({
+                "success": True,
+                "message": "Mood recorded successfully",
+                "mood_type": mood_type,
+                "timestamp": datetime.now().isoformat()
+            })
+        else:
+            return jsonify({"error": "Failed to record mood"}), 500
+
+    except Exception as e:
+        logger.error(f"Record mood error: {str(e)}")
+        return jsonify({"error": "Failed to record mood"}), 500
+
+@app.route('/api/mood/history', methods=['GET'])
+def get_mood_history():
+    """Get mood history for a session"""
+    try:
+        session_id = request.args.get('session_id')
+        days = request.args.get('days', 7, type=int)
+
+        if not session_id:
+            return jsonify({"error": "session_id is required"}), 400
+
+        # Limit days to reasonable range
+        days = min(max(days, 1), 30)
+
+        history = db_manager.get_mood_history(session_id, days)
+
+        return jsonify({
+            "success": True,
+            "session_id": session_id,
+            "days": days,
+            "history": history,
+            "total_entries": len(history)
+        })
+
+    except Exception as e:
+        logger.error(f"Get mood history error: {str(e)}")
+        return jsonify({"error": "Failed to get mood history"}), 500
+
+@app.route('/api/mood/stats', methods=['GET'])
+def get_mood_stats():
+    """Get mood statistics for a session"""
+    try:
+        session_id = request.args.get('session_id')
+        days = request.args.get('days', 7, type=int)
+
+        if not session_id:
+            return jsonify({"error": "session_id is required"}), 400
+
+        # Limit days to reasonable range
+        days = min(max(days, 1), 30)
+
+        stats = db_manager.get_mood_stats(session_id, days)
+
+        return jsonify({
+            "success": True,
+            "session_id": session_id,
+            "days": days,
+            "stats": stats
+        })
+
+    except Exception as e:
+        logger.error(f"Get mood stats error: {str(e)}")
+        return jsonify({"error": "Failed to get mood stats"}), 500
+
+@app.route('/api/mood/latest', methods=['GET'])
+def get_latest_mood():
+    """Get the most recent mood for a session"""
+    try:
+        session_id = request.args.get('session_id')
+
+        if not session_id:
+            return jsonify({"error": "session_id is required"}), 400
+
+        latest_mood = db_manager.get_session_mood_summary(session_id)
+
+        if latest_mood:
+            return jsonify({
+                "success": True,
+                "session_id": session_id,
+                "latest_mood": latest_mood
+            })
+        else:
+            return jsonify({
+                "success": True,
+                "session_id": session_id,
+                "latest_mood": None,
+                "message": "No mood recorded for this session"
+            })
+
+    except Exception as e:
+        logger.error(f"Get latest mood error: {str(e)}")
+        return jsonify({"error": "Failed to get latest mood"}), 500
 
 # Admin Routes
 @app.route('/admin/login', methods=['GET', 'POST'])

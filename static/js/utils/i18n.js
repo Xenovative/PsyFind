@@ -77,6 +77,7 @@ const I18n = (function() {
       analyzing: 'Analyzing your responses...',
       generating_report: 'Generating clinical report...',
       finding_specialists: 'Finding matching specialists...',
+      please_wait: 'Please wait a moment',
       
       // Errors
       error_network: 'Network error. Please try again.',
@@ -447,6 +448,7 @@ const I18n = (function() {
       analyzing: '正在分析您的回答...',
       generating_report: '正在生成臨床報告...',
       finding_specialists: '正在尋找匹配的專科醫生...',
+      please_wait: '請稍候',
       
       // Errors
       error_network: '網絡錯誤，請重試。',

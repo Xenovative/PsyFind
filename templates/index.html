@@ -509,6 +509,17 @@
         </div>
     </div>
 
+    <!-- Processing Modal (Hidden by default) -->
+    <div class="modal-overlay" id="processingModal" role="dialog" aria-modal="true" aria-labelledby="processingTitle" style="display: none;">
+        <div class="modal modal--sm">
+            <div class="modal__body" style="text-align: center; padding: var(--space-8);">
+                <div class="spinner spinner--lg" style="margin: 0 auto var(--space-4);"></div>
+                <h3 id="processingTitle" data-lang="analyzing">Analyzing your responses...</h3>
+                <p style="color: var(--text-muted); margin-top: var(--space-2);" data-lang="please_wait">Please wait a moment</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Results Panel (Hidden by default) -->
     <div class="results-panel" id="resultsPanel" role="dialog" aria-modal="true" aria-labelledby="resultsTitle" style="display: none;">
         <div class="results-panel__content">
@@ -1142,6 +1153,18 @@
             // Update sidebar to show the recommended assessment as priority
             updateSidebarAssessmentRecommendation(resolvedType);
 
+            // Add prompt message to chat
+            const assessmentNames = {
+                'phq9': userLanguage === 'zh' ? 'PHQ-9 抑鬱量表' : 'PHQ-9 Depression Scale',
+                'gad7': userLanguage === 'zh' ? 'GAD-7 焦慮量表' : 'GAD-7 Anxiety Scale',
+                'whiteley': userLanguage === 'zh' ? 'Whiteley-7 健康焦慮量表' : 'Whiteley-7 Health Anxiety Scale',
+                'isi': userLanguage === 'zh' ? '睡眠質素量表' : 'Sleep Quality Scale'
+            };
+            const promptMessage = userLanguage === 'zh' 
+                ? `根據我們的對話，建議您完成${assessmentNames[resolvedType]}。您想要開始這個評估嗎？`
+                : `Based on our conversation, I recommend you take the ${assessmentNames[resolvedType]}. Would you like to start this assessment?`;
+            addMessage(promptMessage, 'assistant');
+
             const container = document.getElementById('quickResponses');
             if (!container) {
                 console.error('quickResponses container not found');
@@ -1333,6 +1356,11 @@
         async function submitAssessment() {
             const responses = getAssessmentResponses();
             
+            // Show processing modal
+            const processingModal = document.getElementById('processingModal');
+            processingModal.style.display = 'flex';
+            processingModal.classList.add('modal-overlay--open');
+            
             try {
                 const data = await API.Assessment.submit(sessionId, currentAssessment, {
                     responses: responses,
@@ -1341,10 +1369,18 @@
                     language: userLanguage === 'zh' ? 'Traditional Chinese' : 'English'
                 });
                 
+                // Hide processing modal
+                processingModal.style.display = 'none';
+                processingModal.classList.remove('modal-overlay--open');
+                
                 closeAssessment();
                 showResults(data);
                 Toast.success(I18n.t('assessment_completed'));
             } catch (error) {
+                // Hide processing modal on error
+                processingModal.style.display = 'none';
+                processingModal.classList.remove('modal-overlay--open');
+                
                 console.error('Failed to submit assessment:', error);
                 Toast.error(I18n.t('failed_submit_assessment'));
             }
@@ -1360,6 +1396,8 @@
             resultsContent.innerHTML = renderResults(data);
             resultsPanel.style.display = 'flex';
             resultsPanel.classList.add('results-panel--active');
+            // Apply translations to the dynamically rendered results
+            I18n.translatePage();
         }
 
         function renderResults(data) {

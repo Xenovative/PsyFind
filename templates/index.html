@@ -918,6 +918,27 @@
             return div.innerHTML;
         }
 
+        function formatMarkdown(text) {
+            if (!text) return '';
+            // Simple markdown to HTML conversion
+            let html = escapeHtml(text);
+            // Headers
+            html = html.replace(/^#### (.*$)/gim, '<h4>$1</h4>');
+            html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+            html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+            html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+            // Bold and italic
+            html = html.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            // Lists
+            html = html.replace(/^\- (.*$)/gim, '<li>$1</li>');
+            html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+            // Line breaks
+            html = html.replace(/\n/g, '<br>');
+            return html;
+        }
+
         // Disclaimer Modal Functions
         function showDisclaimerModal() {
             const modal = document.getElementById('disclaimerModal');
@@ -1416,14 +1437,19 @@
             let html = '';
             
             // The /analyze endpoint returns data in data.analysis
-            const analysis = data.analysis || data;
+            const analysis = data && (data.analysis || data);
+            
+            if (!analysis) {
+                console.error('No analysis data available');
+                return '<p style="text-align: center; color: var(--text-muted);">Unable to load results. Please try again.</p>';
+            }
             
             // Score display - handle different assessment types
-            const score = analysis.whiteley_score || analysis.phq9_score || analysis.gad7_score || 0;
-            const maxScore = analysis.whiteley_score ? 28 : analysis.phq9_score ? 27 : analysis.gad7_score ? 21 : 28;
+            const score = analysis.whiteley_score || analysis.phq9_score || analysis.gad7_score || analysis.isi_score || 0;
+            const maxScore = analysis.whiteley_score ? 28 : analysis.phq9_score ? 27 : analysis.gad7_score ? 21 : analysis.isi_score ? 40 : 28;
             const severity = analysis.severity || 'unknown';
             
-            if (score !== undefined) {
+            if (score > 0) {
                 html += `
                     <div class="score-display">
                         <div class="score-display__number">${score}<span class="score-display__total">/${maxScore}</span></div>
@@ -1447,20 +1473,22 @@
             }
 
             // Analysis items (DSM matches)
-            if (analysis.analysis && analysis.analysis.length > 0) {
+            if (analysis.analysis && Array.isArray(analysis.analysis) && analysis.analysis.length > 0) {
                 html += `
                     <div class="results-section">
                         <h4 class="results-section__title">
                             <i class="fas fa-stethoscope" aria-hidden="true"></i>
                             <span data-lang="analysis">Analysis</span>
                         </h4>
-                        ${analysis.analysis.map(item => `
+                        ${analysis.analysis.map(item => {
+                            const disorderName = item && (item.disorder || item.name || (typeof item === 'string' ? item : JSON.stringify(item)));
+                            return `
                             <div class="disorder-card">
                                 <div class="disorder-card__header">
-                                    <span class="disorder-card__name">${escapeHtml(item.disorder || item)}</span>
+                                    <span class="disorder-card__name">${escapeHtml(disorderName || 'Unknown')}</span>
                                 </div>
                             </div>
-                        `).join('')}
+                        `}).join('')}
                     </div>
                 `;
             }
@@ -1474,7 +1502,7 @@
                             <i class="fas fa-file-medical-alt" aria-hidden="true"></i>
                             <span data-lang="clinical_report">Clinical Report</span>
                         </h4>
-                        <div class="clinical-report" style="white-space: pre-wrap; line-height: 1.6;">${escapeHtml(clinicalReport)}</div>
+                        <div class="clinical-report" style="line-height: 1.6;">${formatMarkdown(clinicalReport)}</div>
                     </div>
                 `;
             }
@@ -1506,21 +1534,6 @@
                                 </div>
                             </div>
                         `).join('')}
-                    </div>
-                `;
-            }
-            
-            // Clinical Report
-            if (data.detailed_report) {
-                html += `
-                    <div class="results-section">
-                        <h4 class="results-section__title">
-                            <i class="fas fa-file-medical" aria-hidden="true"></i>
-                            <span data-lang="clinical_report">Clinical Report</span>
-                        </h4>
-                        <div class="clinical-report">
-                            ${escapeHtml(data.detailed_report)}
-                        </div>
                     </div>
                 `;
             }

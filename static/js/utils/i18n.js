@@ -867,6 +867,13 @@ const I18n = (function() {
     }
   }
 
+  /**
+   * Re-apply translations to the page (useful for dynamically added content)
+   */
+  function translatePage() {
+    applyTranslations();
+  }
+
   // Public API
   return {
     init,
@@ -874,6 +881,7 @@ const I18n = (function() {
     t,
     getCurrentLanguage,
     loadSavedLanguage,
+    translatePage,
     translations: translationData
   };
 })();

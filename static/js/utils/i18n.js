@@ -119,14 +119,20 @@ const I18n = (function() {
       submit_assessment: 'Submit Assessment',
       assessment: 'Assessment',
       
-      // Assessment Scale Labels
+      // Scale labels
+      not_at_all: 'Not at all',
       several_days: 'Several days',
       more_than_half_days: 'More than half the days',
       nearly_every_day: 'Nearly every day',
       rarely: 'Rarely',
       sometimes: 'Sometimes',
       often: 'Often',
-      very_often: 'Very Often',
+      very_often: 'Very often',
+      none: 'None',
+      mild: 'Mild',
+      moderate: 'Moderate',
+      severe: 'Severe',
+      very_severe: 'Very severe',
       
       // Whiteley Questions
       whiteley_q1: 'Do you often worry about having a serious illness?',
@@ -491,6 +497,7 @@ const I18n = (function() {
       assessment: '評估',
       
       // Assessment Scale Labels
+      not_at_all: '完全沒有',
       several_days: '幾天',
       more_than_half_days: '超過一半天數',
       nearly_every_day: '幾乎每天',
@@ -498,6 +505,11 @@ const I18n = (function() {
       sometimes: '有時',
       often: '經常',
       very_often: '非常經常',
+      none: '沒有',
+      mild: '輕微',
+      moderate: '中等',
+      severe: '嚴重',
+      very_severe: '非常嚴重',
       
       // Whiteley Questions
       whiteley_q1: '您是否經常擔心患有嚴重疾病？',

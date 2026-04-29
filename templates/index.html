@@ -499,6 +499,7 @@
                         <div class="assessment-section" id="whiteley-section" style="display: none;"></div>
                         <div class="assessment-section" id="phq9-section" style="display: none;"></div>
                         <div class="assessment-section" id="gad7-section" style="display: none;"></div>
+                        <div class="assessment-section" id="isi-section" style="display: none;"></div>
                     </div>
                 </form>
             </div>
@@ -1031,7 +1032,18 @@
                 { value: 3, label: 'nearly_every_day' }
             ];
 
-            const scale = scaleType === 'whiteley' ? whiteleyScale : phq9Scale;
+            const isiScale = [
+                { value: 0, label: 'none' },
+                { value: 1, label: 'mild' },
+                { value: 2, label: 'moderate' },
+                { value: 3, label: 'severe' },
+                { value: 4, label: 'very_severe' }
+            ];
+
+            let scale;
+            if (scaleType === 'whiteley') scale = whiteleyScale;
+            else if (scaleType === 'isi') scale = isiScale;
+            else scale = phq9Scale;
 
             // Generate all questions but hide them initially
             let html = `
@@ -1142,7 +1154,7 @@
             renderAssessmentSection('whiteley', 7, 'whiteley');
             renderAssessmentSection('phq9', 9, 'phq9');
             renderAssessmentSection('gad7', 7, 'phq9');
-            renderAssessmentSection('isi', 7, 'whiteley'); // ISI uses 0-4 scale like Whiteley
+            renderAssessmentSection('isi', 10, 'isi'); // ISI has 10 questions with its own scale
         }
 
         // Assessment Functions

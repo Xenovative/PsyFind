@@ -458,6 +458,29 @@
         </div>
     </div>
 
+    <!-- Session Detail Modal -->
+    <div class="admin-modal-overlay" id="sessionDetailModal" role="dialog" aria-modal="true" aria-labelledby="sessionDetailTitle">
+        <div class="admin-modal admin-modal--lg">
+            <div class="admin-modal__header">
+                <h3 class="admin-modal__title" id="sessionDetailTitle" data-lang="session_details">Session Details</h3>
+                <button class="admin-modal__close" onclick="closeSessionDetailModal()" aria-label="Close modal">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="admin-modal__body">
+                <div id="sessionDetailContent">
+                    <div class="admin-loading">
+                        <i class="fas fa-spinner" aria-hidden="true"></i>
+                        <p data-lang="loading">Loading session details...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="admin-modal__footer">
+                <button class="btn btn--secondary" onclick="closeSessionDetailModal()" data-lang="close">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript Modules -->
     <script src="{{ url_for('static', filename='js/utils/i18n.js') }}"></script>
     <script src="{{ url_for('static', filename='js/utils/api.js') }}"></script>
@@ -569,7 +592,10 @@
                         <div class="session-item__meta">${escapeHtml(s.language)} • ${formatTime(s.last_activity)}</div>
                     </div>
                     <div class="session-item__actions">
-                        <button class="btn btn--danger btn--sm" onclick="terminateSession('${s.session_id}')">
+                        <button class="btn btn--secondary btn--sm" onclick="viewSessionDetails('${s.session_id}')" title="View Details">
+                            <i class="fas fa-eye" aria-hidden="true"></i>
+                        </button>
+                        <button class="btn btn--danger btn--sm" onclick="terminateSession('${s.session_id}')" title="Terminate Session">
                             <i class="fas fa-times" aria-hidden="true"></i>
                         </button>
                     </div>
@@ -981,9 +1007,117 @@
         }
 
         // Session Management
+        async function viewSessionDetails(sessionId) {
+            const modal = document.getElementById('sessionDetailModal');
+            const content = document.getElementById('sessionDetailContent');
+
+            modal.classList.add('admin-modal-overlay--open');
+            content.innerHTML = '<div class="admin-loading"><i class="fas fa-spinner" aria-hidden="true"></i><p>Loading session details...</p></div>';
+
+            try {
+                const data = await API.Admin.getSessionDetail(sessionId);
+                console.log('Session detail:', data);
+                renderSessionDetails(data);
+            } catch (error) {
+                console.error('Failed to load session details:', error);
+                content.innerHTML = '<p class="text-center text-muted">Failed to load session details: ' + (error.message || 'Unknown error') + '</p>';
+            }
+        }
+
+        function closeSessionDetailModal() {
+            const modal = document.getElementById('sessionDetailModal');
+            modal.classList.remove('admin-modal-overlay--open');
+        }
+
+        function renderSessionDetails(data) {
+            const content = document.getElementById('sessionDetailContent');
+            const session = data.session || {};
+            const chatHistory = data.chat_history || [];
+            const assessments = data.assessments || [];
+            const moodHistory = data.mood_history || [];
+
+            content.innerHTML = `
+                <div class="session-detail">
+                    <div class="session-detail__header">
+                        <h4 class="session-detail__id">${escapeHtml(session.session_id || 'Unknown')}</h4>
+                        <div class="session-detail__meta">
+                            <span class="badge badge--${session.is_active ? 'success' : 'secondary'}">${session.is_active ? 'Active' : 'Inactive'}</span>
+                            <span>Language: ${escapeHtml(session.language || 'en')}</span>
+                            <span>Messages: ${session.message_count || 0}</span>
+                        </div>
+                    </div>
+
+                    <div class="session-detail__tabs">
+                        <button class="session-detail__tab session-detail__tab--active" onclick="switchSessionTab('chat')">Chat History (${chatHistory.length})</button>
+                        <button class="session-detail__tab" onclick="switchSessionTab('assessments')">Assessments (${assessments.length})</button>
+                        <button class="session-detail__tab" onclick="switchSessionTab('mood')">Mood Records (${moodHistory.length})</button>
+                    </div>
+
+                    <div class="session-detail__content" id="sessionTab-chat">
+                        ${chatHistory.length === 0 ? '<p class="text-center text-muted">No chat history</p>' :
+                            chatHistory.slice().reverse().map(msg => `
+                                <div class="chat-message chat-message--${escapeHtml(msg.role)}">
+                                    <div class="chat-message__header">
+                                        <span class="chat-message__role">${escapeHtml(msg.role)}</span>
+                                        <span class="chat-message__time">${formatTime(msg.timestamp)}</span>
+                                    </div>
+                                    <div class="chat-message__content">${escapeHtml(msg.content)}</div>
+                                </div>
+                            `).join('')}
+                    </div>
+
+                    <div class="session-detail__content" id="sessionTab-assessments" style="display: none;">
+                        ${assessments.length === 0 ? '<p class="text-center text-muted">No assessments completed</p>' :
+                            assessments.map(a => `
+                                <div class="assessment-item">
+                                    <div class="assessment-item__header">
+                                        <span class="assessment-item__type">${escapeHtml(a.assessment_type)}</span>
+                                        <span class="assessment-item__score">Score: ${a.score}</span>
+                                    </div>
+                                    <div class="assessment-item__severity severity--${escapeHtml(a.severity?.toLowerCase().replace(/\s+/g, '-'))}">${escapeHtml(a.severity)}</div>
+                                    <div class="assessment-item__time">${formatTime(a.created_at)}</div>
+                                </div>
+                            `).join('')}
+                    </div>
+
+                    <div class="session-detail__content" id="sessionTab-mood" style="display: none;">
+                        ${moodHistory.length === 0 ? '<p class="text-center text-muted">No mood records</p>' :
+                            moodHistory.map(m => `
+                                <div class="mood-item mood-item--${escapeHtml(m.mood_type)}">
+                                    <span class="mood-item__emoji">${getMoodEmoji(m.mood_type)}</span>
+                                    <span class="mood-item__type">${escapeHtml(m.mood_type)}</span>
+                                    ${m.note ? `<span class="mood-item__note">${escapeHtml(m.note)}</span>` : ''}
+                                    <span class="mood-item__time">${formatTime(m.timestamp)}</span>
+                                </div>
+                            `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function switchSessionTab(tabName) {
+            document.querySelectorAll('.session-detail__tab').forEach(tab => {
+                tab.classList.remove('session-detail__tab--active');
+            });
+            document.querySelectorAll('.session-detail__content').forEach(content => {
+                content.style.display = 'none';
+            });
+
+            document.getElementById('sessionTab-' + tabName).style.display = 'block';
+            event.target.classList.add('session-detail__tab--active');
+        }
+
+        function getMoodEmoji(moodType) {
+            const emojis = {
+                'happy': '😄', 'calm': '😌', 'neutral': '🤔',
+                'anxious': '😟', 'sad': '😢', 'tired': '😴'
+            };
+            return emojis[moodType] || '😐';
+        }
+
         async function terminateSession(sessionId) {
             if (!confirm('Are you sure you want to terminate this session?')) return;
-            
+
             try {
                 await API.Admin.terminateSession(sessionId);
                 Toast.success('Session terminated');

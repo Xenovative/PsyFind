@@ -351,6 +351,15 @@ const API = (function() {
      */
     async getSessionExchangeStats(days = 30) {
       return request(`/admin/api/session-exchanges/stats?days=${days}`);
+    },
+
+    /**
+     * Get detailed session information
+     * @param {string} sessionId - Session ID
+     * @returns {Promise} Session details with chat history, assessments, mood records
+     */
+    async getSessionDetail(sessionId) {
+      return request(`/admin/api/clinical/session/${encodeURIComponent(sessionId)}`);
     }
   };
 

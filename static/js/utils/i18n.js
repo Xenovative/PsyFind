@@ -215,6 +215,10 @@ const I18n = (function() {
       session_exchanges: 'Session Exchanges',
       loading_session_exchanges: 'Loading session exchanges...',
 
+      // Admin Session Details
+      session_details: 'Session Details',
+      close: 'Close',
+
       // Actions
       refresh: 'Refresh',
       logout: 'Logout',
@@ -613,6 +617,10 @@ const I18n = (function() {
       // Admin Session Exchange
       session_exchanges: '會話交換',
       loading_session_exchanges: '載入會話交換中...',
+
+      // Admin Session Details
+      session_details: '會話詳情',
+      close: '關閉',
 
       // Actions
       refresh: '刷新',

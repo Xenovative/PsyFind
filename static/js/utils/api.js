@@ -136,7 +136,7 @@ const API = (function() {
      */
     async search(params = {}) {
       const queryString = new URLSearchParams(params).toString();
-      return request(`/doctors/search?${queryString}`);
+      return request(`/admin/api/doctors/search?${queryString}`);
     },
 
     /**
@@ -144,7 +144,7 @@ const API = (function() {
      * @returns {Promise} List of doctors
      */
     async getAll() {
-      return request('/doctors');
+      return request('/admin/api/doctors');
     },
 
     /**
@@ -153,7 +153,7 @@ const API = (function() {
      * @returns {Promise} Doctor details
      */
     async getById(id) {
-      return request(`/doctors/${id}`);
+      return request(`/admin/api/doctors/${id}`);
     },
 
     /**
@@ -257,7 +257,7 @@ const API = (function() {
      * @returns {Promise} List of active sessions
      */
     async getSessions() {
-      return request('/admin/sessions');
+      return request('/admin/api/sessions');
     },
 
     /**
@@ -266,9 +266,8 @@ const API = (function() {
      * @returns {Promise} Result
      */
     async terminateSession(sessionId) {
-      return request('/admin/sessions/terminate', {
-        method: 'POST',
-        body: JSON.stringify({ session_id: sessionId })
+      return request(`/admin/api/sessions/${sessionId}/terminate`, {
+        method: 'POST'
       });
     },
 
@@ -277,7 +276,7 @@ const API = (function() {
      * @returns {Promise} System health data
      */
     async getHealth() {
-      return request('/admin/health');
+      return request('/admin/api/system/health');
     },
 
     /**
@@ -285,7 +284,7 @@ const API = (function() {
      * @returns {Promise} Analytics data
      */
     async getAnalytics() {
-      return request('/admin/analytics');
+      return request('/admin/api/analytics');
     },
 
     /**
@@ -295,7 +294,7 @@ const API = (function() {
      */
     async getLogs(filters = {}) {
       const queryString = new URLSearchParams(filters).toString();
-      return request(`/admin/logs?${queryString}`);
+      return request(`/admin/api/logs?${queryString}`);
     },
 
     // Doctor Management
@@ -305,7 +304,7 @@ const API = (function() {
      * @returns {Promise} Created doctor
      */
     async createDoctor(doctorData) {
-      return request('/admin/doctors', {
+      return request('/admin/api/doctors', {
         method: 'POST',
         body: JSON.stringify(doctorData)
       });
@@ -318,7 +317,7 @@ const API = (function() {
      * @returns {Promise} Updated doctor
      */
     async updateDoctor(id, doctorData) {
-      return request(`/admin/doctors/${id}`, {
+      return request(`/admin/api/doctors/${id}`, {
         method: 'PUT',
         body: JSON.stringify(doctorData)
       });
@@ -330,7 +329,7 @@ const API = (function() {
      * @returns {Promise} Result
      */
     async deleteDoctor(id) {
-      return request(`/admin/doctors/${id}`, {
+      return request(`/admin/api/doctors/${id}`, {
         method: 'DELETE'
       });
     }

@@ -371,7 +371,9 @@
         // Data Loading
         async function loadDashboardData() {
             try {
+                console.log('Loading dashboard stats...');
                 const stats = await API.Admin.getStats();
+                console.log('Stats data:', stats);
                 
                 document.getElementById('activeSessions').textContent = stats.active_sessions || 0;
                 document.getElementById('totalAssessments').textContent = stats.total_assessments || 0;
@@ -385,7 +387,7 @@
                 
             } catch (error) {
                 console.error('Failed to load dashboard:', error);
-                Toast.error('Failed to load dashboard data');
+                Toast.error('Failed to load dashboard: ' + (error.message || 'Unknown error'));
             }
         }
 
@@ -394,10 +396,13 @@
             panel.innerHTML = '<div class="admin-loading"><i class="fas fa-spinner" aria-hidden="true"></i><p>Loading...</p></div>';
             
             try {
+                console.log('Fetching sessions...');
                 const data = await API.Admin.getSessions();
+                console.log('Sessions data:', data);
                 renderSessions(data.sessions || []);
             } catch (error) {
-                panel.innerHTML = '<p class="text-center text-muted">Failed to load sessions</p>';
+                console.error('Failed to load sessions:', error);
+                panel.innerHTML = '<p class="text-center text-muted">Failed to load sessions: ' + (error.message || 'Unknown error') + '</p>';
             }
         }
 
@@ -428,7 +433,9 @@
             const panel = document.getElementById('healthPanel');
             
             try {
+                console.log('Fetching health...');
                 const data = await API.Admin.getHealth();
+                console.log('Health data:', data);
                 
                 const statusClass = data.status === 'online' ? 'health-status__indicator--online' : 
                                    data.status === 'warning' ? 'health-status__indicator--warning' : 'health-status__indicator--error';
@@ -450,7 +457,8 @@
                     </div>
                 `;
             } catch (error) {
-                panel.innerHTML = '<p class="text-center text-muted">Failed to load health data</p>';
+                console.error('Failed to load health:', error);
+                panel.innerHTML = '<p class="text-center text-muted">Failed to load health: ' + (error.message || 'Unknown error') + '</p>';
             }
         }
 
@@ -458,7 +466,9 @@
             const panel = document.getElementById('analyticsPanel');
             
             try {
+                console.log('Fetching analytics...');
                 const data = await API.Admin.getAnalytics();
+                console.log('Analytics data:', data);
                 
                 if (!data.assessment_types || Object.keys(data.assessment_types).length === 0) {
                     panel.innerHTML = '<p class="text-center text-muted">No data available</p>';
@@ -479,7 +489,8 @@
                     `).join('') + 
                 '</div>';
             } catch (error) {
-                panel.innerHTML = '<p class="text-center text-muted">Failed to load analytics</p>';
+                console.error('Failed to load analytics:', error);
+                panel.innerHTML = '<p class="text-center text-muted">Failed to load analytics: ' + (error.message || 'Unknown error') + '</p>';
             }
         }
 
@@ -489,10 +500,13 @@
             panel.innerHTML = '<div class="admin-loading"><i class="fas fa-spinner" aria-hidden="true"></i><p>Loading...</p></div>';
             
             try {
+                console.log('Fetching doctors...');
                 const data = await API.Doctor.getAll();
-                renderDoctors(data);
+                console.log('Doctors data:', data);
+                renderDoctors(data.doctors || data);
             } catch (error) {
-                panel.innerHTML = '<p class="text-center text-muted">Failed to load doctors</p>';
+                console.error('Failed to load doctors:', error);
+                panel.innerHTML = '<p class="text-center text-muted">Failed to load doctors: ' + (error.message || 'Unknown error') + '</p>';
             }
         }
 

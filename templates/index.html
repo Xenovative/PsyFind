@@ -918,79 +918,92 @@
             return div.innerHTML;
         }
 
+        function parseClinicalReport(text) {
+            if (!text) return [{ title: '', content: '' }];
+            
+            const sections = [];
+            const lines = text.split('\n');
+            let currentTitle = '';
+            let currentContent = [];
+            
+            for (let line of lines) {
+                const headerMatch = line.match(/^(#{2,4})\s+(.+)$/);
+                
+                if (headerMatch) {
+                    // Save previous section if exists
+                    if (currentContent.length > 0 || currentTitle) {
+                        sections.push({
+                            title: currentTitle,
+                            content: currentContent.join('\n').trim()
+                        });
+                    }
+                    // Start new section
+                    currentTitle = headerMatch[2].trim();
+                    currentContent = [];
+                } else {
+                    currentContent.push(line);
+                }
+            }
+            
+            // Don't forget the last section
+            if (currentContent.length > 0 || currentTitle) {
+                sections.push({
+                    title: currentTitle,
+                    content: currentContent.join('\n').trim()
+                });
+            }
+            
+            // If no sections found, return entire text as one section
+            if (sections.length === 0) {
+                sections.push({ title: '', content: text });
+            }
+            
+            return sections;
+        }
+
         function formatMarkdown(text) {
             if (!text) return '';
             
-            // First, escape HTML to prevent XSS
-            const div = document.createElement('div');
-            div.textContent = text;
-            let html = div.innerHTML;
+            // Escape HTML special chars
+            text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             
-            // Split into lines for processing
-            const lines = html.split('\n');
+            // Bold: **text**
+            text = text.replace(/\*\*(.+?)\*\*/g, '<strong style="color: var(--text-primary); font-weight: 600;">$1</strong>');
+            
+            // Lists: - item at start of line
+            text = text.replace(/^\s*-\s+(.+)$/gim, '<div style="margin: 4px 0; padding-left: 20px; position: relative;"><span style="position: absolute; left: 0; color: var(--color-primary-500);">•</span>$1</div>');
+            
+            // Numbered lists
+            text = text.replace(/^(\d+)[\.\)]\s+(.+)$/gim, '<div style="margin: 4px 0; padding-left: 20px; position: relative;"><span style="position: absolute; left: 0; font-weight: 600; color: var(--color-primary-500);">$1.</span>$2</div>');
+            
+            // Paragraphs - wrap non-tag lines
+            const lines = text.split('\n');
             let result = [];
-            let inList = false;
-            
-            for (let i = 0; i < lines.length; i++) {
-                let line = lines[i].trim();
-                
-                // Skip empty lines but preserve as paragraph breaks
-                if (!line) {
-                    if (inList) {
-                        result.push('</div>');
-                        inList = false;
-                    }
+            let i = 0;
+            while (i < lines.length) {
+                let line = lines[i];
+                // Skip if already an HTML tag
+                if (line.match(/^\s*<div/)) {
+                    result.push(line);
+                    i++;
                     continue;
                 }
-                
-                // Section headers: **Title:** or **Title.**
-                if (line.match(/^\*\*[^*]+\*\*[:\.]?/)) {
-                    if (inList) {
-                        result.push('</div>');
-                        inList = false;
-                    }
-                    line = line.replace(/\*\*([^*]+)\*\*[:\.]?/g, '<strong style="color: var(--text-primary); font-size: 1.05em;">$1</strong>');
-                    result.push('<div style="margin: 16px 0 8px;">' + line + '</div>');
-                    continue;
+                // Collect consecutive non-tag lines as paragraph
+                let paraLines = [];
+                while (i < lines.length && !lines[i].match(/^\s*<div/) && lines[i].trim()) {
+                    paraLines.push(lines[i]);
+                    i++;
                 }
-                
-                // Bullet points: .- item or - item
-                if (line.match(/^[\.\s]*-\s+/)) {
-                    if (!inList) {
-                        result.push('<div style="margin: 8px 0; padding-left: 16px; border-left: 3px solid var(--color-primary-300);">');
-                        inList = true;
-                    }
-                    line = line.replace(/^[\.\s]*-\s+/, '');
-                    line = line.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-                    result.push('<div style="margin: 6px 0; padding: 4px 0;">• ' + line + '</div>');
-                    continue;
+                if (paraLines.length > 0) {
+                    result.push('<p style="margin: 10px 0; line-height: 1.7;">' + paraLines.join(' ') + '</p>');
                 }
-                
-                // Numbered items: 1. item or 1. **Title**: item
-                if (line.match(/^\d+\.\s+/)) {
-                    if (!inList) {
-                        result.push('<div style="margin: 8px 0; padding-left: 16px;">');
-                        inList = true;
-                    }
-                    line = line.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-                    result.push('<div style="margin: 6px 0; padding: 4px 0;">' + line + '</div>');
-                    continue;
+                // Empty line - skip
+                if (i < lines.length && !lines[i].trim()) {
+                    i++;
                 }
-                
-                // Regular text with inline bold
-                if (inList) {
-                    result.push('</div>');
-                    inList = false;
-                }
-                line = line.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-                result.push('<div style="margin: 8px 0; line-height: 1.7;">' + line + '</div>');
             }
             
-            if (inList) {
-                result.push('</div>');
-            }
-            
-            return result.join('');
+            return result.join('\n');
         }
 
         // Disclaimer Modal Functions
@@ -1547,18 +1560,25 @@
                 `;
             }
 
-            // Clinical Report - from data.detailed_report
+            // Clinical Report - split into separate cards by sections
             const clinicalReport = data.detailed_report || '';
             if (clinicalReport) {
-                html += `
-                    <div class="results-section">
-                        <h4 class="results-section__title">
-                            <i class="fas fa-file-medical-alt" aria-hidden="true"></i>
-                            <span data-lang="clinical_report">Clinical Report</span>
-                        </h4>
-                        <div class="clinical-report" style="line-height: 1.6;">${formatMarkdown(clinicalReport)}</div>
-                    </div>
-                `;
+                const sections = parseClinicalReport(clinicalReport);
+                sections.forEach((section, index) => {
+                    html += `
+                        <div class="results-section" style="margin-bottom: var(--space-4);">
+                            <div class="clinical-card" style="background: var(--bg-secondary); border-radius: var(--radius-lg); padding: var(--space-4); border: 1px solid var(--border-light);">
+                                ${section.title ? `
+                                    <h5 style="margin: 0 0 var(--space-3); color: var(--color-primary-600); font-weight: 600; font-size: 1.05em; display: flex; align-items: center; gap: var(--space-2);">
+                                        <span style="width: 6px; height: 6px; background: var(--color-primary-500); border-radius: 50%;"></span>
+                                        ${escapeHtml(section.title)}
+                                    </h5>
+                                ` : ''}
+                                <div style="line-height: 1.7; color: var(--text-primary);">${formatMarkdown(section.content)}</div>
+                            </div>
+                        </div>
+                    `;
+                });
             }
 
             // Doctors - from data.psychiatrists

@@ -3054,6 +3054,17 @@ def admin_dashboard():
     """Admin dashboard page"""
     return render_template('admin_dashboard.html')
 
+@app.route('/admin/stats')
+@admin_required
+def admin_stats():
+    """Get dashboard statistics (compatibility endpoint)"""
+    try:
+        analytics = admin_manager.get_analytics_data()
+        return jsonify(analytics)
+    except Exception as e:
+        logger.error(f"Admin stats error: {str(e)}")
+        return jsonify({"error": "Failed to fetch stats"}), 500
+
 @app.route('/admin/api/analytics')
 @admin_permission_required('view_analytics')
 def admin_analytics():

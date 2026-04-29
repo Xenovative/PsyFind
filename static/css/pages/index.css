@@ -797,6 +797,20 @@
   color: var(--text-muted);
 }
 
+.mood-chart__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.mood-chart--collapsible .mood-chart__header {
+  cursor: pointer;
+}
+
+.mood-chart--collapsible.collapsed .widget__collapse-btn i {
+  transform: rotate(-90deg);
+}
+
 .mood-chart__btn {
   font-size: var(--text-xs);
   background: rgba(139, 92, 246, 0.1);
@@ -926,6 +940,22 @@
   border-radius: var(--radius-3xl);
   padding: var(--space-6);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+.practices-widget__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-5);
+  cursor: pointer;
+}
+
+.practices-widget__header .practices-widget__title {
+  margin-bottom: 0;
+}
+
+.practices-widget--collapsible.collapsed .widget__collapse-btn i {
+  transform: rotate(-90deg);
 }
 
 .practices-widget__title {

@@ -151,15 +151,24 @@
                     </div>
 
                     <div class="chat-interface__input-container">
-                        <div class="quick-actions">
-                            <button class="quick-action-btn" onclick="sendQuickIntent('vent')">
-                                <span>💭</span> <span data-lang="quick_vent">I want to talk</span>
+                        <div class="quick-actions quick-actions--moods">
+                            <button class="mood-btn mood-btn--quick" data-mood="happy" onclick="selectMood('happy')">
+                                <span class="mood-btn__emoji">�</span>
                             </button>
-                            <button class="quick-action-btn quick-action-btn--pink" onclick="sendQuickIntent('relax')">
-                                <span>🌿</span> <span data-lang="quick_relax">Relaxation</span>
+                            <button class="mood-btn mood-btn--quick" data-mood="calm" onclick="selectMood('calm')">
+                                <span class="mood-btn__emoji">😌</span>
                             </button>
-                            <button class="quick-action-btn quick-action-btn--cyan" onclick="sendQuickIntent('assessment')">
-                                <span>📊</span> <span data-lang="quick_assessment">Take Assessment</span>
+                            <button class="mood-btn mood-btn--quick" data-mood="neutral" onclick="selectMood('neutral')">
+                                <span class="mood-btn__emoji">😐</span>
+                            </button>
+                            <button class="mood-btn mood-btn--quick" data-mood="anxious" onclick="selectMood('anxious')">
+                                <span class="mood-btn__emoji">😟</span>
+                            </button>
+                            <button class="mood-btn mood-btn--quick" data-mood="sad" onclick="selectMood('sad')">
+                                <span class="mood-btn__emoji">�</span>
+                            </button>
+                            <button class="mood-btn mood-btn--quick" data-mood="tired" onclick="selectMood('tired')">
+                                <span class="mood-btn__emoji">😴</span>
                             </button>
                         </div>
                         <div class="chat-input-area">
@@ -200,13 +209,19 @@
             <!-- Sidebar -->
             <aside class="sidebar">
                 <!-- Mental Status Widget -->
-                <div class="widget" id="mentalStatusWidget">
-                    <div class="widget__header">
+                <div class="widget widget--collapsible" id="mentalStatusWidget">
+                    <div class="widget__header" onclick="toggleWidget('mentalStatusWidget')">
                         <h3 class="widget__title">
                             <span>📊</span> <span data-lang="widget_status">Mental Status</span>
                         </h3>
-                        <span class="widget__badge" data-lang="badge_ai">AI Analysis</span>
+                        <div class="widget__actions">
+                            <span class="widget__badge" data-lang="badge_ai">AI Analysis</span>
+                            <button class="widget__collapse-btn" aria-label="Toggle section" type="button">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
                     </div>
+                    <div class="widget__content" style="display: none;">
                     <div id="analysisLoading" style="text-align: center; padding: var(--space-4); color: var(--text-muted); font-size: var(--text-sm);">
                         <span data-lang="analyzing_chat">Analyzing conversation...</span>
                     </div>
@@ -254,14 +269,21 @@
                             </p>
                         </div>
                     </div>
+                    </div>
                 </div>
 
                 <!-- Recommended Assessments -->
-                <div class="widget" id="recommendedAssessmentsWidget">
-                    <h3 class="widget__title" style="margin-bottom: var(--space-4);">
-                        <span>🎯</span> <span data-lang="widget_recommended">Recommended</span>
-                    </h3>
-                    <div style="display: flex; flex-direction: column; gap: var(--space-3);" id="assessmentsList">
+                <div class="widget widget--collapsible" id="recommendedAssessmentsWidget">
+                    <div class="widget__header" onclick="toggleWidget('recommendedAssessmentsWidget')">
+                        <h3 class="widget__title">
+                            <span>🎯</span> <span data-lang="widget_recommended">Recommended</span>
+                        </h3>
+                        <button class="widget__collapse-btn" aria-label="Toggle section" type="button">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="widget__content" style="display: none;">
+                    <div style="display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-4);" id="assessmentsList">
                         <!-- Primary/Priority Assessment - dynamically updated based on AI recommendation -->
                         <div class="assessment-card" id="primaryAssessmentCard" onclick="showAssessment('phq9')">
                             <div class="assessment-card__priority" id="priorityBadge" data-lang="label_priority">Priority</div>
@@ -295,13 +317,20 @@
                             </div>
                         </div>
                     </div>
+                    </div>
                 </div>
 
                 <!-- Emergency Help -->
-                <div class="emergency-card">
-                    <h3 class="emergency-card__title">
-                        <span>🆘</span> <span data-lang="emergency_title">Emergency Hotlines</span>
-                    </h3>
+                <div class="emergency-card emergency-card--collapsible" id="emergencyCard">
+                    <div class="emergency-card__header" onclick="toggleEmergencyCard()">
+                        <h3 class="emergency-card__title">
+                            <span>🆘</span> <span data-lang="emergency_title">Emergency Hotlines</span>
+                        </h3>
+                        <button class="widget__collapse-btn" aria-label="Toggle section" type="button">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="emergency-card__content" style="display: none;">
                     <p class="emergency-card__text" data-lang="emergency_text">
                         If you're in distress or having thoughts of self-harm, please contact immediately:
                     </p>
@@ -319,6 +348,7 @@
                         </div>
                         <span class="emergency-card__phone">1995</span>
                     </div>
+                    </div>
                 </div>
             </aside>
         </div>
@@ -326,16 +356,22 @@
         <!-- Bottom Section: Mood Chart & Practices -->
         <div class="bottom-section">
             <!-- 7-Day Mood Trend -->
-            <div class="mood-chart">
-                <div class="mood-chart__header">
+            <div class="mood-chart mood-chart--collapsible" id="moodChart">
+                <div class="mood-chart__header" onclick="toggleMoodChart()">
                     <div class="mood-chart__title-group">
                         <h3 class="mood-chart__title">
                             <span>📈</span> <span data-lang="chart_title">7-Day Mood Trend</span>
                         </h3>
                         <p class="mood-chart__subtitle" data-lang="chart_subtitle">Your emotional fluctuations this week</p>
                     </div>
-                    <button class="mood-chart__btn" data-lang="chart_detail">View Details</button>
+                    <div class="mood-chart__actions">
+                        <button class="mood-chart__btn" data-lang="chart_detail" onclick="event.stopPropagation()">View Details</button>
+                        <button class="widget__collapse-btn" aria-label="Toggle section" type="button">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
                 </div>
+                <div class="mood-chart__content" style="display: none;">
                 <div class="mood-chart__bars">
                     <div class="mood-chart__bar">
                         <div class="mood-chart__bar-track">
@@ -394,13 +430,20 @@
                         <p class="mood-chart__stat-label" data-lang="stat_chats">Conversations</p>
                     </div>
                 </div>
+                </div>
             </div>
 
             <!-- Daily Practices -->
-            <div class="practices-widget">
-                <h3 class="practices-widget__title">
-                    <span>🌱</span> <span data-lang="practices_title">Today's Recommended Practices</span>
-                </h3>
+            <div class="practices-widget practices-widget--collapsible" id="practicesWidget">
+                <div class="practices-widget__header" onclick="togglePracticesWidget()">
+                    <h3 class="practices-widget__title">
+                        <span>🌱</span> <span data-lang="practices_title">Today's Recommended Practices</span>
+                    </h3>
+                    <button class="widget__collapse-btn" aria-label="Toggle section" type="button">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="practices-widget__content" style="display: none;">
                 <div class="practices-widget__list">
                     <div class="practice-card">
                         <div class="practice-card__icon">🫁</div>
@@ -434,6 +477,7 @@
                         </div>
                         <div class="practice-card__time" data-lang="time_15min">15 min</div>
                     </div>
+                </div>
                 </div>
             </div>
         </div>
@@ -1655,6 +1699,51 @@
             this.style.height = 'auto';
             this.style.height = Math.min(this.scrollHeight, 120) + 'px';
         });
+
+        // Widget Collapse Functions
+        function toggleWidget(widgetId) {
+            const widget = document.getElementById(widgetId);
+            if (!widget) return;
+            const content = widget.querySelector('.widget__content');
+            if (!content) return;
+
+            const isCollapsed = content.style.display === 'none';
+            content.style.display = isCollapsed ? 'block' : 'none';
+            widget.classList.toggle('collapsed', !isCollapsed);
+        }
+
+        function toggleMoodChart() {
+            const chart = document.getElementById('moodChart');
+            if (!chart) return;
+            const content = chart.querySelector('.mood-chart__content');
+            if (!content) return;
+
+            const isCollapsed = content.style.display === 'none';
+            content.style.display = isCollapsed ? 'block' : 'none';
+            chart.classList.toggle('collapsed', !isCollapsed);
+        }
+
+        function togglePracticesWidget() {
+            const widget = document.getElementById('practicesWidget');
+            if (!widget) return;
+            const content = widget.querySelector('.practices-widget__content');
+            if (!content) return;
+
+            const isCollapsed = content.style.display === 'none';
+            content.style.display = isCollapsed ? 'block' : 'none';
+            widget.classList.toggle('collapsed', !isCollapsed);
+        }
+
+        function toggleEmergencyCard() {
+            const card = document.getElementById('emergencyCard');
+            if (!card) return;
+            const content = card.querySelector('.emergency-card__content');
+            if (!content) return;
+
+            const isCollapsed = content.style.display === 'none';
+            content.style.display = isCollapsed ? 'block' : 'none';
+            card.classList.toggle('collapsed', !isCollapsed);
+        }
     </script>
 </body>
 </html>

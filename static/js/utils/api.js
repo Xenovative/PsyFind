@@ -332,6 +332,25 @@ const API = (function() {
       return request(`/admin/api/doctors/${id}`, {
         method: 'DELETE'
       });
+    },
+
+    // Session Exchange Management
+    /**
+     * Get session exchange records
+     * @param {number} days - Number of days to look back
+     * @returns {Promise} Session exchanges
+     */
+    async getSessionExchanges(days = 30) {
+      return request(`/admin/api/session-exchanges?days=${days}`);
+    },
+
+    /**
+     * Get session exchange statistics
+     * @param {number} days - Number of days to look back
+     * @returns {Promise} Session exchange stats
+     */
+    async getSessionExchangeStats(days = 30) {
+      return request(`/admin/api/session-exchanges/stats?days=${days}`);
     }
   };
 

@@ -214,8 +214,34 @@ class DatabaseManager:
 
                 # Create index for faster mood history queries
                 conn.execute('''
-                    CREATE INDEX IF NOT EXISTS idx_mood_tracking_session 
+                    CREATE INDEX IF NOT EXISTS idx_mood_tracking_session
                     ON mood_tracking(session_id, timestamp)
+                ''')
+
+                # Session exchange tracking table
+                conn.execute('''
+                    CREATE TABLE IF NOT EXISTS session_exchange (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        from_session_id TEXT NOT NULL,
+                        to_session_id TEXT NOT NULL,
+                        exchange_type TEXT NOT NULL,
+                        exchange_data TEXT DEFAULT '{}',
+                        reason TEXT,
+                        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY (from_session_id) REFERENCES user_sessions (session_id),
+                        FOREIGN KEY (to_session_id) REFERENCES user_sessions (session_id)
+                    )
+                ''')
+
+                # Create index for faster session exchange queries
+                conn.execute('''
+                    CREATE INDEX IF NOT EXISTS idx_session_exchange_from
+                    ON session_exchange(from_session_id, timestamp)
+                ''')
+
+                conn.execute('''
+                    CREATE INDEX IF NOT EXISTS idx_session_exchange_to
+                    ON session_exchange(to_session_id, timestamp)
                 ''')
 
                 # Doctors/Psychiatrists table
@@ -536,6 +562,118 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Error getting session mood summary: {str(e)}")
             return None
+        finally:
+            conn.close()
+
+    # Session Exchange Management
+    def record_session_exchange(self, from_session_id: str, to_session_id: str,
+                                exchange_type: str, exchange_data: Dict = None,
+                                reason: str = None) -> bool:
+        """Record a session exchange/transfer between two sessions"""
+        with self.lock:
+            conn = self.get_connection()
+            try:
+                conn.execute('''
+                    INSERT INTO session_exchange
+                    (from_session_id, to_session_id, exchange_type, exchange_data, reason)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', (from_session_id, to_session_id, exchange_type,
+                      json.dumps(exchange_data or {}), reason))
+                conn.commit()
+                logger.info(f"Session exchange recorded: {from_session_id} -> {to_session_id} ({exchange_type})")
+                return True
+            except Exception as e:
+                logger.error(f"Error recording session exchange: {str(e)}")
+                return False
+            finally:
+                conn.close()
+
+    def get_session_exchanges(self, session_id: str, limit: int = 50) -> List[Dict]:
+        """Get all exchanges for a session (both as source and target)"""
+        conn = self.get_connection()
+        try:
+            cursor = conn.execute('''
+                SELECT * FROM session_exchange
+                WHERE from_session_id = ? OR to_session_id = ?
+                ORDER BY timestamp DESC
+                LIMIT ?
+            ''', (session_id, session_id, limit))
+            exchanges = []
+            for row in cursor.fetchall():
+                exchange = dict(row)
+                exchange['exchange_data'] = json.loads(exchange.get('exchange_data') or '{}')
+                exchanges.append(exchange)
+            return exchanges
+        except Exception as e:
+            logger.error(f"Error getting session exchanges: {str(e)}")
+            return []
+        finally:
+            conn.close()
+
+    def get_all_session_exchanges(self, days: int = 30, limit: int = 100) -> List[Dict]:
+        """Get all session exchanges within the last N days"""
+        conn = self.get_connection()
+        try:
+            cursor = conn.execute('''
+                SELECT * FROM session_exchange
+                WHERE timestamp >= datetime('now', ?)
+                ORDER BY timestamp DESC
+                LIMIT ?
+            ''', (f'-{days} days', limit))
+            exchanges = []
+            for row in cursor.fetchall():
+                exchange = dict(row)
+                exchange['exchange_data'] = json.loads(exchange.get('exchange_data') or '{}')
+                exchanges.append(exchange)
+            return exchanges
+        except Exception as e:
+            logger.error(f"Error getting all session exchanges: {str(e)}")
+            return []
+        finally:
+            conn.close()
+
+    def get_session_exchange_stats(self, days: int = 30) -> Dict:
+        """Get session exchange statistics"""
+        conn = self.get_connection()
+        try:
+            # Total exchanges
+            cursor = conn.execute('''
+                SELECT COUNT(*) as total FROM session_exchange
+                WHERE timestamp >= datetime('now', ?)
+            ''', (f'-{days} days',))
+            total = cursor.fetchone()['total']
+
+            # Exchange type distribution
+            cursor = conn.execute('''
+                SELECT exchange_type, COUNT(*) as count
+                FROM session_exchange
+                WHERE timestamp >= datetime('now', ?)
+                GROUP BY exchange_type
+                ORDER BY count DESC
+            ''', (f'-{days} days',))
+            exchange_types = {row['exchange_type']: row['count'] for row in cursor.fetchall()}
+
+            # Daily exchange trends
+            cursor = conn.execute('''
+                SELECT
+                    date(timestamp) as date,
+                    COUNT(*) as count
+                FROM session_exchange
+                WHERE timestamp >= datetime('now', ?)
+                GROUP BY date(timestamp)
+                ORDER BY date(timestamp)
+            ''', (f'-{days} days',))
+            daily_trends = {row['date']: row['count'] for row in cursor.fetchall()}
+
+            return {
+                'total_exchanges': total,
+                'exchange_types': exchange_types,
+                'daily_trends': daily_trends,
+                'days_tracked': len(daily_trends)
+            }
+        except Exception as e:
+            logger.error(f"Error getting session exchange stats: {str(e)}")
+            return {'total_exchanges': 0, 'exchange_types': {}, 'daily_trends': {}, 'days_tracked': 0}
         finally:
             conn.close()
 
@@ -3182,10 +3320,37 @@ def admin_terminate_session(session_id):
             return jsonify({"success": True})
         else:
             return jsonify({"error": "Session not found"}), 404
-            
+
     except Exception as e:
         logger.error(f"Admin terminate session error: {str(e)}")
         return jsonify({"error": "Failed to terminate session"}), 500
+
+@app.route('/admin/api/session-exchanges')
+@admin_permission_required('view_analytics')
+def admin_session_exchanges():
+    """Get session exchange records"""
+    try:
+        days = request.args.get('days', 30, type=int)
+        exchanges = db_manager.get_all_session_exchanges(days=days)
+        return jsonify({
+            "exchanges": exchanges,
+            "count": len(exchanges)
+        })
+    except Exception as e:
+        logger.error(f"Admin session exchanges error: {str(e)}")
+        return jsonify({"error": "Failed to fetch session exchanges"}), 500
+
+@app.route('/admin/api/session-exchanges/stats')
+@admin_permission_required('view_analytics')
+def admin_session_exchange_stats():
+    """Get session exchange statistics"""
+    try:
+        days = request.args.get('days', 30, type=int)
+        stats = db_manager.get_session_exchange_stats(days=days)
+        return jsonify(stats)
+    except Exception as e:
+        logger.error(f"Admin session exchange stats error: {str(e)}")
+        return jsonify({"error": "Failed to fetch session exchange stats"}), 500
 
 @app.route('/admin/api/system/health')
 @admin_permission_required('system_control')

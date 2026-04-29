@@ -211,6 +211,10 @@ const I18n = (function() {
       recent_mood_records: 'Recent Mood Records',
       loading_mood_analytics: 'Loading mood analytics...',
 
+      // Admin Session Exchange
+      session_exchanges: 'Session Exchanges',
+      loading_session_exchanges: 'Loading session exchanges...',
+
       // Actions
       refresh: 'Refresh',
       logout: 'Logout',
@@ -605,6 +609,10 @@ const I18n = (function() {
       mood_trends: '心情趨勢 (30天)',
       recent_mood_records: '最近心情記錄',
       loading_mood_analytics: '載入心情分析中...',
+
+      // Admin Session Exchange
+      session_exchanges: '會話交換',
+      loading_session_exchanges: '載入會話交換中...',
 
       // Actions
       refresh: '刷新',

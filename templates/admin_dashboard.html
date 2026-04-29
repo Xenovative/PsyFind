@@ -128,6 +128,11 @@
                         <div class="stat-card__value" id="totalMoodRecords">-</div>
                         <div class="stat-card__label" data-lang="mood_records">Mood Records</div>
                     </div>
+                    <div class="stat-card stat-card--exchange">
+                        <i class="fas fa-exchange-alt" aria-hidden="true"></i>
+                        <div class="stat-card__value" id="totalSessionExchanges">-</div>
+                        <div class="stat-card__label" data-lang="session_exchanges">Session Exchanges</div>
+                    </div>
                     <div class="stat-card stat-card--memory">
                         <i class="fas fa-memory" aria-hidden="true"></i>
                         <div class="stat-card__value" id="memoryUsage">-</div>
@@ -205,6 +210,28 @@
                         <div class="admin-loading">
                             <i class="fas fa-spinner" aria-hidden="true"></i>
                             <p data-lang="loading_mood_analytics">Loading mood analytics...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Session Exchange Panel -->
+                <div class="admin-panel admin-panel--full-width">
+                    <div class="admin-panel__header">
+                        <h3 class="admin-panel__title">
+                            <i class="fas fa-exchange-alt" aria-hidden="true"></i>
+                            <span data-lang="session_exchanges">Session Exchanges</span>
+                        </h3>
+                        <div class="admin-panel__actions">
+                            <button class="btn btn--secondary btn--sm" onclick="refreshSessionExchangeStats()">
+                                <i class="fas fa-sync" aria-hidden="true"></i>
+                                <span data-lang="refresh">Refresh</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="admin-panel__content" id="sessionExchangePanel">
+                        <div class="admin-loading">
+                            <i class="fas fa-spinner" aria-hidden="true"></i>
+                            <p data-lang="loading_session_exchanges">Loading session exchanges...</p>
                         </div>
                     </div>
                 </div>
@@ -494,12 +521,13 @@
                 document.getElementById('totalMoodRecords').textContent = stats.total_mood_records || 0;
                 document.getElementById('memoryUsage').textContent = stats.memory_usage || '-';
                 document.getElementById('systemUptime').textContent = stats.uptime || '-';
-                
+
                 // Load other panels
                 refreshSessions();
                 refreshHealth();
                 refreshAnalytics();
                 refreshMoodAnalytics();
+                refreshSessionExchangeStats();
                 
             } catch (error) {
                 console.error('Failed to load dashboard:', error);
@@ -695,6 +723,48 @@
             } catch (error) {
                 console.error('Failed to load mood analytics:', error);
                 panel.innerHTML = '<p class="text-center text-muted">Failed to load mood analytics: ' + (error.message || 'Unknown error') + '</p>';
+            }
+        }
+
+        async function refreshSessionExchangeStats() {
+            const panel = document.getElementById('sessionExchangePanel');
+            console.log('refreshSessionExchangeStats called');
+
+            try {
+                const stats = await API.Admin.getSessionExchangeStats(30);
+                console.log('Session exchange stats:', stats);
+
+                // Update stat card
+                document.getElementById('totalSessionExchanges').textContent = stats.total_exchanges || 0;
+
+                if (stats.total_exchanges === 0) {
+                    panel.innerHTML = '<p class="text-center text-muted">No session exchanges recorded yet</p>';
+                    return;
+                }
+
+                panel.innerHTML = `
+                    <div class="session-exchange-summary">
+                        <div class="exchange-summary-stat">
+                            <span class="exchange-summary-value">${stats.total_exchanges}</span>
+                            <span class="exchange-summary-label">Total Exchanges (30 days)</span>
+                        </div>
+                    </div>
+                    <div class="exchange-type-chart">
+                        ${Object.entries(stats.exchange_types || {}).map(([type, count]) => `
+                            <div class="exchange-type-item">
+                                <span class="exchange-type-label">${type}</span>
+                                <div class="exchange-type-bar-container">
+                                    <div class="exchange-type-bar" style="width: ${(count / Math.max(...Object.values(stats.exchange_types))) * 100}%"></div>
+                                </div>
+                                <span class="exchange-type-count">${count}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Failed to load session exchange stats:', error);
+                panel.innerHTML = '<p class="text-center text-muted">Failed to load session exchange stats</p>';
+                document.getElementById('totalSessionExchanges').textContent = '-';
             }
         }
 

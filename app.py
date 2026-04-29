@@ -473,6 +473,51 @@ class DatabaseManager:
         finally:
             conn.close()
 
+    def get_all_mood_stats(self, days: int = 30) -> Dict:
+        """Get overall mood statistics across all sessions"""
+        conn = self.get_connection()
+        try:
+            # Total mood entries
+            cursor = conn.execute('''
+                SELECT COUNT(*) as total FROM mood_tracking
+                WHERE timestamp >= datetime('now', ?)
+            ''', (f'-{days} days',))
+            total = cursor.fetchone()['total']
+            
+            # Mood distribution
+            cursor = conn.execute('''
+                SELECT mood_type, COUNT(*) as count
+                FROM mood_tracking
+                WHERE timestamp >= datetime('now', ?)
+                GROUP BY mood_type
+                ORDER BY count DESC
+            ''', (f'-{days} days',))
+            mood_distribution = {row['mood_type']: row['count'] for row in cursor.fetchall()}
+            
+            # Daily mood trends
+            cursor = conn.execute('''
+                SELECT 
+                    date(timestamp) as date,
+                    COUNT(*) as count
+                FROM mood_tracking
+                WHERE timestamp >= datetime('now', ?)
+                GROUP BY date(timestamp)
+                ORDER BY date(timestamp)
+            ''', (f'-{days} days',))
+            daily_trends = {row['date']: row['count'] for row in cursor.fetchall()}
+            
+            return {
+                'total_mood_records': total,
+                'mood_distribution': mood_distribution,
+                'daily_trends': daily_trends,
+                'days_tracked': len(daily_trends)
+            }
+        except Exception as e:
+            logger.error(f"Error getting all mood stats: {str(e)}")
+            return {'total_mood_records': 0, 'mood_distribution': {}, 'daily_trends': {}, 'days_tracked': 0}
+        finally:
+            conn.close()
+    
     def get_session_mood_summary(self, session_id: str) -> Optional[Dict]:
         """Get the most recent mood for a session"""
         conn = self.get_connection()
@@ -652,12 +697,35 @@ class DatabaseManager:
             cursor = conn.execute('SELECT COUNT(*) as count FROM user_sessions')
             total_sessions = cursor.fetchone()['count']
             
+            # Completed sessions with clinical reports
+            cursor = conn.execute('''
+                SELECT COUNT(DISTINCT s.session_id) as count 
+                FROM user_sessions s
+                INNER JOIN assessment_results ar ON s.session_id = ar.session_id
+                WHERE ar.clinical_report IS NOT NULL AND ar.clinical_report != ''
+            ''')
+            completed_sessions = cursor.fetchone()['count']
+            
+            # Total clinical reports generated
+            cursor = conn.execute('''
+                SELECT COUNT(*) as count FROM assessment_results 
+                WHERE clinical_report IS NOT NULL AND clinical_report != ''
+            ''')
+            total_clinical_reports = cursor.fetchone()['count']
+            
             # Assessment stats
             assessment_stats = self.get_assessment_stats()
+            
+            # Mood stats (last 30 days)
+            mood_stats = self.get_all_mood_stats(days=30)
             
             return {
                 'active_sessions': active_sessions,
                 'total_sessions': total_sessions,
+                'completed_sessions': completed_sessions,
+                'total_clinical_reports': total_clinical_reports,
+                'total_mood_records': mood_stats['total_mood_records'],
+                'mood_distribution': mood_stats['mood_distribution'],
                 **assessment_stats
             }
         finally:
@@ -1792,6 +1860,10 @@ class AdminManager:
         return {
             'active_sessions': stats['active_sessions'],
             'total_sessions': stats['total_sessions'],
+            'completed_sessions': stats.get('completed_sessions', 0),
+            'total_clinical_reports': stats.get('total_clinical_reports', 0),
+            'total_mood_records': stats.get('total_mood_records', 0),
+            'mood_distribution': stats.get('mood_distribution', {}),
             'total_assessments': stats['total_assessments'],
             'assessment_types': stats['assessment_types'],
             'daily_stats': stats['daily_stats'],

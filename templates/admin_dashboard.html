@@ -44,6 +44,10 @@
                 <i class="fas fa-chart-bar admin-nav__icon" aria-hidden="true"></i>
                 <span data-lang="nav_analytics">Analytics</span>
             </a>
+            <a href="#mood" class="admin-nav__item" onclick="showSection('mood', event)">
+                <i class="fas fa-smile admin-nav__icon" aria-hidden="true"></i>
+                <span data-lang="nav_mood">Mood Analytics</span>
+            </a>
             <a href="#sessions" class="admin-nav__item" onclick="showSection('sessions', event)">
                 <i class="fas fa-users admin-nav__icon" aria-hidden="true"></i>
                 <span data-lang="nav_sessions">Active Sessions</span>
@@ -109,6 +113,21 @@
                         <div class="stat-card__value" id="totalAssessments">-</div>
                         <div class="stat-card__label" data-lang="total_assessments">Total Assessments</div>
                     </div>
+                    <div class="stat-card stat-card--completed">
+                        <i class="fas fa-check-circle" aria-hidden="true"></i>
+                        <div class="stat-card__value" id="completedSessions">-</div>
+                        <div class="stat-card__label" data-lang="completed_sessions">Completed Sessions</div>
+                    </div>
+                    <div class="stat-card stat-card--reports">
+                        <i class="fas fa-file-medical" aria-hidden="true"></i>
+                        <div class="stat-card__value" id="totalReports">-</div>
+                        <div class="stat-card__label" data-lang="clinical_reports">Clinical Reports</div>
+                    </div>
+                    <div class="stat-card stat-card--mood">
+                        <i class="fas fa-smile" aria-hidden="true"></i>
+                        <div class="stat-card__value" id="totalMoodRecords">-</div>
+                        <div class="stat-card__label" data-lang="mood_records">Mood Records</div>
+                    </div>
                     <div class="stat-card stat-card--memory">
                         <i class="fas fa-memory" aria-hidden="true"></i>
                         <div class="stat-card__value" id="memoryUsage">-</div>
@@ -168,7 +187,29 @@
                     </div>
                 </div>
 
-                <!-- Analytics Panel -->
+                <!-- Mood Analytics Panel -->
+                <div class="admin-panel admin-panel--full-width">
+                    <div class="admin-panel__header">
+                        <h3 class="admin-panel__title">
+                            <i class="fas fa-smile" aria-hidden="true"></i>
+                            <span data-lang="mood_analytics">Mood Analytics</span>
+                        </h3>
+                        <div class="admin-panel__actions">
+                            <button class="btn btn--secondary btn--sm" onclick="refreshMoodAnalytics()">
+                                <i class="fas fa-sync" aria-hidden="true"></i>
+                                <span data-lang="refresh">Refresh</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="admin-panel__content" id="moodAnalyticsPanel">
+                        <div class="admin-loading">
+                            <i class="fas fa-spinner" aria-hidden="true"></i>
+                            <p data-lang="loading_mood_analytics">Loading mood analytics...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assessment Analytics Panel -->
                 <div class="admin-panel admin-panel--full-width">
                     <div class="admin-panel__header">
                         <h3 class="admin-panel__title">
@@ -198,6 +239,77 @@
                     <div class="admin-loading">
                         <i class="fas fa-spinner" aria-hidden="true"></i>
                         <p data-lang="loading_analytics">Loading analytics...</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="mood-section" class="content-section">
+                <h2 class="content-section__title" data-lang="mood_analytics">Mood Analytics</h2>
+                <div class="dashboard-grid">
+                    <!-- Mood Distribution Panel -->
+                    <div class="admin-panel">
+                        <div class="admin-panel__header">
+                            <h3 class="admin-panel__title">
+                                <i class="fas fa-chart-pie" aria-hidden="true"></i>
+                                <span data-lang="mood_distribution">Mood Distribution</span>
+                            </h3>
+                            <div class="admin-panel__actions">
+                                <button class="btn btn--secondary btn--sm" onclick="refreshMoodDistribution()">
+                                    <i class="fas fa-sync" aria-hidden="true"></i>
+                                    <span data-lang="refresh">Refresh</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="admin-panel__content" id="moodDistributionPanel">
+                            <div class="admin-loading">
+                                <i class="fas fa-spinner" aria-hidden="true"></i>
+                                <p data-lang="loading">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mood Trends Panel -->
+                    <div class="admin-panel">
+                        <div class="admin-panel__header">
+                            <h3 class="admin-panel__title">
+                                <i class="fas fa-chart-line" aria-hidden="true"></i>
+                                <span data-lang="mood_trends">Mood Trends (30 Days)</span>
+                            </h3>
+                            <div class="admin-panel__actions">
+                                <button class="btn btn--secondary btn--sm" onclick="refreshMoodTrends()">
+                                    <i class="fas fa-sync" aria-hidden="true"></i>
+                                    <span data-lang="refresh">Refresh</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="admin-panel__content" id="moodTrendsPanel">
+                            <div class="admin-loading">
+                                <i class="fas fa-spinner" aria-hidden="true"></i>
+                                <p data-lang="loading">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- All Mood Records Panel -->
+                <div class="admin-panel admin-panel--full-width" style="margin-top: var(--space-6);">
+                    <div class="admin-panel__header">
+                        <h3 class="admin-panel__title">
+                            <i class="fas fa-list" aria-hidden="true"></i>
+                            <span data-lang="recent_mood_records">Recent Mood Records</span>
+                        </h3>
+                        <div class="admin-panel__actions">
+                            <button class="btn btn--secondary btn--sm" onclick="refreshAllMoodRecords()">
+                                <i class="fas fa-sync" aria-hidden="true"></i>
+                                <span data-lang="refresh">Refresh</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="admin-panel__content" id="allMoodRecordsPanel">
+                        <div class="admin-loading">
+                            <i class="fas fa-spinner" aria-hidden="true"></i>
+                            <p data-lang="loading">Loading...</p>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -377,6 +489,9 @@
                 
                 document.getElementById('activeSessions').textContent = stats.active_sessions || 0;
                 document.getElementById('totalAssessments').textContent = stats.total_assessments || 0;
+                document.getElementById('completedSessions').textContent = stats.completed_sessions || 0;
+                document.getElementById('totalReports').textContent = stats.total_clinical_reports || 0;
+                document.getElementById('totalMoodRecords').textContent = stats.total_mood_records || 0;
                 document.getElementById('memoryUsage').textContent = stats.memory_usage || '-';
                 document.getElementById('systemUptime').textContent = stats.uptime || '-';
                 
@@ -384,6 +499,7 @@
                 refreshSessions();
                 refreshHealth();
                 refreshAnalytics();
+                refreshMoodAnalytics();
                 
             } catch (error) {
                 console.error('Failed to load dashboard:', error);
@@ -407,10 +523,14 @@
         }
 
         function renderSessions(sessions) {
+            console.log('renderSessions called with', sessions.length, 'sessions');
             const panel = document.getElementById('sessionsPanel');
+            console.log('Panel element:', panel);
             
             if (sessions.length === 0) {
+                console.log('No sessions, showing empty message');
                 panel.innerHTML = '<p class="text-center text-muted">No active sessions</p>';
+                console.log('Panel updated to:', panel.innerHTML.substring(0, 50));
                 return;
             }
             
@@ -430,16 +550,20 @@
         }
 
         async function refreshHealth() {
+            console.log('refreshHealth called');
             const panel = document.getElementById('healthPanel');
+            console.log('Health panel element:', panel);
             
             try {
                 console.log('Fetching health...');
                 const data = await API.Admin.getHealth();
-                console.log('Health data:', data);
+                console.log('Health data received:', data);
+                console.log('Status:', data.status);
                 
                 const statusClass = data.status === 'online' ? 'health-status__indicator--online' : 
                                    data.status === 'warning' ? 'health-status__indicator--warning' : 'health-status__indicator--error';
                 
+                console.log('Setting health panel HTML, statusClass:', statusClass);
                 panel.innerHTML = `
                     <div class="health-status">
                         <span class="health-status__indicator ${statusClass}" aria-hidden="true"></span>
@@ -456,24 +580,43 @@
                         </div>
                     </div>
                 `;
+                console.log('Health panel HTML set successfully');
             } catch (error) {
                 console.error('Failed to load health:', error);
                 panel.innerHTML = '<p class="text-center text-muted">Failed to load health: ' + (error.message || 'Unknown error') + '</p>';
+                console.log('Health panel updated with error message');
             }
         }
 
         async function refreshAnalytics() {
             const panel = document.getElementById('analyticsPanel');
+            console.log('refreshAnalytics called, panel:', panel);
             
             try {
                 console.log('Fetching analytics...');
                 const data = await API.Admin.getAnalytics();
-                console.log('Analytics data:', data);
+                console.log('Analytics data received:', data);
+                console.log('Type of assessment_types:', typeof data.assessment_types);
+                console.log('assessment_types value:', data.assessment_types);
+                console.log('Is empty object?', data.assessment_types && Object.keys(data.assessment_types).length === 0);
                 
-                if (!data.assessment_types || Object.keys(data.assessment_types).length === 0) {
-                    panel.innerHTML = '<p class="text-center text-muted">No data available</p>';
+                if (!data.assessment_types) {
+                    console.log('assessment_types is null/undefined');
+                    panel.innerHTML = '<p class="text-center text-muted">No data available (null)</p>';
                     return;
                 }
+                
+                const keys = Object.keys(data.assessment_types);
+                console.log('Number of keys:', keys.length);
+                
+                if (keys.length === 0) {
+                    console.log('assessment_types is empty, showing no data');
+                    console.log('Setting panel HTML to no data message');
+                    panel.innerHTML = '<p class="text-center text-muted">No data available</p>';
+                    console.log('Panel HTML set, new content:', panel.innerHTML.substring(0, 50));
+                    return;
+                }
+                console.log('Rendering chart with', keys.length, 'items');
                 
                 const maxCount = Math.max(...Object.values(data.assessment_types));
                 
@@ -491,6 +634,202 @@
             } catch (error) {
                 console.error('Failed to load analytics:', error);
                 panel.innerHTML = '<p class="text-center text-muted">Failed to load analytics: ' + (error.message || 'Unknown error') + '</p>';
+            }
+        }
+
+        // Mood Analytics Functions
+        async function refreshMoodAnalytics() {
+            const panel = document.getElementById('moodAnalyticsPanel');
+            console.log('refreshMoodAnalytics called');
+
+            try {
+                const data = await API.Admin.getAnalytics();
+                console.log('Mood analytics data:', data);
+
+                if (!data.mood_distribution || Object.keys(data.mood_distribution).length === 0) {
+                    panel.innerHTML = '<p class="text-center text-muted">No mood data available yet</p>';
+                    return;
+                }
+
+                const moodColors = {
+                    'happy': '#22c55e',
+                    'calm': '#06b6d4',
+                    'neutral': '#8b5cf6',
+                    'anxious': '#f59e0b',
+                    'sad': '#f43f5e',
+                    'tired': '#fb923c'
+                };
+
+                const moodEmojis = {
+                    'happy': '😄',
+                    'calm': '😌',
+                    'neutral': '🤔',
+                    'anxious': '😟',
+                    'sad': '😢',
+                    'tired': '😴'
+                };
+
+                const totalMoods = Object.values(data.mood_distribution).reduce((a, b) => a + b, 0);
+                const maxCount = Math.max(...Object.values(data.mood_distribution));
+
+                panel.innerHTML = `
+                    <div class="mood-analytics-summary">
+                        <div class="mood-summary-stat">
+                            <span class="mood-summary-value">${data.total_mood_records || 0}</span>
+                            <span class="mood-summary-label">Total Records (30 days)</span>
+                        </div>
+                    </div>
+                    <div class="mood-distribution-chart">
+                        ${Object.entries(data.mood_distribution).sort((a, b) => b[1] - a[1]).map(([mood, count]) => `
+                            <div class="mood-chart-item">
+                                <span class="mood-chart-emoji">${moodEmojis[mood] || '😐'}</span>
+                                <div class="mood-chart-bar-container">
+                                    <div class="mood-chart-bar" style="width: ${(count / maxCount) * 100}%; background: ${moodColors[mood] || '#8b5cf6'}"></div>
+                                </div>
+                                <span class="mood-chart-count">${count}</span>
+                                <span class="mood-chart-percent">${((count / totalMoods) * 100).toFixed(1)}%</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Failed to load mood analytics:', error);
+                panel.innerHTML = '<p class="text-center text-muted">Failed to load mood analytics: ' + (error.message || 'Unknown error') + '</p>';
+            }
+        }
+
+        async function refreshMoodDistribution() {
+            const panel = document.getElementById('moodDistributionPanel');
+            // Reuse the same logic as refreshMoodAnalytics but for the dedicated panel
+            try {
+                const data = await API.Admin.getAnalytics();
+                if (!data.mood_distribution || Object.keys(data.mood_distribution).length === 0) {
+                    panel.innerHTML = '<p class="text-center text-muted">No mood data available</p>';
+                    return;
+                }
+
+                const moodColors = {
+                    'happy': '#22c55e', 'calm': '#06b6d4', 'neutral': '#8b5cf6',
+                    'anxious': '#f59e0b', 'sad': '#f43f5e', 'tired': '#fb923c'
+                };
+                const moodEmojis = {
+                    'happy': '😄', 'calm': '😌', 'neutral': '🤔',
+                    'anxious': '😟', 'sad': '😢', 'tired': '😴'
+                };
+
+                const totalMoods = Object.values(data.mood_distribution).reduce((a, b) => a + b, 0);
+
+                panel.innerHTML = `
+                    <div class="mood-distribution-pie">
+                        ${Object.entries(data.mood_distribution).sort((a, b) => b[1] - a[1]).map(([mood, count]) => `
+                            <div class="mood-pie-item">
+                                <div class="mood-pie-color" style="background: ${moodColors[mood] || '#8b5cf6'}"></div>
+                                <span class="mood-pie-emoji">${moodEmojis[mood] || '😐'}</span>
+                                <span class="mood-pie-label">${mood}</span>
+                                <span class="mood-pie-value">${count} (${((count / totalMoods) * 100).toFixed(1)}%)</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Failed to load mood distribution:', error);
+                panel.innerHTML = '<p class="text-center text-muted">Failed to load mood distribution</p>';
+            }
+        }
+
+        async function refreshMoodTrends() {
+            const panel = document.getElementById('moodTrendsPanel');
+            try {
+                const data = await API.Admin.getAnalytics();
+                if (!data.mood_distribution || Object.keys(data.mood_distribution).length === 0) {
+                    panel.innerHTML = '<p class="text-center text-muted">No mood trend data available</p>';
+                    return;
+                }
+
+                // Create a simple trend visualization
+                const moodColors = {
+                    'happy': '#22c55e', 'calm': '#06b6d4', 'neutral': '#8b5cf6',
+                    'anxious': '#f59e0b', 'sad': '#f43f5e', 'tired': '#fb923c'
+                };
+
+                const sortedMoods = Object.entries(data.mood_distribution).sort((a, b) => b[1] - a[1]);
+                const maxCount = Math.max(...Object.values(data.mood_distribution));
+
+                panel.innerHTML = `
+                    <div class="mood-trends-chart">
+                        <div class="mood-trend-bars">
+                            ${sortedMoods.map(([mood, count]) => `
+                                <div class="mood-trend-item">
+                                    <span class="mood-trend-label">${mood}</span>
+                                    <div class="mood-trend-bar-container">
+                                        <div class="mood-trend-bar" style="width: ${(count / maxCount) * 100}%; background: ${moodColors[mood] || '#8b5cf6'}"></div>
+                                    </div>
+                                    <span class="mood-trend-value">${count}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Failed to load mood trends:', error);
+                panel.innerHTML = '<p class="text-center text-muted">Failed to load mood trends</p>';
+            }
+        }
+
+        async function refreshAllMoodRecords() {
+            const panel = document.getElementById('allMoodRecordsPanel');
+            panel.innerHTML = '<div class="admin-loading"><i class="fas fa-spinner" aria-hidden="true"></i><p>Loading mood records...</p></div>';
+
+            try {
+                // Get recent sessions and their mood data
+                const sessionsData = await API.Admin.getSessions();
+                const sessions = sessionsData.sessions || [];
+
+                if (sessions.length === 0) {
+                    panel.innerHTML = '<p class="text-center text-muted">No active sessions with mood data</p>';
+                    return;
+                }
+
+                // Fetch mood data for each session
+                const moodPromises = sessions.slice(0, 10).map(async (s) => {
+                    try {
+                        const moodData = await API.Mood.getLatest(s.session_id);
+                        return { session: s, mood: moodData.latest_mood };
+                    } catch (e) {
+                        return { session: s, mood: null };
+                    }
+                });
+
+                const sessionMoods = await Promise.all(moodPromises);
+                const withMoods = sessionMoods.filter(sm => sm.mood);
+
+                if (withMoods.length === 0) {
+                    panel.innerHTML = '<p class="text-center text-muted">No mood records found in recent sessions</p>';
+                    return;
+                }
+
+                const moodEmojis = {
+                    'happy': '😄', 'calm': '😌', 'neutral': '🤔',
+                    'anxious': '😟', 'sad': '😢', 'tired': '😴'
+                };
+
+                panel.innerHTML = `
+                    <div class="mood-records-list">
+                        ${withMoods.map(sm => `
+                            <div class="mood-record-item">
+                                <span class="mood-record-emoji">${moodEmojis[sm.mood.mood_type] || '😐'}</span>
+                                <div class="mood-record-info">
+                                    <span class="mood-record-type">${sm.mood.mood_type}</span>
+                                    <span class="mood-record-session">Session: ${sm.session.session_id.substring(0, 16)}...</span>
+                                </div>
+                                <span class="mood-record-time">${new Date(sm.mood.timestamp).toLocaleString()}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Failed to load mood records:', error);
+                panel.innerHTML = '<p class="text-center text-muted">Failed to load mood records</p>';
             }
         }
 

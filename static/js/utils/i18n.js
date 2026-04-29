@@ -182,6 +182,7 @@ const I18n = (function() {
       admin_title: 'Admin Dashboard',
       nav_dashboard: 'Dashboard',
       nav_analytics: 'Analytics',
+      nav_mood: 'Mood Analytics',
       nav_sessions: 'Active Sessions',
       nav_health: 'System Health',
       nav_management: 'Management',
@@ -197,9 +198,19 @@ const I18n = (function() {
       // Admin stats
       active_sessions: 'Active Sessions',
       total_assessments: 'Total Assessments',
+      completed_sessions: 'Completed Sessions',
+      clinical_reports: 'Clinical Reports',
+      mood_records: 'Mood Records',
       memory_usage: 'Memory Usage',
       system_uptime: 'System Uptime',
       
+      // Admin Mood Analytics
+      mood_analytics: 'Mood Analytics',
+      mood_distribution: 'Mood Distribution',
+      mood_trends: 'Mood Trends (30 Days)',
+      recent_mood_records: 'Recent Mood Records',
+      loading_mood_analytics: 'Loading mood analytics...',
+
       // Actions
       refresh: 'Refresh',
       logout: 'Logout',
@@ -276,6 +287,11 @@ const I18n = (function() {
       mood_message_sad: "I'm feeling sad and down. 😢",
       mood_message_tired: "I'm feeling tired and exhausted. 😴",
 
+      // Mood History Modal
+      mood_history_title: 'Mood History',
+      mood_history_empty: 'No mood records yet. Start tracking your mood today!',
+      close: 'Close',
+
       // Quick Actions
       quick_vent: 'I want to talk',
       quick_relax: 'Relaxation',
@@ -327,6 +343,7 @@ const I18n = (function() {
       chart_title: '7-Day Mood Trend',
       chart_subtitle: 'Your emotional fluctuations this week',
       chart_detail: 'View Details',
+      day_sun: 'Sun',
       day_mon: 'Mon',
       day_tue: 'Tue',
       day_wed: 'Wed',
@@ -337,6 +354,7 @@ const I18n = (function() {
       stat_avg: 'Average Score',
       stat_weekly: 'vs Last Week',
       stat_chats: 'Conversations',
+      stat_entries: 'Mood Entries',
 
       // Daily Practices
       practices_title: "Today's Recommended Practices",
@@ -559,6 +577,7 @@ const I18n = (function() {
       admin_title: '管理員儀表板',
       nav_dashboard: '儀表板',
       nav_analytics: '分析',
+      nav_mood: '心情分析',
       nav_sessions: '活動會話',
       nav_health: '系統健康',
       nav_management: '管理',
@@ -574,9 +593,19 @@ const I18n = (function() {
       // Admin stats
       active_sessions: '活動會話',
       total_assessments: '總評估數',
+      completed_sessions: '已完成會話',
+      clinical_reports: '臨床報告',
+      mood_records: '心情記錄',
       memory_usage: '內存使用',
       system_uptime: '系統運行時間',
       
+      // Admin Mood Analytics
+      mood_analytics: '心情分析',
+      mood_distribution: '心情分布',
+      mood_trends: '心情趨勢 (30天)',
+      recent_mood_records: '最近心情記錄',
+      loading_mood_analytics: '載入心情分析中...',
+
       // Actions
       refresh: '刷新',
       logout: '登出',
@@ -653,6 +682,11 @@ const I18n = (function() {
       mood_message_sad: '我感到難過和沮喪。😢',
       mood_message_tired: '我感到疲倦和筋疲力盡。😴',
 
+      // Mood History Modal
+      mood_history_title: '心情記錄歷史',
+      mood_history_empty: '尚無心情記錄。開始記錄你今天的心情吧！',
+      close: '關閉',
+
       // Quick Actions
       quick_vent: '我想傾訴',
       quick_relax: '放鬆練習',
@@ -704,6 +738,7 @@ const I18n = (function() {
       chart_title: '7天心情趨勢',
       chart_subtitle: '您本週的情緒波動',
       chart_detail: '查看詳情',
+      day_sun: '日',
       day_mon: '一',
       day_tue: '二',
       day_wed: '三',
@@ -714,6 +749,7 @@ const I18n = (function() {
       stat_avg: '平均分數',
       stat_weekly: '與上週相比',
       stat_chats: '對話次數',
+      stat_entries: '心情記錄數',
 
       // Daily Practices
       practices_title: '今日推薦練習',

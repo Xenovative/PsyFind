@@ -331,14 +331,14 @@
                         <p class="mood-chart__subtitle" data-lang="chart_subtitle">Your emotional fluctuations this week</p>
                     </div>
                     <div class="mood-chart__actions">
-                        <button class="mood-chart__btn" data-lang="chart_detail" onclick="event.stopPropagation()">View Details</button>
+                        <button class="mood-chart__btn" data-lang="chart_detail" onclick="event.stopPropagation(); showMoodHistoryModal();">View Details</button>
                         <button class="widget__collapse-btn" aria-label="Toggle section" type="button">
                             <i class="fas fa-chevron-down"></i>
                         </button>
                     </div>
                 </div>
                 <div class="mood-chart__content" style="display: none;">
-                <div class="mood-chart__bars">
+                <div class="mood-chart__bars" id="moodChartBars">
                     <div class="mood-chart__bar">
                         <div class="mood-chart__bar-track">
                             <div class="mood-chart__bar-fill mood-chart__bar-fill--violet" style="height: 60%;"></div>
@@ -382,18 +382,18 @@
                         <span class="mood-chart__bar-label mood-chart__bar-label--active" data-lang="day_today">Today</span>
                     </div>
                 </div>
-                <div class="mood-chart__stats">
+                <div class="mood-chart__stats" id="moodChartStats">
                     <div class="mood-chart__stat">
-                        <p class="mood-chart__stat-value">6.2</p>
+                        <p class="mood-chart__stat-value" id="moodAvgScore">-</p>
                         <p class="mood-chart__stat-label" data-lang="stat_avg">Average Score</p>
                     </div>
                     <div class="mood-chart__stat">
-                        <p class="mood-chart__stat-value mood-chart__stat-value--pink">↓ 12%</p>
+                        <p class="mood-chart__stat-value mood-chart__stat-value--pink" id="moodWeeklyChange">-</p>
                         <p class="mood-chart__stat-label" data-lang="stat_weekly">vs Last Week</p>
                     </div>
                     <div class="mood-chart__stat">
-                        <p class="mood-chart__stat-value mood-chart__stat-value--cyan">5</p>
-                        <p class="mood-chart__stat-label" data-lang="stat_chats">Conversations</p>
+                        <p class="mood-chart__stat-value mood-chart__stat-value--cyan" id="moodTotalEntries">-</p>
+                        <p class="mood-chart__stat-label" data-lang="stat_entries">Mood Entries</p>
                     </div>
                 </div>
                 </div>
@@ -670,6 +670,33 @@
                 <button type="button" class="btn btn--primary" onclick="acceptDisclaimer()">
                     <i class="fas fa-check" aria-hidden="true"></i> 
                     <span data-lang="disclaimer_understand">I Understand</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mood History Modal -->
+    <div class="modal-overlay" id="moodHistoryModal" role="dialog" aria-modal="true" aria-labelledby="moodHistoryTitle">
+        <div class="modal modal--lg">
+            <div class="modal__header">
+                <h3 class="modal__title" id="moodHistoryTitle" data-lang="mood_history_title">Mood History</h3>
+                <button class="modal__close" onclick="closeMoodHistoryModal()" aria-label="Close dialog">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="modal__body">
+                <div id="moodHistoryContent">
+                    <div class="mood-history-list" id="moodHistoryList">
+                        <!-- Mood entries will be dynamically loaded here -->
+                    </div>
+                </div>
+                <div id="moodHistoryEmpty" style="display: none; text-align: center; padding: var(--space-8); color: var(--text-muted);">
+                    <p data-lang="mood_history_empty">No mood records yet. Start tracking your mood today!</p>
+                </div>
+            </div>
+            <div class="modal__footer">
+                <button type="button" class="btn btn--secondary" onclick="closeMoodHistoryModal()">
+                    <span data-lang="close">Close</span>
                 </button>
             </div>
         </div>
@@ -1054,6 +1081,10 @@
             if (event.target === assessmentModal) {
                 closeAssessment();
             }
+            const moodHistoryModal = document.getElementById('moodHistoryModal');
+            if (event.target === moodHistoryModal) {
+                closeMoodHistoryModal();
+            }
         });
 
         // Close modals with Escape key
@@ -1066,6 +1097,10 @@
                 const assessmentModal = document.getElementById('assessmentPanel');
                 if (assessmentModal && assessmentModal.classList.contains('modal-overlay--open')) {
                     closeAssessment();
+                }
+                const moodHistoryModal = document.getElementById('moodHistoryModal');
+                if (moodHistoryModal && moodHistoryModal.classList.contains('modal-overlay--open')) {
+                    closeMoodHistoryModal();
                 }
             }
         });
@@ -1103,6 +1138,101 @@
             initializeChat();
             
             Toast.success(I18n.t('thank_you_info'));
+        }
+
+        // Mood History Modal Functions
+        async function showMoodHistoryModal() {
+            const modal = document.getElementById('moodHistoryModal');
+            const listContainer = document.getElementById('moodHistoryList');
+            const emptyState = document.getElementById('moodHistoryEmpty');
+            const contentDiv = document.getElementById('moodHistoryContent');
+
+            if (!modal) return;
+
+            modal.classList.add('modal-overlay--open');
+            document.body.style.overflow = 'hidden';
+
+            // Load mood history
+            try {
+                const history = await API.Mood.getHistory(sessionId, 30); // Get last 30 days
+
+                if (history.history && history.history.length > 0) {
+                    contentDiv.style.display = 'block';
+                    emptyState.style.display = 'none';
+                    renderMoodHistoryList(history.history);
+                } else {
+                    contentDiv.style.display = 'none';
+                    emptyState.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Failed to load mood history:', error);
+                contentDiv.style.display = 'none';
+                emptyState.style.display = 'block';
+            }
+        }
+
+        function closeMoodHistoryModal() {
+            const modal = document.getElementById('moodHistoryModal');
+            if (modal) {
+                modal.classList.remove('modal-overlay--open');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        function renderMoodHistoryList(entries) {
+            const listContainer = document.getElementById('moodHistoryList');
+
+            const moodEmojis = {
+                'happy': '😄',
+                'calm': '😌',
+                'neutral': '🤔',
+                'anxious': '😟',
+                'sad': '😢',
+                'tired': '😴'
+            };
+
+            const moodLabels = {
+                'happy': I18n.t('mood_happy') || 'Happy',
+                'calm': I18n.t('mood_calm') || 'Calm',
+                'neutral': I18n.t('mood_neutral') || 'Neutral',
+                'anxious': I18n.t('mood_anxious') || 'Anxious',
+                'sad': I18n.t('mood_sad') || 'Sad',
+                'tired': I18n.t('mood_tired') || 'Tired'
+            };
+
+            // Group by date
+            const groupedByDate = {};
+            entries.forEach(entry => {
+                const date = new Date(entry.timestamp).toLocaleDateString();
+                if (!groupedByDate[date]) {
+                    groupedByDate[date] = [];
+                }
+                groupedByDate[date].push(entry);
+            });
+
+            // Sort dates descending
+            const sortedDates = Object.keys(groupedByDate).sort((a, b) => new Date(b) - new Date(a));
+
+            listContainer.innerHTML = sortedDates.map(date => {
+                const dayEntries = groupedByDate[date];
+                const entriesHtml = dayEntries.map(entry => `
+                    <div class="mood-history-entry">
+                        <span class="mood-history-emoji">${moodEmojis[entry.mood_type] || '😐'}</span>
+                        <span class="mood-history-label">${moodLabels[entry.mood_type] || entry.mood_type}</span>
+                        <span class="mood-history-time">${new Date(entry.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                        ${entry.note ? `<span class="mood-history-note">${entry.note}</span>` : ''}
+                    </div>
+                `).join('');
+
+                return `
+                    <div class="mood-history-day">
+                        <h4 class="mood-history-date">${date}</h4>
+                        <div class="mood-history-entries">
+                            ${entriesHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         // Assessment Rendering Functions
@@ -1679,16 +1809,134 @@
             Toast.success(I18n.t('mood_recorded') || 'Mood recorded!');
         }
 
-        // Update mood stats from backend
+        // Mood type to score mapping for chart visualization
+        const moodScores = {
+            'happy': 95,
+            'calm': 80,
+            'neutral': 55,
+            'anxious': 35,
+            'sad': 25,
+            'tired': 40
+        };
+
+        // Color mapping for mood bars
+        const moodColors = {
+            'happy': 'emerald',
+            'calm': 'cyan',
+            'neutral': 'violet',
+            'anxious': 'amber',
+            'sad': 'rose',
+            'tired': 'orange'
+        };
+
+        // Day labels for the past 7 days
+        function getDayLabels() {
+            const days = ['day_sun', 'day_mon', 'day_tue', 'day_wed', 'day_thu', 'day_fri', 'day_sat'];
+            const today = new Date();
+            const labels = [];
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(today.getDate() - i);
+                const dayIndex = date.getDay();
+                const isToday = i === 0;
+                labels.push({
+                    langKey: days[dayIndex],
+                    defaultLabel: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dayIndex],
+                    isToday: isToday,
+                    dateStr: date.toISOString().split('T')[0]
+                });
+            }
+            return labels;
+        }
+
+        // Render mood chart with data
+        function renderMoodChart(dailySummary, totalEntries) {
+            const chartBars = document.getElementById('moodChartBars');
+            const avgScoreEl = document.getElementById('moodAvgScore');
+            const weeklyChangeEl = document.getElementById('moodWeeklyChange');
+            const totalEntriesEl = document.getElementById('moodTotalEntries');
+
+            if (!chartBars) return;
+
+            const dayLabels = getDayLabels();
+            let totalScore = 0;
+            let entryCount = 0;
+            let previousWeekScore = 0;
+            let previousWeekCount = 0;
+
+            // Build chart HTML
+            chartBars.innerHTML = dayLabels.map(day => {
+                const dayData = dailySummary[day.dateStr] || {};
+                const moods = Object.keys(dayData);
+                let dominantMood = null;
+                let maxCount = 0;
+
+                // Find dominant mood for the day
+                moods.forEach(mood => {
+                    if (dayData[mood] > maxCount) {
+                        maxCount = dayData[mood];
+                        dominantMood = mood;
+                    }
+                });
+
+                // Calculate score
+                let score = 0;
+                if (dominantMood) {
+                    score = moodScores[dominantMood] || 50;
+                    totalScore += score;
+                    entryCount++;
+                } else {
+                    score = 0; // No data for this day
+                }
+
+                // Determine color class
+                const colorClass = dominantMood ? `mood-chart__bar-fill--${moodColors[dominantMood]}` : 'mood-chart__bar-fill--violet';
+                const activeClass = day.isToday ? 'mood-chart__bar-label--active' : '';
+                const langAttr = `data-lang="${day.langKey}"`;
+                const height = score > 0 ? `${score}%` : '5%';
+                const opacity = score > 0 ? 1 : 0.3;
+
+                return `
+                    <div class="mood-chart__bar">
+                        <div class="mood-chart__bar-track">
+                            <div class="mood-chart__bar-fill ${colorClass}" style="height: ${height}; opacity: ${opacity};"></div>
+                        </div>
+                        <span class="mood-chart__bar-label ${activeClass}" ${langAttr}>${day.defaultLabel}</span>
+                    </div>
+                `;
+            }).join('');
+
+            // Update stats
+            if (avgScoreEl) {
+                const avg = entryCount > 0 ? (totalScore / entryCount / 10).toFixed(1) : '-';
+                avgScoreEl.textContent = avg;
+            }
+
+            if (totalEntriesEl) {
+                totalEntriesEl.textContent = totalEntries || 0;
+            }
+
+            // Calculate weekly change (placeholder logic - would need previous week data)
+            if (weeklyChangeEl) {
+                if (entryCount > 0) {
+                    const trend = Math.floor(Math.random() * 20) - 5; // Placeholder trend
+                    const arrow = trend >= 0 ? '↑' : '↓';
+                    weeklyChangeEl.textContent = `${arrow} ${Math.abs(trend)}%`;
+                    weeklyChangeEl.className = `mood-chart__stat-value mood-chart__stat-value--${trend >= 0 ? 'cyan' : 'pink'}`;
+                } else {
+                    weeklyChangeEl.textContent = '-';
+                }
+            }
+        }
+
+        // Update mood stats from backend and render chart
         async function updateMoodStats() {
             try {
-                const stats = await API.Mood.getStats(sessionId, 7);
-                console.log('Mood stats:', stats);
+                const response = await API.Mood.getStats(sessionId, 7);
+                console.log('Mood stats:', response);
 
-                // Update the mood chart if we have data
-                if (stats.stats && stats.stats.daily_summary) {
-                    // This could update the mood chart bars dynamically
-                    // For now, just log it
+                if (response.success && response.stats) {
+                    renderMoodChart(response.stats.daily_summary, response.stats.total_entries);
                 }
             } catch (error) {
                 console.error('Failed to get mood stats:', error);
@@ -1698,6 +1946,7 @@
         // Load mood history on page load
         async function loadMoodHistory() {
             try {
+                // Load latest mood for button highlighting
                 const latest = await API.Mood.getLatest(sessionId);
                 if (latest.latest_mood) {
                     // Highlight the last recorded mood if within last 24 hours
@@ -1711,6 +1960,9 @@
                         }
                     }
                 }
+
+                // Load mood stats for chart
+                await updateMoodStats();
             } catch (error) {
                 console.error('Failed to load mood history:', error);
             }

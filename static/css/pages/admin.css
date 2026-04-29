@@ -798,6 +798,223 @@
 }
 
 /* --------------------------------------------------------------------------
+   Mood Analytics
+   -------------------------------------------------------------------------- */
+.mood-analytics-summary {
+  margin-bottom: var(--space-6);
+  padding: var(--space-4);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.mood-summary-stat {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.mood-summary-value {
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  color: #8b5cf6;
+}
+
+.mood-summary-label {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.mood-distribution-chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.mood-chart-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: var(--radius-lg);
+}
+
+.mood-chart-emoji {
+  font-size: var(--text-xl);
+  width: 32px;
+  text-align: center;
+}
+
+.mood-chart-bar-container {
+  flex: 1;
+  height: 24px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.mood-chart-bar {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slow);
+}
+
+.mood-chart-count {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  min-width: 40px;
+  text-align: right;
+}
+
+.mood-chart-percent {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  min-width: 50px;
+  text-align: right;
+}
+
+/* Mood Distribution Pie (alternative view) */
+.mood-distribution-pie {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.mood-pie-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+}
+
+.mood-pie-color {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
+}
+
+.mood-pie-emoji {
+  font-size: var(--text-lg);
+}
+
+.mood-pie-label {
+  flex: 1;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  text-transform: capitalize;
+}
+
+.mood-pie-value {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* Mood Trends */
+.mood-trends-chart {
+  padding: var(--space-4);
+}
+
+.mood-trend-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.mood-trend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.mood-trend-label {
+  width: 80px;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  text-transform: capitalize;
+}
+
+.mood-trend-bar-container {
+  flex: 1;
+  height: 28px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.mood-trend-bar {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slow);
+}
+
+.mood-trend-value {
+  width: 50px;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  text-align: right;
+}
+
+/* Mood Records List */
+.mood-records-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.mood-record-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.mood-record-emoji {
+  font-size: var(--text-2xl);
+}
+
+.mood-record-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.mood-record-type {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  text-transform: capitalize;
+}
+
+.mood-record-session {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+.mood-record-time {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* Mood stat card color */
+.stat-card--mood {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%);
+  border-left: 4px solid #8b5cf6;
+}
+
+.stat-card--mood i {
+  color: #8b5cf6;
+}
+
+/* --------------------------------------------------------------------------
    Mobile Responsive
    -------------------------------------------------------------------------- */
 @media (max-width: 1024px) {

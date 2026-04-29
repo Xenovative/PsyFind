@@ -17,6 +17,9 @@ import os
 from dotenv import load_dotenv
 from functools import wraps
 
+# Base directory for the application
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Load environment variables FIRST (before any os.getenv calls)
 # Check for production config, fall back to .env
 if os.path.exists('.env.production'):
@@ -97,7 +100,10 @@ def filter_medication_recommendations(report: str, language: str = 'en') -> str:
 class DatabaseManager:
     """SQLite database manager for PsyFind"""
     
-    def __init__(self, db_path: str = 'psyfind.db'):
+    def __init__(self, db_path: str = None):
+        # Use absolute path based on BASE_DIR to ensure consistent location
+        if db_path is None:
+            db_path = os.path.join(BASE_DIR, 'psyfind.db')
         self.db_path = db_path
         self.lock = threading.Lock()
         self.init_database()
@@ -836,7 +842,7 @@ class DatabaseManager:
             import csv
             import os
             
-            csv_path = 'assets/psychiatrists.csv'
+            csv_path = os.path.join(BASE_DIR, 'assets/psychiatrists.csv')
             if not os.path.exists(csv_path):
                 logger.warning("Psychiatrists CSV file not found, skipping import")
                 return
@@ -3322,10 +3328,11 @@ def admin_create_backup():
         from datetime import datetime
         
         backup_name = f"psyfind_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
-        backup_path = f"backups/{backup_name}"
+        backup_dir = os.path.join(BASE_DIR, 'backups')
+        backup_path = os.path.join(backup_dir, backup_name)
         
         # Create backups directory if it doesn't exist
-        os.makedirs('backups', exist_ok=True)
+        os.makedirs(backup_dir, exist_ok=True)
         
         # Copy database file
         shutil.copy2(db_manager.db_path, backup_path)
@@ -3348,7 +3355,7 @@ def admin_create_backup():
 def admin_list_backups():
     """List available backups"""
     try:
-        backup_dir = 'backups'
+        backup_dir = os.path.join(BASE_DIR, 'backups')
         if not os.path.exists(backup_dir):
             return jsonify({"backups": []})
         

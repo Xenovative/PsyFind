@@ -3699,57 +3699,73 @@ def admin_clinical_sessions():
 def admin_clinical_session_detail(session_id):
     """Get complete clinical data for a session"""
     try:
+        logger.info(f"Fetching clinical session details for: {session_id}")
         conn = db_manager.get_connection()
-        
+
         # Get session info
         cursor = conn.execute('''
             SELECT * FROM user_sessions WHERE session_id = ?
         ''', (session_id,))
         session_info = cursor.fetchone()
-        
+
         if not session_info:
+            logger.warning(f"Session not found: {session_id}")
+            conn.close()
             return jsonify({"error": "Session not found"}), 404
-        
+
         session_data = dict(session_info)
-        
+
         # Get complete chat history (unfiltered)
         cursor = conn.execute('''
             SELECT role, content, timestamp, metadata
-            FROM chat_messages 
-            WHERE session_id = ? 
+            FROM chat_messages
+            WHERE session_id = ?
             ORDER BY timestamp ASC
         ''', (session_id,))
-        
+
         chat_history = []
         for row in cursor.fetchall():
             msg = dict(row)
             msg['metadata'] = json.loads(msg['metadata'])
             chat_history.append(msg)
-        
+
         # Get assessment results with unredacted clinical reports
         cursor = conn.execute('''
-            SELECT assessment_type, score, severity, interpretation, 
+            SELECT assessment_type, score, severity, interpretation,
                    dsm_analysis, clinical_report, responses, created_at
-            FROM assessment_results 
+            FROM assessment_results
             WHERE session_id = ?
             ORDER BY created_at DESC
         ''', (session_id,))
-        
+
         assessments = []
         for row in cursor.fetchall():
             assessment = dict(row)
             assessment['dsm_analysis'] = json.loads(assessment['dsm_analysis'])
             assessment['responses'] = json.loads(assessment['responses'])
             assessments.append(assessment)
-        
+
+        # Get mood history
+        cursor = conn.execute('''
+            SELECT mood_type, note, timestamp
+            FROM mood_tracking
+            WHERE session_id = ?
+            ORDER BY timestamp DESC
+        ''', (session_id,))
+        mood_history = [dict(row) for row in cursor.fetchall()]
+
         conn.close()
-        
+
+        logger.info(f"Session details fetched: {len(chat_history)} messages, {len(assessments)} assessments, {len(mood_history)} mood records")
+
         return jsonify({
-            "session_info": session_data,
+            "session": session_data,
             "chat_history": chat_history,
             "assessments": assessments,
+            "mood_history": mood_history,
             "total_messages": len(chat_history),
-            "total_assessments": len(assessments)
+            "total_assessments": len(assessments),
+            "total_mood_records": len(mood_history)
         })
         
     except Exception as e:

@@ -585,22 +585,25 @@
                 return;
             }
             
-            panel.innerHTML = '<div class="session-list">' + sessions.map(s => `
+            panel.innerHTML = '<div class="session-list">' + sessions.map(s => {
+                // Properly escape session ID for use in HTML onclick attribute
+                const safeSessionId = s.session_id.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                return `
                 <div class="session-item">
                     <div class="session-item__info">
                         <div class="session-item__id">${escapeHtml(s.session_id.substring(0, 16))}...</div>
                         <div class="session-item__meta">${escapeHtml(s.language)} • ${formatTime(s.last_activity)}</div>
                     </div>
                     <div class="session-item__actions">
-                        <button class="btn btn--secondary btn--sm" onclick="viewSessionDetails('${s.session_id}')" title="View Details">
+                        <button class="btn btn--secondary btn--sm" onclick="viewSessionDetails('${safeSessionId}')" title="View Details">
                             <i class="fas fa-eye" aria-hidden="true"></i>
                         </button>
-                        <button class="btn btn--danger btn--sm" onclick="terminateSession('${s.session_id}')" title="Terminate Session">
+                        <button class="btn btn--danger btn--sm" onclick="terminateSession('${safeSessionId}')" title="Terminate Session">
                             <i class="fas fa-times" aria-hidden="true"></i>
                         </button>
                     </div>
                 </div>
-            `).join('') + '</div>';
+            `}).join('') + '</div>';
         }
 
         async function refreshHealth() {

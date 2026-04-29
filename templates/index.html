@@ -926,31 +926,71 @@
             div.textContent = text;
             let html = div.innerHTML;
             
-            // Now apply markdown transformations to the escaped HTML string
-            // Headers (### Header)
-            html = html.replace(/###&nbsp;([^<\n]+)/g, '<h4 style="margin: 16px 0 8px; color: var(--text-primary); font-weight: 600;">$1</h4>');
-            html = html.replace(/##&nbsp;([^<\n]+)/g, '<h3 style="margin: 20px 0 12px; color: var(--text-primary); font-weight: 600;">$1</h3>');
+            // Split into lines for processing
+            const lines = html.split('\n');
+            let result = [];
+            let inList = false;
             
-            // Bold text (**text**)
-            html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                
+                // Skip empty lines but preserve as paragraph breaks
+                if (!line) {
+                    if (inList) {
+                        result.push('</div>');
+                        inList = false;
+                    }
+                    continue;
+                }
+                
+                // Section headers: **Title:** or **Title.**
+                if (line.match(/^\*\*[^*]+\*\*[:\.]?/)) {
+                    if (inList) {
+                        result.push('</div>');
+                        inList = false;
+                    }
+                    line = line.replace(/\*\*([^*]+)\*\*[:\.]?/g, '<strong style="color: var(--text-primary); font-size: 1.05em;">$1</strong>');
+                    result.push('<div style="margin: 16px 0 8px;">' + line + '</div>');
+                    continue;
+                }
+                
+                // Bullet points: .- item or - item
+                if (line.match(/^[\.\s]*-\s+/)) {
+                    if (!inList) {
+                        result.push('<div style="margin: 8px 0; padding-left: 16px; border-left: 3px solid var(--color-primary-300);">');
+                        inList = true;
+                    }
+                    line = line.replace(/^[\.\s]*-\s+/, '');
+                    line = line.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                    result.push('<div style="margin: 6px 0; padding: 4px 0;">• ' + line + '</div>');
+                    continue;
+                }
+                
+                // Numbered items: 1. item or 1. **Title**: item
+                if (line.match(/^\d+\.\s+/)) {
+                    if (!inList) {
+                        result.push('<div style="margin: 8px 0; padding-left: 16px;">');
+                        inList = true;
+                    }
+                    line = line.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                    result.push('<div style="margin: 6px 0; padding: 4px 0;">' + line + '</div>');
+                    continue;
+                }
+                
+                // Regular text with inline bold
+                if (inList) {
+                    result.push('</div>');
+                    inList = false;
+                }
+                line = line.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                result.push('<div style="margin: 8px 0; line-height: 1.7;">' + line + '</div>');
+            }
             
-            // List items with bullet
-            html = html.replace(/\.\s+-\s+([^<\n]+)/g, '<div style="margin: 4px 0; margin-left: 20px; padding-left: 12px; border-left: 2px solid var(--border-light);">• $1</div>');
-            html = html.replace(/<br>-\s+([^<]+)/g, '<div style="margin: 4px 0; margin-left: 20px; padding-left: 12px; border-left: 2px solid var(--border-light);">• $1</div>');
+            if (inList) {
+                result.push('</div>');
+            }
             
-            // Numbered sections
-            html = html.replace(/(\d+)\.\s+([^<\n]+)/g, '<div style="margin: 8px 0; font-weight: 500;">$1. $2</div>');
-            
-            // Convert remaining newlines to breaks
-            html = html.replace(/<br>/g, '%%%BR%%%');
-            html = html.replace(/\n/g, '<br>');
-            html = html.replace(/%%%BR%%%/g, '<br>');
-            
-            // Paragraphs - double breaks create paragraph spacing
-            html = html.replace(/<br><br>/g, '</p><p style="margin: 12px 0;">');
-            html = '<p style="margin: 12px 0;">' + html + '</p>';
-            
-            return html;
+            return result.join('');
         }
 
         // Disclaimer Modal Functions

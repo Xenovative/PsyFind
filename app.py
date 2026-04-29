@@ -2017,8 +2017,10 @@ class AdminManager:
         sessions = db_manager.get_active_sessions()
         formatted_sessions = []
         for session in sessions:
+            full_session_id = session['session_id']
             formatted_sessions.append({
-                'session_id': session['session_id'][:16] + '...',  # Truncate for privacy
+                'session_id': full_session_id,  # Keep full ID for API calls
+                'display_id': full_session_id[:16] + '...',  # Truncated for display only
                 'created_at': session['created_at'],
                 'last_activity': session['last_activity'],
                 'message_count': session['message_count'],

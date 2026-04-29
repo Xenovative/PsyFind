@@ -588,10 +588,11 @@
             panel.innerHTML = '<div class="session-list">' + sessions.map(s => {
                 // Properly escape session ID for use in HTML onclick attribute
                 const safeSessionId = s.session_id.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const displayId = s.display_id || s.session_id.substring(0, 16) + '...';
                 return `
                 <div class="session-item">
                     <div class="session-item__info">
-                        <div class="session-item__id">${escapeHtml(s.session_id.substring(0, 16))}...</div>
+                        <div class="session-item__id">${escapeHtml(displayId)}</div>
                         <div class="session-item__meta">${escapeHtml(s.language)} • ${formatTime(s.last_activity)}</div>
                     </div>
                     <div class="session-item__actions">
